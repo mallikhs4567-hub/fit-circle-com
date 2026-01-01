@@ -47,9 +47,12 @@ function AppRoutes() {
     );
   }
 
+  // User is authenticated and onboarded - redirect /onboarding to main app
+
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/fitness" replace />} />
+      <Route path="/onboarding" element={<Navigate to="/fitness" replace />} />
       <Route element={<AppLayout />}>
         <Route path="/circle" element={<Circle />} />
         <Route path="/fitness" element={<Fitness />} />
