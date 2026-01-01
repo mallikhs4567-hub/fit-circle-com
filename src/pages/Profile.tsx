@@ -1,4 +1,5 @@
-import { useApp } from '@/contexts/AppContext';
+import { useProfile } from '@/hooks/useProfile';
+import { useAuth } from '@/hooks/useAuth';
 import { Avatar } from '@/components/common/Avatar';
 import { StreakBadge } from '@/components/common/StreakBadge';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,8 @@ import {
   ChevronRight,
   User,
   Scale,
-  Ruler
+  Ruler,
+  Loader2
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
@@ -24,17 +26,24 @@ const goalLabels = {
 };
 
 export default function Profile() {
-  const { user, setUser, setIsOnboarded } = useApp();
+  const { profile, loading } = useProfile();
+  const { signOut } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    setUser(null);
-    setIsOnboarded(false);
-    localStorage.clear();
+  const handleLogout = async () => {
+    await signOut();
     navigate('/');
   };
 
-  if (!user) {
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!profile) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center p-4">
         <p className="text-muted-foreground">Please log in</p>
@@ -58,20 +67,20 @@ export default function Profile() {
       <div className="px-4 mb-6">
         <div className="card-elevated p-6 text-center">
           <Avatar 
-            name={user.username} 
-            src={user.avatar} 
+            name={profile.username} 
+            src={profile.avatar_url} 
             size="xl" 
             showBorder 
             className="mx-auto mb-4"
           />
           <h2 className="text-xl font-display font-bold text-foreground mb-1">
-            @{user.username}
+            @{profile.username}
           </h2>
-          <p className="text-sm text-muted-foreground mb-4">{user.email}</p>
+          <p className="text-sm text-muted-foreground mb-4">{profile.email}</p>
           
           {/* Streak Display */}
           <div className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-streak/10 border border-streak/20">
-            <StreakBadge streak={user.streak} size="md" animate={user.streak > 0} />
+            <StreakBadge streak={profile.streak} size="md" animate={profile.streak > 0} />
           </div>
         </div>
       </div>
@@ -82,19 +91,19 @@ export default function Profile() {
           <StatCard
             icon={Flame}
             label="Current Streak"
-            value={`${user.streak} days`}
+            value={`${profile.streak} days`}
             iconColor="text-streak"
           />
           <StatCard
             icon={Trophy}
             label="Total Active"
-            value={`${user.totalActiveDays} days`}
+            value={`${profile.total_active_days} days`}
             iconColor="text-primary"
           />
           <StatCard
             icon={Calendar}
             label="Member Since"
-            value={new Date(user.createdAt).toLocaleDateString(undefined, { 
+            value={new Date(profile.created_at).toLocaleDateString(undefined, { 
               month: 'short', 
               year: 'numeric' 
             })}
@@ -103,7 +112,7 @@ export default function Profile() {
           <StatCard
             icon={Target}
             label="Goal"
-            value={user.goal ? goalLabels[user.goal] : 'Not set'}
+            value={profile.goal ? goalLabels[profile.goal] : 'Not set'}
             iconColor="text-success"
           />
         </div>
@@ -118,17 +127,17 @@ export default function Profile() {
           <DetailRow
             icon={User}
             label="Gender"
-            value={user.gender ? user.gender.charAt(0).toUpperCase() + user.gender.slice(1) : 'Not set'}
+            value={profile.gender ? profile.gender.charAt(0).toUpperCase() + profile.gender.slice(1) : 'Not set'}
           />
           <DetailRow
             icon={Ruler}
             label="Height"
-            value={user.height ? `${user.height} cm` : 'Not set'}
+            value={profile.height ? `${profile.height} cm` : 'Not set'}
           />
           <DetailRow
             icon={Scale}
             label="Weight"
-            value={user.weight ? `${user.weight} kg` : 'Not set'}
+            value={profile.weight ? `${profile.weight} kg` : 'Not set'}
           />
         </div>
       </div>
