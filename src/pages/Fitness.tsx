@@ -1,10 +1,22 @@
-import { useState, useEffect } from 'react';
-import { useApp } from '@/contexts/AppContext';
+import { useState } from 'react';
+import { useProfile } from '@/hooks/useProfile';
+import { useChecklist } from '@/hooks/useChecklist';
 import { StreakBadge } from '@/components/common/StreakBadge';
-import { Button } from '@/components/ui/button';
-import { Check, Dumbbell, Utensils, Trophy, Flame, ChevronRight } from 'lucide-react';
+import { Check, Dumbbell, Utensils, Trophy, Flame, ChevronRight, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { FitnessPlan, FitnessGoal } from '@/types';
+
+type FitnessGoal = 'weight-loss' | 'muscle-gain' | 'healthy-routine';
+
+interface FitnessPlan {
+  goal: FitnessGoal;
+  workout: string[];
+  diet: {
+    breakfast: string;
+    lunch: string;
+    dinner: string;
+    snacks: string;
+  };
+}
 
 const fitnessPlans: Record<FitnessGoal, FitnessPlan> = {
   'weight-loss': {
@@ -58,40 +70,24 @@ const fitnessPlans: Record<FitnessGoal, FitnessPlan> = {
 };
 
 export default function Fitness() {
-  const { user, dailyChecklist, setDailyChecklist, updateStreak } = useApp();
+  const { profile, loading: profileLoading } = useProfile();
+  const { checklist, loading: checklistLoading, updateChecklist } = useChecklist();
   const [showPlan, setShowPlan] = useState<'workout' | 'diet' | null>(null);
 
-  const today = new Date().toISOString().split('T')[0];
-  const plan = user?.goal ? fitnessPlans[user.goal] : null;
+  const plan = profile?.goal ? fitnessPlans[profile.goal as FitnessGoal] : null;
+  const bothCompleted = checklist?.workout_completed && checklist?.diet_followed;
 
-  const todayChecklist = dailyChecklist?.date === today ? dailyChecklist : {
-    date: today,
-    workoutCompleted: false,
-    dietFollowed: false,
+  const handleChecklistToggle = async (type: 'workout' | 'diet') => {
+    await updateChecklist(type);
   };
 
-  const bothCompleted = todayChecklist.workoutCompleted && todayChecklist.dietFollowed;
-
-  const handleChecklistToggle = (type: 'workout' | 'diet') => {
-    const updated = {
-      ...todayChecklist,
-      [type === 'workout' ? 'workoutCompleted' : 'dietFollowed']: 
-        type === 'workout' ? !todayChecklist.workoutCompleted : !todayChecklist.dietFollowed,
-    };
-    
-    setDailyChecklist(updated);
-
-    // Check if both are now complete
-    if (updated.workoutCompleted && updated.dietFollowed && !bothCompleted) {
-      updateStreak(true);
-    }
-  };
-
-  useEffect(() => {
-    if (!dailyChecklist || dailyChecklist.date !== today) {
-      setDailyChecklist({ date: today, workoutCompleted: false, dietFollowed: false });
-    }
-  }, []);
+  if (profileLoading || checklistLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!plan) {
     return (
@@ -110,7 +106,7 @@ export default function Fitness() {
             <p className="text-muted-foreground text-sm">Today's Progress</p>
             <h1 className="text-2xl font-display font-bold text-foreground">Fitness</h1>
           </div>
-          <StreakBadge streak={user?.streak || 0} size="lg" animate={bothCompleted} />
+          <StreakBadge streak={profile?.streak || 0} size="lg" animate={bothCompleted} />
         </div>
 
         {/* Streak Card */}
@@ -123,7 +119,7 @@ export default function Fitness() {
               <div>
                 <p className="font-semibold text-accent-foreground">Day Complete! 🎉</p>
                 <p className="text-sm text-accent-foreground/80">
-                  You're on a {user?.streak || 1} day streak
+                  You're on a {profile?.streak || 1} day streak
                 </p>
               </div>
             </div>
@@ -139,7 +135,7 @@ export default function Fitness() {
           icon={Dumbbell}
           title="Workout Completed"
           description="Complete today's workout"
-          checked={todayChecklist.workoutCompleted}
+          checked={checklist?.workout_completed || false}
           onToggle={() => handleChecklistToggle('workout')}
           onViewDetails={() => setShowPlan('workout')}
         />
@@ -148,7 +144,7 @@ export default function Fitness() {
           icon={Utensils}
           title="Diet Followed"
           description="Follow today's meal plan"
-          checked={todayChecklist.dietFollowed}
+          checked={checklist?.diet_followed || false}
           onToggle={() => handleChecklistToggle('diet')}
           onViewDetails={() => setShowPlan('diet')}
         />
@@ -163,7 +159,7 @@ export default function Fitness() {
               <span className="text-sm font-medium">Current Streak</span>
             </div>
             <p className="text-2xl font-display font-bold text-foreground">
-              {user?.streak || 0} days
+              {profile?.streak || 0} days
             </p>
           </div>
           <div className="card-elevated p-4">
@@ -172,7 +168,7 @@ export default function Fitness() {
               <span className="text-sm font-medium">Total Active</span>
             </div>
             <p className="text-2xl font-display font-bold text-foreground">
-              {user?.totalActiveDays || 0} days
+              {profile?.total_active_days || 0} days
             </p>
           </div>
         </div>
@@ -214,7 +210,7 @@ export default function Fitness() {
               ) : (
                 <div className="space-y-4">
                   <p className="text-muted-foreground text-sm mb-4">
-                    Follow this Indian diet plan for {user?.goal?.replace('-', ' ')}
+                    Follow this Indian diet plan for {profile?.goal?.replace('-', ' ')}
                   </p>
                   
                   <MealCard title="Breakfast" content={plan.diet.breakfast} delay={0} />

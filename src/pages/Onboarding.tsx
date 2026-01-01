@@ -2,10 +2,11 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useApp } from '@/contexts/AppContext';
-import { Dumbbell, Target, Salad, ArrowRight, Check, Flame } from 'lucide-react';
-import type { FitnessGoal } from '@/types';
+import { useProfile } from '@/hooks/useProfile';
+import { Dumbbell, Target, Salad, ArrowRight, Check, Flame, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+type FitnessGoal = 'weight-loss' | 'muscle-gain' | 'healthy-routine';
 
 const goals = [
   {
@@ -30,37 +31,35 @@ const goals = [
 
 export default function Onboarding() {
   const navigate = useNavigate();
-  const { setUser, setIsOnboarded } = useApp();
+  const { updateProfile } = useProfile();
   const [step, setStep] = useState(1);
-  const [email, setEmail] = useState('');
-  const [username, setUsername] = useState('');
+  const [loading, setLoading] = useState(false);
   const [selectedGoal, setSelectedGoal] = useState<FitnessGoal | null>(null);
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
   const [gender, setGender] = useState<'male' | 'female' | 'other' | null>(null);
 
-  const handleComplete = () => {
-    setUser({
-      id: crypto.randomUUID(),
-      email,
-      username,
+  const handleComplete = async () => {
+    setLoading(true);
+    
+    const { error } = await updateProfile({
       goal: selectedGoal!,
       height: Number(height),
       weight: Number(weight),
       gender: gender!,
-      streak: 0,
-      totalActiveDays: 0,
-      createdAt: new Date(),
     });
-    setIsOnboarded(true);
-    navigate('/fitness');
+
+    setLoading(false);
+
+    if (!error) {
+      navigate('/fitness');
+    }
   };
 
   const canProceed = () => {
     switch (step) {
-      case 1: return email.includes('@') && username.length >= 3;
-      case 2: return selectedGoal !== null;
-      case 3: return height && weight && gender;
+      case 1: return selectedGoal !== null;
+      case 2: return height && weight && gender;
       default: return false;
     }
   };
@@ -78,7 +77,7 @@ export default function Onboarding() {
         
         {/* Progress */}
         <div className="flex gap-2 mt-6">
-          {[1, 2, 3].map((s) => (
+          {[1, 2].map((s) => (
             <div
               key={s}
               className={cn(
@@ -93,48 +92,6 @@ export default function Onboarding() {
       {/* Content */}
       <div className="flex-1 px-6 py-6 overflow-y-auto">
         {step === 1 && (
-          <div className="animate-fade-up space-y-6">
-            <div>
-              <h2 className="text-2xl font-display font-bold text-foreground mb-2">
-                Welcome aboard! 👋
-              </h2>
-              <p className="text-muted-foreground">
-                Let's set up your profile to get started
-              </p>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">
-                  Email
-                </label>
-                <Input
-                  type="email"
-                  placeholder="you@example.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-medium text-foreground mb-2 block">
-                  Username
-                </label>
-                <Input
-                  type="text"
-                  placeholder="@yourname"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ''))}
-                />
-                <p className="text-xs text-muted-foreground mt-1.5">
-                  This is how friends will find you
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {step === 2 && (
           <div className="animate-fade-up space-y-6">
             <div>
               <h2 className="text-2xl font-display font-bold text-foreground mb-2">
@@ -188,7 +145,7 @@ export default function Onboarding() {
           </div>
         )}
 
-        {step === 3 && (
+        {step === 2 && (
           <div className="animate-fade-up space-y-6">
             <div>
               <h2 className="text-2xl font-display font-bold text-foreground mb-2">
@@ -255,18 +212,24 @@ export default function Onboarding() {
       <div className="px-6 pb-8 safe-bottom">
         <Button
           onClick={() => {
-            if (step < 3) {
+            if (step < 2) {
               setStep(step + 1);
             } else {
               handleComplete();
             }
           }}
-          disabled={!canProceed()}
+          disabled={!canProceed() || loading}
           className="w-full"
           size="lg"
         >
-          {step === 3 ? "Let's Go!" : 'Continue'}
-          <ArrowRight className="w-5 h-5" />
+          {loading ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            <>
+              {step === 2 ? "Let's Go!" : 'Continue'}
+              <ArrowRight className="w-5 h-5" />
+            </>
+          )}
         </Button>
       </div>
     </div>

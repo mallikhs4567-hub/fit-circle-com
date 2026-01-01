@@ -1,53 +1,51 @@
 import { useState } from 'react';
-import { useApp } from '@/contexts/AppContext';
+import { useChat } from '@/hooks/useChat';
+import { useFriends } from '@/hooks/useFriends';
+import { useAuth } from '@/hooks/useAuth';
 import { Avatar } from '@/components/common/Avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ArrowLeft, Send, MessageCircle } from 'lucide-react';
+import { Search, ArrowLeft, Send, MessageCircle, UserPlus, Loader2, Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-interface Message {
-  id: string;
-  content: string;
-  senderId: string;
-  createdAt: Date;
-}
-
 export default function Chat() {
-  const { chatThreads, user } = useApp();
-  const [selectedThread, setSelectedThread] = useState<string | null>(null);
-  const [messages, setMessages] = useState<Message[]>([
-    { id: '1', content: 'Hey! How\'s your workout going?', senderId: '2', createdAt: new Date(Date.now() - 60000) },
-    { id: '2', content: 'Great! Just finished my morning routine 💪', senderId: '1', createdAt: new Date(Date.now() - 30000) },
-    { id: '3', content: 'Keep it up!', senderId: '2', createdAt: new Date() },
-  ]);
+  const { user } = useAuth();
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const { threads, messages, loading, sendMessage, fetchMessages } = useChat(selectedUserId || undefined);
+  const { friends, pendingRequests, sendFriendRequest, acceptFriendRequest, rejectFriendRequest } = useFriends();
   const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showAddFriend, setShowAddFriend] = useState(false);
+  const [friendUsername, setFriendUsername] = useState('');
+  const [addingFriend, setAddingFriend] = useState(false);
 
-  const selectedChat = chatThreads.find(t => t.id === selectedThread);
+  const selectedThread = threads.find(t => t.participantId === selectedUserId);
 
-  const handleSendMessage = () => {
-    if (!newMessage.trim() || !user) return;
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !selectedUserId) return;
 
-    const message: Message = {
-      id: crypto.randomUUID(),
-      content: newMessage,
-      senderId: user.id,
-      createdAt: new Date(),
-    };
-
-    setMessages([...messages, message]);
+    await sendMessage(selectedUserId, newMessage.trim());
     setNewMessage('');
   };
 
-  const getTimeDisplay = (date: Date) => {
+  const handleAddFriend = async () => {
+    if (!friendUsername.trim()) return;
+    setAddingFriend(true);
+    await sendFriendRequest(friendUsername.trim());
+    setAddingFriend(false);
+    setFriendUsername('');
+    setShowAddFriend(false);
+  };
+
+  const getTimeDisplay = (dateStr: string) => {
     const now = new Date();
-    const diff = now.getTime() - new Date(date).getTime();
+    const date = new Date(dateStr);
+    const diff = now.getTime() - date.getTime();
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
     if (hours > 24) {
-      return new Date(date).toLocaleDateString(undefined, { weekday: 'short' });
+      return date.toLocaleDateString(undefined, { weekday: 'short' });
     }
     if (hours > 0) return `${hours}h`;
     if (minutes > 0) return `${minutes}m`;
@@ -55,13 +53,22 @@ export default function Chat() {
   };
 
   // Thread List View
-  if (!selectedThread) {
+  if (!selectedUserId) {
     return (
       <div className="min-h-screen bg-background">
         {/* Header */}
         <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border safe-top">
           <div className="px-4 py-3">
-            <h1 className="text-xl font-display font-bold text-foreground mb-3">Chat</h1>
+            <div className="flex items-center justify-between mb-3">
+              <h1 className="text-xl font-display font-bold text-foreground">Chat</h1>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => setShowAddFriend(true)}
+              >
+                <UserPlus className="w-5 h-5" />
+              </Button>
+            </div>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
@@ -74,29 +81,68 @@ export default function Chat() {
           </div>
         </header>
 
+        {/* Pending Requests */}
+        {pendingRequests.length > 0 && (
+          <div className="px-4 py-3 border-b border-border">
+            <p className="text-sm font-medium text-muted-foreground mb-2">Friend Requests</p>
+            {pendingRequests.map((request) => (
+              <div key={request.user_id} className="flex items-center gap-3 py-2">
+                <Avatar name={request.username} src={request.avatar_url} size="md" />
+                <div className="flex-1">
+                  <p className="font-semibold text-foreground">@{request.username}</p>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => acceptFriendRequest(request.user_id)}
+                  >
+                    <Check className="w-4 h-4 text-success" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon-sm"
+                    onClick={() => rejectFriendRequest(request.user_id)}
+                  >
+                    <X className="w-4 h-4 text-destructive" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* Thread List */}
         <div className="divide-y divide-border">
-          {chatThreads.length === 0 ? (
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : threads.length === 0 ? (
             <div className="text-center py-12 px-4">
               <div className="w-16 h-16 rounded-full bg-secondary mx-auto mb-4 flex items-center justify-center">
                 <MessageCircle className="w-8 h-8 text-muted-foreground" />
               </div>
               <h3 className="font-semibold text-foreground mb-1">No conversations yet</h3>
-              <p className="text-sm text-muted-foreground">
-                Start chatting with your friends!
+              <p className="text-sm text-muted-foreground mb-4">
+                Add friends to start chatting!
               </p>
+              <Button onClick={() => setShowAddFriend(true)}>
+                <UserPlus className="w-4 h-4 mr-2" />
+                Add Friend
+              </Button>
             </div>
           ) : (
-            chatThreads
+            threads
               .filter(t => t.participantName.toLowerCase().includes(searchQuery.toLowerCase()))
               .map((thread) => (
                 <button
-                  key={thread.id}
-                  onClick={() => setSelectedThread(thread.id)}
+                  key={thread.participantId}
+                  onClick={() => setSelectedUserId(thread.participantId)}
                   className="w-full flex items-center gap-3 p-4 hover:bg-secondary/50 transition-colors text-left"
                 >
                   <div className="relative">
-                    <Avatar name={thread.participantName} size="lg" />
+                    <Avatar name={thread.participantName} src={thread.participantAvatar} size="lg" />
                     {thread.unreadCount > 0 && (
                       <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full gradient-primary flex items-center justify-center">
                         <span className="text-xs font-bold text-primary-foreground">
@@ -123,6 +169,54 @@ export default function Chat() {
               ))
           )}
         </div>
+
+        {/* Friends List (for starting new chats) */}
+        {friends.length > 0 && threads.length === 0 && (
+          <div className="px-4 py-3">
+            <p className="text-sm font-medium text-muted-foreground mb-2">Your Friends</p>
+            {friends.map((friend) => (
+              <button
+                key={friend.user_id}
+                onClick={() => setSelectedUserId(friend.user_id)}
+                className="w-full flex items-center gap-3 py-2 hover:bg-secondary/50 rounded-lg px-2 transition-colors"
+              >
+                <Avatar name={friend.username} src={friend.avatar_url} size="md" />
+                <p className="font-semibold text-foreground">@{friend.username}</p>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Add Friend Modal */}
+        {showAddFriend && (
+          <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-xl flex items-center justify-center p-4">
+            <div className="card-elevated p-6 w-full max-w-sm">
+              <h2 className="text-xl font-display font-bold text-foreground mb-4">Add Friend</h2>
+              <Input
+                placeholder="Enter username"
+                value={friendUsername}
+                onChange={(e) => setFriendUsername(e.target.value.toLowerCase())}
+                className="mb-4"
+              />
+              <div className="flex gap-2">
+                <Button
+                  variant="secondary"
+                  className="flex-1"
+                  onClick={() => setShowAddFriend(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="flex-1"
+                  onClick={handleAddFriend}
+                  disabled={!friendUsername.trim() || addingFriend}
+                >
+                  {addingFriend ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Add'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }
@@ -134,14 +228,14 @@ export default function Chat() {
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border safe-top">
         <div className="flex items-center gap-3 px-4 py-3">
           <button
-            onClick={() => setSelectedThread(null)}
+            onClick={() => setSelectedUserId(null)}
             className="p-2 -ml-2 text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <Avatar name={selectedChat?.participantName} size="md" />
+          <Avatar name={selectedThread?.participantName} src={selectedThread?.participantAvatar} size="md" />
           <div>
-            <p className="font-semibold text-foreground">@{selectedChat?.participantName}</p>
+            <p className="font-semibold text-foreground">@{selectedThread?.participantName}</p>
             <p className="text-xs text-muted-foreground">Active now</p>
           </div>
         </div>
@@ -150,7 +244,7 @@ export default function Chat() {
       {/* Messages */}
       <div className="flex-1 p-4 overflow-y-auto space-y-3">
         {messages.map((message, index) => {
-          const isOwn = message.senderId === user?.id || message.senderId === '1';
+          const isOwn = message.sender_id === user?.id;
           
           return (
             <div

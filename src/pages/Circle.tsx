@@ -1,55 +1,35 @@
 import { useState } from 'react';
-import { useApp } from '@/contexts/AppContext';
+import { usePosts } from '@/hooks/usePosts';
+import { useProfile } from '@/hooks/useProfile';
 import { Avatar } from '@/components/common/Avatar';
 import { TimeLeft } from '@/components/common/TimeLeft';
 import { Button } from '@/components/ui/button';
-import { Plus, Heart, Flame, Hand, Send, X, Image } from 'lucide-react';
+import { Plus, Heart, Flame, Hand, Send, X, Image, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { CirclePost } from '@/types';
 
 export default function Circle() {
-  const { posts, setPosts, user } = useApp();
+  const { posts, loading, createPost, addReaction } = usePosts();
+  const { profile } = useProfile();
   const [showCompose, setShowCompose] = useState(false);
   const [newPost, setNewPost] = useState('');
+  const [posting, setPosting] = useState(false);
 
   const handleReaction = (postId: string, reaction: 'heart' | 'fire' | 'clap') => {
-    setPosts(posts.map(post => {
-      if (post.id === postId) {
-        const wasReacted = post.userReaction === reaction;
-        return {
-          ...post,
-          userReaction: wasReacted ? undefined : reaction,
-          reactions: {
-            ...post.reactions,
-            [reaction]: wasReacted ? post.reactions[reaction] - 1 : post.reactions[reaction] + 1,
-          },
-        };
-      }
-      return post;
-    }));
+    addReaction(postId, reaction);
   };
 
-  const handlePost = () => {
-    if (!newPost.trim() || !user) return;
-
-    const post: CirclePost = {
-      id: crypto.randomUUID(),
-      userId: user.id,
-      username: user.username,
-      avatar: user.avatar,
-      content: newPost,
-      createdAt: new Date(),
-      expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000),
-      reactions: { heart: 0, fire: 0, clap: 0 },
-    };
-
-    setPosts([post, ...posts]);
+  const handlePost = async () => {
+    if (!newPost.trim()) return;
+    
+    setPosting(true);
+    await createPost(newPost.trim());
+    setPosting(false);
     setNewPost('');
     setShowCompose(false);
   };
 
-  const getTimeAgo = (date: Date) => {
-    const diff = Date.now() - new Date(date).getTime();
+  const getTimeAgo = (dateStr: string) => {
+    const diff = Date.now() - new Date(dateStr).getTime();
     const hours = Math.floor(diff / (1000 * 60 * 60));
     const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
     
@@ -76,7 +56,11 @@ export default function Circle() {
 
       {/* Feed */}
       <div className="p-4 space-y-4">
-        {posts.length === 0 ? (
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        ) : posts.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-16 h-16 rounded-full bg-secondary mx-auto mb-4 flex items-center justify-center">
               <Flame className="w-8 h-8 text-muted-foreground" />
@@ -96,13 +80,13 @@ export default function Circle() {
               {/* Header */}
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <Avatar name={post.username} size="md" />
+                  <Avatar name={post.username} src={post.avatar_url} size="md" />
                   <div>
                     <p className="font-semibold text-foreground">@{post.username}</p>
-                    <p className="text-xs text-muted-foreground">{getTimeAgo(post.createdAt)}</p>
+                    <p className="text-xs text-muted-foreground">{getTimeAgo(post.created_at)}</p>
                   </div>
                 </div>
-                <TimeLeft expiresAt={new Date(post.expiresAt)} />
+                <TimeLeft expiresAt={new Date(post.expires_at)} />
               </div>
 
               {/* Content */}
@@ -155,17 +139,23 @@ export default function Circle() {
               <Button
                 size="sm"
                 onClick={handlePost}
-                disabled={!newPost.trim()}
+                disabled={!newPost.trim() || posting}
               >
-                <Send className="w-4 h-4" />
-                Post
+                {posting ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    Post
+                  </>
+                )}
               </Button>
             </div>
 
             {/* Compose Area */}
             <div className="flex-1 p-4">
               <div className="flex gap-3">
-                <Avatar name={user?.username} size="md" />
+                <Avatar name={profile?.username} src={profile?.avatar_url} size="md" />
                 <textarea
                   autoFocus
                   value={newPost}
