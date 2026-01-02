@@ -80,7 +80,8 @@ export function useAuth() {
   };
 
   const resetPassword = async (email: string) => {
-    // Use signInWithOtp for OTP-based recovery
+    // Use signInWithOtp for OTP-based password recovery
+    // This sends a 6-digit OTP code to the user's email
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
@@ -89,7 +90,7 @@ export function useAuth() {
     });
 
     if (error) {
-      if (error.message.includes('Signups not allowed for otp')) {
+      if (error.message.includes('Signups not allowed') || error.message.includes('User not found')) {
         toast.error('This email is not registered. Please sign up first.');
       } else {
         toast.error(error.message);
@@ -97,7 +98,7 @@ export function useAuth() {
       return { error };
     }
 
-    toast.success('OTP sent to your email! Check your inbox.');
+    toast.success('6-digit OTP sent to your email! Check your inbox.');
     return { error: null };
   };
 
