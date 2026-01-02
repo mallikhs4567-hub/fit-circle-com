@@ -16,6 +16,8 @@ export interface Post {
   userReaction?: 'heart' | 'fire' | 'clap';
 }
 
+export type MediaType = 'image' | 'video' | null;
+
 export function usePosts() {
   const { user } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
@@ -95,15 +97,50 @@ export function usePosts() {
     };
   }, [user]);
 
-  const createPost = async (content: string, imageUrl?: string) => {
+  const uploadMedia = async (file: File): Promise<{ url: string; type: MediaType } | null> => {
+    if (!user) return null;
+
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+    const isVideo = file.type.startsWith('video/');
+
+    const { error: uploadError } = await supabase.storage
+      .from('post-media')
+      .upload(fileName, file);
+
+    if (uploadError) {
+      console.error('Upload error:', uploadError);
+      toast.error('Failed to upload media');
+      return null;
+    }
+
+    const { data: urlData } = supabase.storage
+      .from('post-media')
+      .getPublicUrl(fileName);
+
+    return {
+      url: urlData.publicUrl,
+      type: isVideo ? 'video' : 'image',
+    };
+  };
+
+  const createPost = async (content: string, mediaFile?: File) => {
     if (!user) return { error: new Error('Not authenticated') };
+
+    let mediaUrl: string | null = null;
+
+    if (mediaFile) {
+      const result = await uploadMedia(mediaFile);
+      if (!result) return { error: new Error('Media upload failed') };
+      mediaUrl = result.url;
+    }
 
     const { data, error } = await supabase
       .from('posts')
       .insert({
         user_id: user.id,
         content,
-        image_url: imageUrl || null,
+        image_url: mediaUrl,
       })
       .select()
       .single();
@@ -209,6 +246,7 @@ export function usePosts() {
     loading,
     createPost,
     addReaction,
+    uploadMedia,
     refetch: fetchPosts,
   };
 }
