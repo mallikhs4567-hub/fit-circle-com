@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { usePosts } from '@/hooks/usePosts';
 import { useProfile } from '@/hooks/useProfile';
 import { Avatar } from '@/components/common/Avatar';
 import { TimeLeft } from '@/components/common/TimeLeft';
 import { Button } from '@/components/ui/button';
-import { Plus, Heart, Flame, Hand, Send, X, Image, Loader2 } from 'lucide-react';
+import { MediaPreview } from '@/components/circle/MediaPreview';
+import { PostMedia } from '@/components/circle/PostMedia';
+import { Plus, Heart, Flame, Hand, Send, X, Image, Video, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function Circle() {
@@ -12,19 +14,33 @@ export default function Circle() {
   const { profile } = useProfile();
   const [showCompose, setShowCompose] = useState(false);
   const [newPost, setNewPost] = useState('');
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [posting, setPosting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleReaction = (postId: string, reaction: 'heart' | 'fire' | 'clap') => {
     addReaction(postId, reaction);
   };
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Check file size (50MB limit)
+      if (file.size > 52428800) {
+        return;
+      }
+      setMediaFile(file);
+    }
+  };
+
   const handlePost = async () => {
-    if (!newPost.trim()) return;
+    if (!newPost.trim() && !mediaFile) return;
     
     setPosting(true);
-    await createPost(newPost.trim());
+    await createPost(newPost.trim(), mediaFile || undefined);
     setPosting(false);
     setNewPost('');
+    setMediaFile(null);
     setShowCompose(false);
   };
 
@@ -90,9 +106,16 @@ export default function Circle() {
               </div>
 
               {/* Content */}
-              <p className="text-foreground text-base leading-relaxed mb-4">
+              <p className="text-foreground text-base leading-relaxed">
                 {post.content}
               </p>
+
+              {/* Media */}
+              {post.image_url && (
+                <PostMedia url={post.image_url} />
+              )}
+
+              <div className="mt-4" />
 
               {/* Reactions */}
               <div className="flex items-center gap-2">
@@ -139,7 +162,7 @@ export default function Circle() {
               <Button
                 size="sm"
                 onClick={handlePost}
-                disabled={!newPost.trim() || posting}
+                disabled={(!newPost.trim() && !mediaFile) || posting}
               >
                 {posting ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -153,26 +176,54 @@ export default function Circle() {
             </div>
 
             {/* Compose Area */}
-            <div className="flex-1 p-4">
+            <div className="flex-1 p-4 overflow-y-auto">
               <div className="flex gap-3">
                 <Avatar name={profile?.username} src={profile?.avatar_url} size="md" />
-                <textarea
-                  autoFocus
-                  value={newPost}
-                  onChange={(e) => setNewPost(e.target.value)}
-                  placeholder="Share your progress..."
-                  className="flex-1 bg-transparent text-foreground text-lg placeholder:text-muted-foreground resize-none focus:outline-none"
-                  rows={5}
-                  maxLength={280}
-                />
+                <div className="flex-1">
+                  <textarea
+                    autoFocus
+                    value={newPost}
+                    onChange={(e) => setNewPost(e.target.value)}
+                    placeholder="Share your progress..."
+                    className="w-full bg-transparent text-foreground text-lg placeholder:text-muted-foreground resize-none focus:outline-none"
+                    rows={4}
+                    maxLength={280}
+                  />
+                  {mediaFile && (
+                    <div className="mt-3">
+                      <MediaPreview
+                        file={mediaFile}
+                        onRemove={() => setMediaFile(null)}
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
             {/* Compose Footer */}
             <div className="px-4 py-3 border-t border-border flex items-center justify-between">
-              <button className="p-2 text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-secondary">
-                <Image className="w-5 h-5" />
-              </button>
+              <div className="flex gap-1">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/gif,image/webp,video/mp4,video/webm,video/quicktime"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-2 text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-secondary"
+                >
+                  <Image className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  className="p-2 text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-secondary"
+                >
+                  <Video className="w-5 h-5" />
+                </button>
+              </div>
               <span className="text-xs text-muted-foreground">
                 {newPost.length}/280
               </span>
