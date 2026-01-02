@@ -151,6 +151,8 @@ export function usePosts() {
     }
 
     toast.success('Posted to your Circle!');
+    // Refetch posts to show the new post immediately
+    await fetchPosts();
     return { data, error: null };
   };
 
