@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useChat } from '@/hooks/useChat';
 import { useFriends } from '@/hooks/useFriends';
 import { useAuth } from '@/hooks/useAuth';
@@ -7,17 +7,61 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, ArrowLeft, Send, MessageCircle, UserPlus, Loader2, Check, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+
+interface SearchUser {
+  user_id: string;
+  username: string;
+  avatar_url: string | null;
+}
 
 export default function Chat() {
   const { user } = useAuth();
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const { threads, messages, loading, sendMessage, fetchMessages } = useChat(selectedUserId || undefined);
-  const { friends, pendingRequests, sendFriendRequest, acceptFriendRequest, rejectFriendRequest } = useFriends();
+  const { friends, pendingRequests, sendFriendRequest, acceptFriendRequest, rejectFriendRequest, refetch: refetchFriends } = useFriends();
   const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [showAddFriend, setShowAddFriend] = useState(false);
-  const [friendUsername, setFriendUsername] = useState('');
-  const [addingFriend, setAddingFriend] = useState(false);
+  const [searchResults, setSearchResults] = useState<SearchUser[]>([]);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [isSearchFocused, setIsSearchFocused] = useState(false);
+  const [addingFriend, setAddingFriend] = useState<string | null>(null);
+
+  // Instagram-style real-time user search
+  useEffect(() => {
+    const searchUsers = async () => {
+      if (!searchQuery.trim() || searchQuery.length < 1) {
+        setSearchResults([]);
+        return;
+      }
+
+      setSearchLoading(true);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('user_id, username, avatar_url')
+        .ilike('username', `%${searchQuery}%`)
+        .neq('user_id', user?.id || '')
+        .limit(10);
+
+      if (!error && data) {
+        setSearchResults(data);
+      }
+      setSearchLoading(false);
+    };
+
+    const debounce = setTimeout(searchUsers, 300);
+    return () => clearTimeout(debounce);
+  }, [searchQuery, user?.id]);
+
+  const handleAddFriendFromSearch = async (username: string, userId: string) => {
+    setAddingFriend(userId);
+    await sendFriendRequest(username);
+    await refetchFriends();
+    setAddingFriend(null);
+  };
+
+  const isFriend = (userId: string) => friends.some(f => f.user_id === userId);
+  const hasPendingRequest = (userId: string) => pendingRequests.some(r => r.user_id === userId);
 
   const selectedThread = threads.find(t => t.participantId === selectedUserId);
 
@@ -26,15 +70,6 @@ export default function Chat() {
 
     await sendMessage(selectedUserId, newMessage.trim());
     setNewMessage('');
-  };
-
-  const handleAddFriend = async () => {
-    if (!friendUsername.trim()) return;
-    setAddingFriend(true);
-    await sendFriendRequest(friendUsername.trim());
-    setAddingFriend(false);
-    setFriendUsername('');
-    setShowAddFriend(false);
   };
 
   const getTimeDisplay = (dateStr: string) => {
@@ -61,25 +96,73 @@ export default function Chat() {
           <div className="px-4 py-3">
             <div className="flex items-center justify-between mb-3">
               <h1 className="text-xl font-display font-bold text-foreground">Chat</h1>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                onClick={() => setShowAddFriend(true)}
-              >
-                <UserPlus className="w-5 h-5" />
-              </Button>
             </div>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
-                placeholder="Search conversations"
+                placeholder="Search users..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => setIsSearchFocused(true)}
+                onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
                 className="pl-10"
               />
             </div>
           </div>
         </header>
+
+        {/* Search Results Dropdown */}
+        {isSearchFocused && searchQuery.trim() && (
+          <div className="absolute left-0 right-0 mx-4 mt-1 z-50 bg-card border border-border rounded-xl shadow-lg overflow-hidden">
+            {searchLoading ? (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="w-5 h-5 animate-spin text-primary" />
+              </div>
+            ) : searchResults.length === 0 ? (
+              <div className="py-4 px-4 text-center text-muted-foreground text-sm">
+                No users found
+              </div>
+            ) : (
+              searchResults.map((result) => (
+                <div
+                  key={result.user_id}
+                  className="flex items-center gap-3 p-3 hover:bg-secondary/50 transition-colors"
+                >
+                  <Avatar name={result.username} src={result.avatar_url} size="md" />
+                  <div className="flex-1">
+                    <p className="font-semibold text-foreground">@{result.username}</p>
+                  </div>
+                  {isFriend(result.user_id) ? (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setSelectedUserId(result.user_id)}
+                    >
+                      Message
+                    </Button>
+                  ) : hasPendingRequest(result.user_id) ? (
+                    <span className="text-xs text-muted-foreground">Pending</span>
+                  ) : (
+                    <Button
+                      size="sm"
+                      onClick={() => handleAddFriendFromSearch(result.username, result.user_id)}
+                      disabled={addingFriend === result.user_id}
+                    >
+                      {addingFriend === result.user_id ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <>
+                          <UserPlus className="w-4 h-4 mr-1" />
+                          Add
+                        </>
+                      )}
+                    </Button>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        )}
 
         {/* Pending Requests */}
         {pendingRequests.length > 0 && (
@@ -118,23 +201,19 @@ export default function Chat() {
             <div className="flex items-center justify-center py-12">
               <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
-          ) : threads.length === 0 ? (
+          ) : threads.length === 0 && friends.length === 0 ? (
             <div className="text-center py-12 px-4">
               <div className="w-16 h-16 rounded-full bg-secondary mx-auto mb-4 flex items-center justify-center">
                 <MessageCircle className="w-8 h-8 text-muted-foreground" />
               </div>
               <h3 className="font-semibold text-foreground mb-1">No conversations yet</h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                Add friends to start chatting!
+              <p className="text-sm text-muted-foreground">
+                Search for users above to add friends!
               </p>
-              <Button onClick={() => setShowAddFriend(true)}>
-                <UserPlus className="w-4 h-4 mr-2" />
-                Add Friend
-              </Button>
             </div>
           ) : (
             threads
-              .filter(t => t.participantName.toLowerCase().includes(searchQuery.toLowerCase()))
+              .filter(t => !searchQuery || t.participantName.toLowerCase().includes(searchQuery.toLowerCase()))
               .map((thread) => (
                 <button
                   key={thread.participantId}
@@ -184,37 +263,6 @@ export default function Chat() {
                 <p className="font-semibold text-foreground">@{friend.username}</p>
               </button>
             ))}
-          </div>
-        )}
-
-        {/* Add Friend Modal */}
-        {showAddFriend && (
-          <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-xl flex items-center justify-center p-4">
-            <div className="card-elevated p-6 w-full max-w-sm">
-              <h2 className="text-xl font-display font-bold text-foreground mb-4">Add Friend</h2>
-              <Input
-                placeholder="Enter username"
-                value={friendUsername}
-                onChange={(e) => setFriendUsername(e.target.value.toLowerCase())}
-                className="mb-4"
-              />
-              <div className="flex gap-2">
-                <Button
-                  variant="secondary"
-                  className="flex-1"
-                  onClick={() => setShowAddFriend(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  className="flex-1"
-                  onClick={handleAddFriend}
-                  disabled={!friendUsername.trim() || addingFriend}
-                >
-                  {addingFriend ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Add'}
-                </Button>
-              </div>
-            </div>
           </div>
         )}
       </div>
