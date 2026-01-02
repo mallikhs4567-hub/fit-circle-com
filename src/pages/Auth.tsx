@@ -2,30 +2,57 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useAuth } from '@/hooks/useAuth';
-import { Flame, Mail, Lock, User, ArrowRight, ArrowLeft, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Flame, Mail, Lock, User, ArrowRight, ArrowLeft, Loader2, Check } from 'lucide-react';
 
 type AuthMode = 'login' | 'signup' | 'forgot';
+type ForgotStep = 'email' | 'otp' | 'password' | 'success';
 
 export default function Auth() {
   const navigate = useNavigate();
-  const { signIn, signUp, resetPassword } = useAuth();
+  const { signIn, signUp, resetPassword, verifyOtp, updatePassword } = useAuth();
   const [mode, setMode] = useState<AuthMode>('login');
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [username, setUsername] = useState('');
-  const [resetSent, setResetSent] = useState(false);
+  const [forgotStep, setForgotStep] = useState<ForgotStep>('email');
+  const [otp, setOtp] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     if (mode === 'forgot') {
-      const { error } = await resetPassword(email);
-      if (!error) {
-        setResetSent(true);
+      if (forgotStep === 'email') {
+        const { error } = await resetPassword(email);
+        if (!error) {
+          setForgotStep('otp');
+        }
+      } else if (forgotStep === 'otp') {
+        const { error } = await verifyOtp(email, otp);
+        if (!error) {
+          setForgotStep('password');
+        }
+      } else if (forgotStep === 'password') {
+        if (password !== confirmPassword) {
+          setLoading(false);
+          return;
+        }
+        const { error } = await updatePassword(password);
+        if (!error) {
+          setForgotStep('success');
+          setTimeout(() => {
+            setMode('login');
+            setForgotStep('email');
+            setEmail('');
+            setPassword('');
+            setConfirmPassword('');
+            setOtp('');
+          }, 2000);
+        }
       }
       setLoading(false);
       return;
@@ -52,7 +79,10 @@ export default function Auth() {
 
   const canSubmit = () => {
     if (mode === 'forgot') {
-      return email.includes('@');
+      if (forgotStep === 'email') return email.includes('@');
+      if (forgotStep === 'otp') return otp.length === 6;
+      if (forgotStep === 'password') return password.length >= 6 && password === confirmPassword;
+      return false;
     }
     if (mode === 'login') {
       return email.includes('@') && password.length >= 6;
@@ -61,34 +91,37 @@ export default function Auth() {
   };
 
   const getTitle = () => {
-    if (mode === 'forgot') return 'Reset Password';
+    if (mode === 'forgot') {
+      if (forgotStep === 'email') return 'Reset Password';
+      if (forgotStep === 'otp') return 'Enter OTP';
+      if (forgotStep === 'password') return 'New Password';
+      return 'Success!';
+    }
     if (mode === 'login') return 'Welcome back!';
     return 'Start your fitness journey';
   };
 
-  if (resetSent) {
+  const resetForgotFlow = () => {
+    setMode('login');
+    setForgotStep('email');
+    setEmail('');
+    setPassword('');
+    setConfirmPassword('');
+    setOtp('');
+  };
+
+  if (mode === 'forgot' && forgotStep === 'success') {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6">
-        <div className="w-16 h-16 rounded-2xl gradient-primary flex items-center justify-center mb-6">
-          <Mail className="w-8 h-8 text-primary-foreground" />
+        <div className="w-16 h-16 rounded-2xl bg-green-500/20 flex items-center justify-center mb-6">
+          <Check className="w-8 h-8 text-green-500" />
         </div>
         <h1 className="text-2xl font-display font-bold text-foreground mb-2 text-center">
-          Check your email
+          Password Updated!
         </h1>
-        <p className="text-muted-foreground text-center mb-8 max-w-xs">
-          We've sent a password reset link to <span className="text-foreground font-medium">{email}</span>
+        <p className="text-muted-foreground text-center">
+          Redirecting to login...
         </p>
-        <Button
-          variant="outline"
-          onClick={() => {
-            setResetSent(false);
-            setMode('login');
-            setEmail('');
-          }}
-        >
-          <ArrowLeft className="w-4 h-4" />
-          Back to Login
-        </Button>
       </div>
     );
   }
@@ -96,10 +129,21 @@ export default function Auth() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <div className="safe-top px-6 pt-12 pb-8 text-center">
+      <div className="safe-top px-6 pt-12 pb-8 text-center relative">
         {mode === 'forgot' && (
           <button
-            onClick={() => setMode('login')}
+            onClick={() => {
+              if (forgotStep === 'email') {
+                resetForgotFlow();
+              } else if (forgotStep === 'otp') {
+                setForgotStep('email');
+                setOtp('');
+              } else if (forgotStep === 'password') {
+                setForgotStep('otp');
+                setPassword('');
+                setConfirmPassword('');
+              }
+            }}
             className="absolute left-4 top-12 p-2 text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="w-6 h-6" />
@@ -138,27 +182,115 @@ export default function Auth() {
             </div>
           )}
 
-          <div>
-            <label className="text-sm font-medium text-foreground mb-2 block">
-              Email
-            </label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-              <Input
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="pl-10"
-              />
+          {/* Email step for forgot password or login/signup */}
+          {(mode !== 'forgot' || forgotStep === 'email') && (
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">
+                Email
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Input
+                  type="email"
+                  placeholder="you@example.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-10"
+                  disabled={mode === 'forgot' && forgotStep !== 'email'}
+                />
+              </div>
+              {mode === 'forgot' && forgotStep === 'email' && (
+                <p className="text-xs text-muted-foreground mt-1.5">
+                  We'll send you a 6-digit OTP to reset your password
+                </p>
+              )}
             </div>
-            {mode === 'forgot' && (
-              <p className="text-xs text-muted-foreground mt-1.5">
-                We'll send you a link to reset your password
-              </p>
-            )}
-          </div>
+          )}
 
+          {/* OTP step */}
+          {mode === 'forgot' && forgotStep === 'otp' && (
+            <div className="animate-fade-up">
+              <label className="text-sm font-medium text-foreground mb-2 block">
+                Enter OTP
+              </label>
+              <p className="text-xs text-muted-foreground mb-4">
+                We sent a 6-digit code to <span className="text-foreground font-medium">{email}</span>
+              </p>
+              <div className="flex justify-center">
+                <InputOTP
+                  maxLength={6}
+                  value={otp}
+                  onChange={setOtp}
+                >
+                  <InputOTPGroup>
+                    <InputOTPSlot index={0} />
+                    <InputOTPSlot index={1} />
+                    <InputOTPSlot index={2} />
+                    <InputOTPSlot index={3} />
+                    <InputOTPSlot index={4} />
+                    <InputOTPSlot index={5} />
+                  </InputOTPGroup>
+                </InputOTP>
+              </div>
+              <button
+                type="button"
+                onClick={async () => {
+                  setLoading(true);
+                  await resetPassword(email);
+                  setLoading(false);
+                }}
+                className="text-sm text-primary hover:underline mt-4 block mx-auto"
+              >
+                Resend OTP
+              </button>
+            </div>
+          )}
+
+          {/* Password step */}
+          {mode === 'forgot' && forgotStep === 'password' && (
+            <div className="space-y-4 animate-fade-up">
+              <div>
+                <label className="text-sm font-medium text-foreground mb-2 block">
+                  New Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Input
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground mt-1.5">
+                  At least 6 characters
+                </p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-2 block">
+                  Confirm Password
+                </label>
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                  <Input
+                    type="password"
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                {confirmPassword && password !== confirmPassword && (
+                  <p className="text-xs text-destructive mt-1.5">
+                    Passwords don't match
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Password field for login/signup */}
           {mode !== 'forgot' && (
             <div>
               <label className="text-sm font-medium text-foreground mb-2 block">
@@ -202,7 +334,15 @@ export default function Auth() {
               <Loader2 className="w-5 h-5 animate-spin" />
             ) : (
               <>
-                {mode === 'forgot' ? 'Send Reset Link' : mode === 'login' ? 'Log In' : 'Create Account'}
+                {mode === 'forgot'
+                  ? forgotStep === 'email'
+                    ? 'Send OTP'
+                    : forgotStep === 'otp'
+                    ? 'Verify OTP'
+                    : 'Save Password'
+                  : mode === 'login'
+                  ? 'Log In'
+                  : 'Create Account'}
                 <ArrowRight className="w-5 h-5" />
               </>
             )}
