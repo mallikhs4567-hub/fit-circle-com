@@ -80,10 +80,22 @@ export function useAuth() {
   };
 
   const resetPassword = async (email: string) => {
-    const redirectUrl = `${window.location.origin}/reset-password`;
-    
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: redirectUrl,
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+
+    if (error) {
+      toast.error(error.message);
+      return { error };
+    }
+
+    toast.success('OTP sent to your email! Check your inbox.');
+    return { error: null };
+  };
+
+  const verifyOtp = async (email: string, token: string) => {
+    const { data, error } = await supabase.auth.verifyOtp({
+      email,
+      token,
+      type: 'recovery',
     });
 
     if (error) {
@@ -91,8 +103,7 @@ export function useAuth() {
       return { error };
     }
 
-    toast.success('Password reset email sent! Check your inbox.');
-    return { error: null };
+    return { data, error: null };
   };
 
   const updatePassword = async (newPassword: string) => {
@@ -117,6 +128,7 @@ export function useAuth() {
     signIn,
     signOut,
     resetPassword,
+    verifyOtp,
     updatePassword,
     isAuthenticated: !!session,
   };
