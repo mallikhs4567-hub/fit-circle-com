@@ -80,10 +80,20 @@ export function useAuth() {
   };
 
   const resetPassword = async (email: string) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    // Use signInWithOtp for OTP-based recovery
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        shouldCreateUser: false,
+      },
+    });
 
     if (error) {
-      toast.error(error.message);
+      if (error.message.includes('Signups not allowed for otp')) {
+        toast.error('This email is not registered. Please sign up first.');
+      } else {
+        toast.error(error.message);
+      }
       return { error };
     }
 
@@ -95,14 +105,15 @@ export function useAuth() {
     const { data, error } = await supabase.auth.verifyOtp({
       email,
       token,
-      type: 'recovery',
+      type: 'email', // Use 'email' type for signInWithOtp
     });
 
     if (error) {
-      toast.error(error.message);
+      toast.error('Invalid or expired OTP. Please try again.');
       return { error };
     }
 
+    toast.success('OTP verified! Set your new password.');
     return { data, error: null };
   };
 
