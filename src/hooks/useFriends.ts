@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
+import { demoFriends, demoPendingRequests, DemoFriend } from '@/lib/demoData';
 
 export interface Friend {
   id: string;
@@ -51,7 +52,15 @@ export function useFriends() {
 
       setFriends(profiles as Friend[] || []);
     } else {
-      setFriends([]);
+      // Use demo friends when no real friends exist
+      const demoFriendsFormatted: Friend[] = demoFriends.map(df => ({
+        id: df.id,
+        user_id: df.user_id,
+        username: df.username,
+        avatar_url: df.avatar_url,
+        streak: df.streak,
+      }));
+      setFriends(demoFriendsFormatted);
     }
 
     // Get pending requests
@@ -70,7 +79,15 @@ export function useFriends() {
 
       setPendingRequests(pendingProfiles as Friend[] || []);
     } else {
-      setPendingRequests([]);
+      // Show demo pending requests
+      const demoPendingFormatted: Friend[] = demoPendingRequests.map(dp => ({
+        id: dp.id,
+        user_id: dp.user_id,
+        username: dp.username,
+        avatar_url: dp.avatar_url,
+        streak: dp.streak,
+      }));
+      setPendingRequests(demoPendingFormatted);
     }
 
     setLoading(false);

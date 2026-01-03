@@ -212,59 +212,64 @@ export default function Chat() {
               </p>
             </div>
           ) : (
-            threads
-              .filter(t => !searchQuery || t.participantName.toLowerCase().includes(searchQuery.toLowerCase()))
-              .map((thread) => (
-                <button
-                  key={thread.participantId}
-                  onClick={() => setSelectedUserId(thread.participantId)}
-                  className="w-full flex items-center gap-3 p-4 hover:bg-secondary/50 transition-colors text-left"
-                >
-                  <div className="relative">
-                    <Avatar name={thread.participantName} src={thread.participantAvatar} size="lg" />
-                    {thread.unreadCount > 0 && (
-                      <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full gradient-primary flex items-center justify-center">
-                        <span className="text-xs font-bold text-primary-foreground">
-                          {thread.unreadCount}
+            <>
+              {threads
+                .filter(t => !searchQuery || t.participantName.toLowerCase().includes(searchQuery.toLowerCase()))
+                .map((thread) => (
+                  <button
+                    key={thread.participantId}
+                    onClick={() => setSelectedUserId(thread.participantId)}
+                    className="w-full flex items-center gap-3 p-4 hover:bg-secondary/50 transition-colors text-left"
+                  >
+                    <div className="relative">
+                      <Avatar name={thread.participantName} src={thread.participantAvatar} size="lg" />
+                      {thread.unreadCount > 0 && (
+                        <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full gradient-primary flex items-center justify-center">
+                          <span className="text-xs font-bold text-primary-foreground">
+                            {thread.unreadCount}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-0.5">
+                        <p className="font-semibold text-foreground">@{thread.participantName}</p>
+                        <span className="text-xs text-muted-foreground">
+                          {getTimeDisplay(thread.lastMessageAt)}
                         </span>
                       </div>
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-0.5">
-                      <p className="font-semibold text-foreground">@{thread.participantName}</p>
-                      <span className="text-xs text-muted-foreground">
-                        {getTimeDisplay(thread.lastMessageAt)}
-                      </span>
+                      <p className={cn(
+                        "text-sm truncate",
+                        thread.unreadCount > 0 ? "text-foreground font-medium" : "text-muted-foreground"
+                      )}>
+                        {thread.lastMessage}
+                      </p>
                     </div>
-                    <p className={cn(
-                      "text-sm truncate",
-                      thread.unreadCount > 0 ? "text-foreground font-medium" : "text-muted-foreground"
-                    )}>
-                      {thread.lastMessage}
-                    </p>
-                  </div>
-                </button>
-              ))
+                  </button>
+                ))}
+              
+              {/* Friends without threads - show them for quick access */}
+              {friends
+                .filter(f => !threads.some(t => t.participantId === f.user_id))
+                .filter(f => !searchQuery || f.username.toLowerCase().includes(searchQuery.toLowerCase()))
+                .map((friend) => (
+                  <button
+                    key={friend.user_id}
+                    onClick={() => setSelectedUserId(friend.user_id)}
+                    className="w-full flex items-center gap-3 p-4 hover:bg-secondary/50 transition-colors text-left"
+                  >
+                    <Avatar name={friend.username} src={friend.avatar_url} size="lg" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-foreground">@{friend.username}</p>
+                      <p className="text-sm text-muted-foreground">
+                        🔥 {friend.streak} day streak
+                      </p>
+                    </div>
+                  </button>
+                ))}
+            </>
           )}
         </div>
-
-        {/* Friends List (for starting new chats) */}
-        {friends.length > 0 && threads.length === 0 && (
-          <div className="px-4 py-3">
-            <p className="text-sm font-medium text-muted-foreground mb-2">Your Friends</p>
-            {friends.map((friend) => (
-              <button
-                key={friend.user_id}
-                onClick={() => setSelectedUserId(friend.user_id)}
-                className="w-full flex items-center gap-3 py-2 hover:bg-secondary/50 rounded-lg px-2 transition-colors"
-              >
-                <Avatar name={friend.username} src={friend.avatar_url} size="md" />
-                <p className="font-semibold text-foreground">@{friend.username}</p>
-              </button>
-            ))}
-          </div>
-        )}
       </div>
     );
   }

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
+import { demoPosts, DemoPost } from '@/lib/demoData';
 
 export interface Post {
   id: string;
@@ -22,6 +23,7 @@ export function usePosts() {
   const { user } = useAuth();
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(true);
+  const [demoReactions, setDemoReactions] = useState<Record<string, 'heart' | 'fire' | 'clap' | null>>({});
 
   const fetchPosts = async () => {
     if (!user) {
@@ -69,7 +71,17 @@ export function usePosts() {
       userReaction: userReactions.get(post.id),
     }));
 
-    setPosts(formattedPosts);
+    // If no real posts, merge with demo posts for showcase
+    if (formattedPosts.length === 0) {
+      const demoPostsFormatted: Post[] = demoPosts.map(dp => ({
+        ...dp,
+        userReaction: demoReactions[dp.id] || dp.userReaction || undefined,
+      }));
+      setPosts(demoPostsFormatted);
+    } else {
+      setPosts(formattedPosts);
+    }
+    
     setLoading(false);
   };
 
@@ -161,6 +173,39 @@ export function usePosts() {
 
     const post = posts.find(p => p.id === postId);
     if (!post) return;
+
+    // Handle demo posts (client-side only)
+    if (postId.startsWith('demo-')) {
+      const hasReaction = demoReactions[postId] === reactionType;
+      setDemoReactions(prev => ({
+        ...prev,
+        [postId]: hasReaction ? null : reactionType,
+      }));
+      
+      // Optimistic update for demo posts
+      setPosts(posts.map(p => {
+        if (p.id === postId) {
+          const newReactions = { ...p.reactions };
+          const currentReaction = demoReactions[postId];
+          
+          if (hasReaction) {
+            newReactions[reactionType] = Math.max(0, newReactions[reactionType] - 1);
+          } else {
+            if (currentReaction) {
+              newReactions[currentReaction] = Math.max(0, newReactions[currentReaction] - 1);
+            }
+            newReactions[reactionType] = (newReactions[reactionType] || 0) + 1;
+          }
+          return {
+            ...p,
+            reactions: newReactions,
+            userReaction: hasReaction ? undefined : reactionType,
+          };
+        }
+        return p;
+      }));
+      return;
+    }
 
     const hasReaction = post.userReaction === reactionType;
 
