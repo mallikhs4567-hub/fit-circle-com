@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
+import { demoChatThreads, demoChatMessagesMap, DemoChatMessage } from '@/lib/demoData';
 
 export interface ChatMessage {
   id: string;
@@ -26,6 +27,7 @@ export function useChat(selectedUserId?: string) {
   const [threads, setThreads] = useState<ChatThread[]>([]);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [loading, setLoading] = useState(true);
+  const [demoMessages, setDemoMessages] = useState<Record<string, DemoChatMessage[]>>({ ...demoChatMessagesMap });
 
   const fetchThreads = async () => {
     if (!user) {
@@ -59,8 +61,18 @@ export function useChat(selectedUserId?: string) {
 
     // Fetch profiles for all partners
     const partnerIds = Array.from(threadMap.keys());
+    
+    // If no real threads, use demo threads
     if (partnerIds.length === 0) {
-      setThreads([]);
+      const demoThreadsFormatted: ChatThread[] = demoChatThreads.map(dt => ({
+        participantId: dt.participantId,
+        participantName: dt.participantName,
+        participantAvatar: dt.participantAvatar,
+        lastMessage: dt.lastMessage,
+        lastMessageAt: dt.lastMessageTime,
+        unreadCount: dt.unreadCount,
+      }));
+      setThreads(demoThreadsFormatted);
       setLoading(false);
       return;
     }
@@ -102,6 +114,21 @@ export function useChat(selectedUserId?: string) {
 
   const fetchMessages = async (partnerId: string) => {
     if (!user) return;
+
+    // Handle demo users
+    if (partnerId.startsWith('demo-')) {
+      const demoMsgs = demoMessages[partnerId] || [];
+      const formattedMessages: ChatMessage[] = demoMsgs.map(dm => ({
+        id: dm.id,
+        sender_id: dm.isOwn ? user.id : dm.senderId,
+        receiver_id: dm.isOwn ? dm.receiverId : user.id,
+        content: dm.content,
+        read_at: new Date().toISOString(),
+        created_at: dm.createdAt,
+      }));
+      setMessages(formattedMessages);
+      return;
+    }
 
     const { data, error } = await supabase
       .from('chat_messages')
@@ -162,6 +189,36 @@ export function useChat(selectedUserId?: string) {
 
   const sendMessage = async (receiverId: string, content: string) => {
     if (!user) return { error: new Error('Not authenticated') };
+
+    // Handle demo users - add to local state only
+    if (receiverId.startsWith('demo-')) {
+      const newMsg: DemoChatMessage = {
+        id: `msg-${Date.now()}`,
+        senderId: user.id,
+        receiverId: receiverId,
+        content,
+        createdAt: new Date().toISOString(),
+        isOwn: true,
+      };
+      
+      setDemoMessages(prev => ({
+        ...prev,
+        [receiverId]: [...(prev[receiverId] || []), newMsg],
+      }));
+      
+      // Add to current messages
+      const formattedMsg: ChatMessage = {
+        id: newMsg.id,
+        sender_id: user.id,
+        receiver_id: receiverId,
+        content,
+        read_at: null,
+        created_at: newMsg.createdAt,
+      };
+      setMessages(prev => [...prev, formattedMsg]);
+      
+      return { data: formattedMsg, error: null };
+    }
 
     const { data, error } = await supabase
       .from('chat_messages')
