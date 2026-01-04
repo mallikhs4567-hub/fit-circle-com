@@ -6,6 +6,7 @@ import { TimeLeft } from '@/components/common/TimeLeft';
 import { Button } from '@/components/ui/button';
 import { MediaPreview } from '@/components/circle/MediaPreview';
 import { PostMedia } from '@/components/circle/PostMedia';
+import { StoriesRow } from '@/components/profile/StoriesRow';
 import { Plus, Heart, Flame, Hand, Send, X, Image, Video, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -70,8 +71,11 @@ export default function Circle() {
         </div>
       </header>
 
+      {/* Stories Row */}
+      <StoriesRow />
+
       {/* Feed */}
-      <div className="p-4 space-y-4">
+      <div className="px-4 pb-4 space-y-4">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
