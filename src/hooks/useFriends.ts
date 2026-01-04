@@ -100,12 +100,13 @@ export function useFriends() {
   const sendFriendRequest = async (friendUsername: string) => {
     if (!user) return { error: new Error('Not authenticated') };
 
-    // Find user by username
-    const { data: profile, error: findError } = await supabase
-      .from('profiles')
-      .select('user_id')
-      .eq('username', friendUsername.toLowerCase())
-      .maybeSingle();
+    // Find user by username using secure RPC function (doesn't expose sensitive data)
+    const { data: profiles, error: findError } = await supabase
+      .rpc('search_users_by_username', { search_username: friendUsername });
+
+    const profile = profiles?.find(
+      (p: { username: string }) => p.username.toLowerCase() === friendUsername.toLowerCase()
+    );
 
     if (findError || !profile) {
       toast.error('User not found');
