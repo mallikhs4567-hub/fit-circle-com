@@ -3,8 +3,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Avatar } from '@/components/common/Avatar';
 import { StreakBadge } from '@/components/common/StreakBadge';
 import { Button } from '@/components/ui/button';
-import { StoriesRow } from '@/components/profile/StoriesRow';
-import { 
+import {
   Settings, 
   LogOut, 
   Trophy, 
@@ -63,9 +62,6 @@ export default function Profile() {
           </Button>
         </div>
       </header>
-
-      {/* Stories Row */}
-      <StoriesRow />
 
       {/* Profile Card */}
       <div className="px-4 mb-6">
