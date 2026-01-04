@@ -1,11 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useProfile } from '@/hooks/useProfile';
 import { useChecklist } from '@/hooks/useChecklist';
 import { StreakBadge } from '@/components/common/StreakBadge';
-import { Check, Dumbbell, Utensils, Trophy, Flame, ChevronRight, Loader2 } from 'lucide-react';
+import { Check, Dumbbell, Utensils, Trophy, Flame, ChevronRight, Loader2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type FitnessGoal = 'weight-loss' | 'muscle-gain' | 'healthy-routine';
+
+interface WorkoutTask {
+  id: string;
+  text: string;
+  completed: boolean;
+}
 
 interface FitnessPlan {
   goal: FitnessGoal;
@@ -22,11 +28,11 @@ const fitnessPlans: Record<FitnessGoal, FitnessPlan> = {
   'weight-loss': {
     goal: 'weight-loss',
     workout: [
-      '🏃 15 min HIIT cardio',
-      '💪 20 bodyweight squats',
-      '🔥 30 sec plank hold',
-      '🦵 15 lunges each leg',
-      '⚡ 20 jumping jacks',
+      '15 min HIIT cardio',
+      '20 bodyweight squats',
+      '30 sec plank hold',
+      '15 lunges each leg',
+      '20 jumping jacks',
     ],
     diet: {
       breakfast: 'Oats with banana & almonds, green tea',
@@ -38,11 +44,11 @@ const fitnessPlans: Record<FitnessGoal, FitnessPlan> = {
   'muscle-gain': {
     goal: 'muscle-gain',
     workout: [
-      '💪 15 push-ups (3 sets)',
-      '🏋️ 20 squats with hold',
-      '🔥 Diamond push-ups x 10',
-      '🦵 Bulgarian split squats',
-      '⚡ 30 sec wall sit',
+      '15 push-ups (3 sets)',
+      '20 squats with hold',
+      'Diamond push-ups x 10',
+      'Bulgarian split squats',
+      '30 sec wall sit',
     ],
     diet: {
       breakfast: 'Eggs, whole wheat toast, banana shake',
@@ -54,11 +60,11 @@ const fitnessPlans: Record<FitnessGoal, FitnessPlan> = {
   'healthy-routine': {
     goal: 'healthy-routine',
     workout: [
-      '🧘 10 min morning stretches',
-      '🚶 15 min brisk walk',
-      '🧘‍♀️ 5 min deep breathing',
-      '💪 10 squats, 10 push-ups',
-      '🌅 5 min evening meditation',
+      '10 min morning stretches',
+      '15 min brisk walk',
+      '5 min deep breathing',
+      '10 squats, 10 push-ups',
+      '5 min evening meditation',
     ],
     diet: {
       breakfast: 'Idli/poha with chutney, fruit',
@@ -70,15 +76,69 @@ const fitnessPlans: Record<FitnessGoal, FitnessPlan> = {
 };
 
 export default function Fitness() {
-  const { profile, loading: profileLoading } = useProfile();
+  const { profile, loading: profileLoading, refetch: refetchProfile } = useProfile();
   const { checklist, loading: checklistLoading, updateChecklist } = useChecklist();
   const [showPlan, setShowPlan] = useState<'workout' | 'diet' | null>(null);
+  const [workoutTasks, setWorkoutTasks] = useState<WorkoutTask[]>([]);
+  const [dietTasks, setDietTasks] = useState<WorkoutTask[]>([]);
 
   const plan = profile?.goal ? fitnessPlans[profile.goal as FitnessGoal] : null;
-  const bothCompleted = checklist?.workout_completed && checklist?.diet_followed;
+  
+  // Initialize tasks when plan is available
+  useEffect(() => {
+    if (plan && workoutTasks.length === 0) {
+      setWorkoutTasks(plan.workout.map((text, idx) => ({
+        id: `workout-${idx}`,
+        text,
+        completed: checklist?.workout_completed || false,
+      })));
+      
+      const dietItems = [
+        `Breakfast: ${plan.diet.breakfast}`,
+        `Lunch: ${plan.diet.lunch}`,
+        `Dinner: ${plan.diet.dinner}`,
+        `Snacks: ${plan.diet.snacks}`,
+      ];
+      setDietTasks(dietItems.map((text, idx) => ({
+        id: `diet-${idx}`,
+        text,
+        completed: checklist?.diet_followed || false,
+      })));
+    }
+  }, [plan, checklist]);
 
-  const handleChecklistToggle = async (type: 'workout' | 'diet') => {
-    await updateChecklist(type);
+  const allWorkoutDone = workoutTasks.length > 0 && workoutTasks.every(t => t.completed);
+  const allDietDone = dietTasks.length > 0 && dietTasks.every(t => t.completed);
+  const bothCompleted = allWorkoutDone && allDietDone;
+
+  const toggleWorkoutTask = async (taskId: string) => {
+    const updated = workoutTasks.map(t => 
+      t.id === taskId ? { ...t, completed: !t.completed } : t
+    );
+    setWorkoutTasks(updated);
+    
+    const nowAllDone = updated.every(t => t.completed);
+    if (nowAllDone && !checklist?.workout_completed) {
+      await updateChecklist('workout');
+      if (allDietDone) {
+        refetchProfile();
+      }
+    }
+  };
+
+  const toggleDietTask = async (taskId: string) => {
+    const updated = dietTasks.map(t => 
+      t.id === taskId ? { ...t, completed: !t.completed } : t
+    );
+    setDietTasks(updated);
+    
+    const nowAllDone = updated.every(t => t.completed);
+    if (nowAllDone && !checklist?.diet_followed) {
+      await updateChecklist('diet');
+      if (allWorkoutDone) {
+        refetchProfile();
+      }
+    }
   };
 
   if (profileLoading || checklistLoading) {
@@ -127,27 +187,73 @@ export default function Fitness() {
         )}
       </header>
 
-      {/* Daily Checklist */}
+      {/* Daily Challenges */}
       <div className="px-4 space-y-3 mb-6">
-        <h2 className="text-lg font-semibold text-foreground">Daily Checklist</h2>
+        <h2 className="text-lg font-semibold text-foreground">Today's Challenges</h2>
         
-        <ChecklistItem
-          icon={Dumbbell}
-          title="Workout Completed"
-          description="Complete today's workout"
-          checked={checklist?.workout_completed || false}
-          onToggle={() => handleChecklistToggle('workout')}
-          onViewDetails={() => setShowPlan('workout')}
-        />
+        <div className="card-elevated p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <div className={cn(
+              "w-10 h-10 rounded-xl flex items-center justify-center transition-all",
+              allWorkoutDone ? "gradient-primary" : "bg-secondary"
+            )}>
+              {allWorkoutDone ? (
+                <Check className="w-5 h-5 text-primary-foreground" />
+              ) : (
+                <Dumbbell className="w-5 h-5 text-muted-foreground" />
+              )}
+            </div>
+            <div className="flex-1">
+              <h3 className={cn(
+                "font-semibold",
+                allWorkoutDone ? "text-primary line-through" : "text-foreground"
+              )}>
+                Workout ({workoutTasks.filter(t => t.completed).length}/{workoutTasks.length})
+              </h3>
+              <p className="text-sm text-muted-foreground">Tap tasks to mark complete</p>
+            </div>
+            <button onClick={() => setShowPlan('workout')} className="p-2 text-muted-foreground">
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="space-y-2">
+            {workoutTasks.map((task) => (
+              <TaskItem key={task.id} task={task} onToggle={() => toggleWorkoutTask(task.id)} />
+            ))}
+          </div>
+        </div>
 
-        <ChecklistItem
-          icon={Utensils}
-          title="Diet Followed"
-          description="Follow today's meal plan"
-          checked={checklist?.diet_followed || false}
-          onToggle={() => handleChecklistToggle('diet')}
-          onViewDetails={() => setShowPlan('diet')}
-        />
+        <div className="card-elevated p-4">
+          <div className="flex items-center gap-3 mb-3">
+            <div className={cn(
+              "w-10 h-10 rounded-xl flex items-center justify-center transition-all",
+              allDietDone ? "gradient-primary" : "bg-secondary"
+            )}>
+              {allDietDone ? (
+                <Check className="w-5 h-5 text-primary-foreground" />
+              ) : (
+                <Utensils className="w-5 h-5 text-muted-foreground" />
+              )}
+            </div>
+            <div className="flex-1">
+              <h3 className={cn(
+                "font-semibold",
+                allDietDone ? "text-primary line-through" : "text-foreground"
+              )}>
+                Diet Plan ({dietTasks.filter(t => t.completed).length}/{dietTasks.length})
+              </h3>
+              <p className="text-sm text-muted-foreground">Follow your meal plan</p>
+            </div>
+            <button onClick={() => setShowPlan('diet')} className="p-2 text-muted-foreground">
+              <ChevronRight className="w-5 h-5" />
+            </button>
+          </div>
+          <div className="space-y-2">
+            {dietTasks.map((task) => (
+              <TaskItem key={task.id} task={task} onToggle={() => toggleDietTask(task.id)} />
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Quick Stats */}
@@ -227,61 +333,32 @@ export default function Fitness() {
   );
 }
 
-function ChecklistItem({
-  icon: Icon,
-  title,
-  description,
-  checked,
-  onToggle,
-  onViewDetails,
-}: {
-  icon: typeof Dumbbell;
-  title: string;
-  description: string;
-  checked: boolean;
-  onToggle: () => void;
-  onViewDetails: () => void;
-}) {
+function TaskItem({ task, onToggle }: { task: WorkoutTask; onToggle: () => void }) {
   return (
-    <div className={cn(
-      "card-elevated p-4 transition-all duration-300",
-      checked && "border-primary/50 bg-primary/5"
-    )}>
-      <div className="flex items-center gap-3">
-        <button
-          onClick={onToggle}
-          className={cn(
-            "w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300",
-            checked
-              ? "gradient-primary"
-              : "bg-secondary hover:bg-secondary/80"
-          )}
-        >
-          {checked ? (
-            <Check className="w-5 h-5 text-primary-foreground" />
-          ) : (
-            <Icon className="w-5 h-5 text-muted-foreground" />
-          )}
-        </button>
-        
-        <div className="flex-1" onClick={onViewDetails}>
-          <h3 className={cn(
-            "font-semibold transition-colors",
-            checked ? "text-primary" : "text-foreground"
-          )}>
-            {title}
-          </h3>
-          <p className="text-sm text-muted-foreground">{description}</p>
-        </div>
-
-        <button
-          onClick={onViewDetails}
-          className="p-2 text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ChevronRight className="w-5 h-5" />
-        </button>
+    <button
+      onClick={onToggle}
+      className={cn(
+        "w-full flex items-center gap-3 p-3 rounded-lg transition-all",
+        task.completed 
+          ? "bg-primary/10 border border-primary/30" 
+          : "bg-secondary/50 hover:bg-secondary"
+      )}
+    >
+      <div className={cn(
+        "w-6 h-6 rounded-full flex items-center justify-center transition-all border-2",
+        task.completed 
+          ? "bg-primary border-primary" 
+          : "border-muted-foreground/30"
+      )}>
+        {task.completed && <Check className="w-4 h-4 text-primary-foreground" />}
       </div>
-    </div>
+      <span className={cn(
+        "flex-1 text-left text-sm transition-all",
+        task.completed ? "text-muted-foreground line-through" : "text-foreground"
+      )}>
+        {task.text}
+      </span>
+    </button>
   );
 }
 
