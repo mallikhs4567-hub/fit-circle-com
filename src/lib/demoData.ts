@@ -3,6 +3,8 @@ import workoutImg from '@/assets/demo/workout-1.jpg';
 import mealImg from '@/assets/demo/meal-1.jpg';
 import runImg from '@/assets/demo/run-1.jpg';
 import yogaImg from '@/assets/demo/yoga-1.jpg';
+import hiitVideo from '@/assets/demo/hiit-workout.mp4';
+import yogaVideo from '@/assets/demo/yoga-stretch.mp4';
 
 export interface DemoPost {
   id: string;
@@ -48,19 +50,19 @@ export interface DemoChatMessage {
 const hoursAgo = (hours: number) => new Date(Date.now() - hours * 60 * 60 * 1000).toISOString();
 const hoursFromNow = (hours: number) => new Date(Date.now() + hours * 60 * 60 * 1000).toISOString();
 
-// Demo posts with realistic fitness content
+// Demo posts with realistic fitness content (images + videos)
 export const demoPosts: DemoPost[] = [
   {
     id: 'demo-post-1',
     user_id: 'demo-user-1',
     username: 'fitness_priya',
     avatar_url: null,
-    content: "Just crushed my morning workout! 💪 30 mins of HIIT and feeling amazing. Who else is on their fitness journey?",
-    image_url: workoutImg,
+    content: "Just crushed my morning HIIT! 💪 Check out this insane cardio session. Who else is on their fitness journey?",
+    image_url: hiitVideo,
     reactions: { heart: 12, fire: 8, clap: 5 },
     userReaction: null,
-    created_at: hoursAgo(2),
-    expires_at: hoursFromNow(22),
+    created_at: hoursAgo(1),
+    expires_at: hoursFromNow(23),
   },
   {
     id: 'demo-post-2',
@@ -71,8 +73,8 @@ export const demoPosts: DemoPost[] = [
     image_url: mealImg,
     reactions: { heart: 18, fire: 6, clap: 9 },
     userReaction: 'heart',
-    created_at: hoursAgo(4),
-    expires_at: hoursFromNow(20),
+    created_at: hoursAgo(3),
+    expires_at: hoursFromNow(21),
   },
   {
     id: 'demo-post-3',
@@ -83,35 +85,47 @@ export const demoPosts: DemoPost[] = [
     image_url: runImg,
     reactions: { heart: 24, fire: 15, clap: 11 },
     userReaction: 'fire',
-    created_at: hoursAgo(6),
-    expires_at: hoursFromNow(18),
+    created_at: hoursAgo(5),
+    expires_at: hoursFromNow(19),
   },
   {
     id: 'demo-post-4',
     user_id: 'demo-user-4',
     username: 'yoga_anita',
     avatar_url: null,
-    content: "Morning yoga session complete. 42 day streak! Remember - progress, not perfection 🧘‍♀️",
-    image_url: yogaImg,
+    content: "Morning yoga flow 🧘‍♀️ 42 day streak! Starting the day with peace and flexibility",
+    image_url: yogaVideo,
     reactions: { heart: 31, fire: 12, clap: 18 },
     userReaction: null,
-    created_at: hoursAgo(8),
-    expires_at: hoursFromNow(16),
+    created_at: hoursAgo(6),
+    expires_at: hoursFromNow(18),
   },
   {
     id: 'demo-post-5',
     user_id: 'demo-user-1',
     username: 'fitness_priya',
     avatar_url: null,
-    content: "Small wins matter! Chose stairs over elevator today. Every step counts on this journey! 🚀",
-    image_url: null,
-    reactions: { heart: 8, fire: 4, clap: 6 },
-    userReaction: 'clap',
+    content: "Gym selfie after crushing legs day! 💪 These gains don't come easy",
+    image_url: workoutImg,
+    reactions: { heart: 14, fire: 9, clap: 7 },
+    userReaction: null,
+    created_at: hoursAgo(8),
+    expires_at: hoursFromNow(16),
+  },
+  {
+    id: 'demo-post-6',
+    user_id: 'demo-user-4',
+    username: 'yoga_anita',
+    avatar_url: null,
+    content: "Evening stretches before bed 🌙 Remember - flexibility is strength too!",
+    image_url: yogaImg,
+    reactions: { heart: 19, fire: 7, clap: 11 },
+    userReaction: 'heart',
     created_at: hoursAgo(10),
     expires_at: hoursFromNow(14),
   },
   {
-    id: 'demo-post-6',
+    id: 'demo-post-7',
     user_id: 'demo-user-2',
     username: 'muscle_rahul',
     avatar_url: null,
