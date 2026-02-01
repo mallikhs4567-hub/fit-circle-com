@@ -2,12 +2,18 @@ import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/common/Avatar';
 import { useStories, Story, StoryPost } from '@/hooks/useStories';
+import { useProfile } from '@/hooks/useProfile';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { X, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Loader2, Plus } from 'lucide-react';
 import { PostMedia } from '@/components/circle/PostMedia';
 
-export function StoriesRow() {
+interface StoriesRowProps {
+  onAddStory?: () => void;
+}
+
+export function StoriesRow({ onAddStory }: StoriesRowProps) {
   const { stories, loading } = useStories();
+  const { profile } = useProfile();
   const [selectedStory, setSelectedStory] = useState<Story | null>(null);
   const [currentPostIndex, setCurrentPostIndex] = useState(0);
 
@@ -64,9 +70,6 @@ export function StoriesRow() {
     );
   }
 
-  if (stories.length === 0) {
-    return null;
-  }
   return (
     <>
       {/* Stories Row */}
@@ -75,6 +78,30 @@ export function StoriesRow() {
           Stories
         </h3>
         <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+          {/* Add Your Story Button */}
+          <button
+            onClick={onAddStory}
+            className="flex flex-col items-center gap-1.5 flex-shrink-0"
+          >
+            <div className="relative">
+              <div className="p-0.5 rounded-full bg-muted">
+                <div className="p-0.5 bg-background rounded-full">
+                  <Avatar
+                    name={profile?.username}
+                    src={profile?.avatar_url}
+                    size="lg"
+                  />
+                </div>
+              </div>
+              {/* Plus icon overlay */}
+              <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center border-2 border-background">
+                <Plus className="w-3 h-3 text-primary-foreground" />
+              </div>
+            </div>
+            <span className="text-xs text-muted-foreground">Your story</span>
+          </button>
+
+          {/* Friends' Stories */}
           {stories.map((story) => (
             <button
               key={story.userId}

@@ -91,7 +91,7 @@ export default function Circle() {
       </header>
 
       {/* Stories Row */}
-      <StoriesRow />
+      <StoriesRow onAddStory={() => setShowCompose(true)} />
 
       {/* Feed */}
       <div className="px-4 pb-4 space-y-4">
