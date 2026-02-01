@@ -1,44 +1,15 @@
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Avatar } from '@/components/common/Avatar';
-import { demoPosts, demoFriends, DemoPost } from '@/lib/demoData';
+import { useStories, Story, StoryPost } from '@/hooks/useStories';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import { PostMedia } from '@/components/circle/PostMedia';
 
-interface Story {
-  userId: string;
-  username: string;
-  avatarUrl: string | null;
-  posts: DemoPost[];
-  hasUnviewed: boolean;
-}
-
-// Group demo posts by user to create stories
-const getStories = (): Story[] => {
-  const userMap = new Map<string, Story>();
-  
-  demoPosts.forEach((post) => {
-    if (!userMap.has(post.user_id)) {
-      const friend = demoFriends.find(f => f.user_id === post.user_id);
-      userMap.set(post.user_id, {
-        userId: post.user_id,
-        username: post.username,
-        avatarUrl: friend?.avatar_url || null,
-        posts: [],
-        hasUnviewed: Math.random() > 0.3, // Randomly mark some as unviewed for demo
-      });
-    }
-    userMap.get(post.user_id)!.posts.push(post);
-  });
-  
-  return Array.from(userMap.values());
-};
-
 export function StoriesRow() {
+  const { stories, loading } = useStories();
   const [selectedStory, setSelectedStory] = useState<Story | null>(null);
   const [currentPostIndex, setCurrentPostIndex] = useState(0);
-  const stories = getStories();
 
   const handleStoryClick = (story: Story) => {
     setSelectedStory(story);
@@ -78,8 +49,24 @@ export function StoriesRow() {
     }
   };
 
-  const currentPost = selectedStory?.posts[currentPostIndex];
+  const currentPost: StoryPost | undefined = selectedStory?.posts[currentPostIndex];
 
+  if (loading) {
+    return (
+      <div className="px-4 mb-6">
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+          Stories
+        </h3>
+        <div className="flex items-center justify-center py-4">
+          <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+        </div>
+      </div>
+    );
+  }
+
+  if (stories.length === 0) {
+    return null;
+  }
   return (
     <>
       {/* Stories Row */}
