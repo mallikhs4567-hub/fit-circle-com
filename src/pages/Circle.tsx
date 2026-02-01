@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { MediaPreview } from '@/components/circle/MediaPreview';
 import { PostMedia } from '@/components/circle/PostMedia';
 import { StoriesRow } from '@/components/profile/StoriesRow';
+import { MediaPermissionDialog } from '@/components/circle/MediaPermissionDialog';
 import { Plus, Heart, Flame, Hand, Send, X, Image, Video, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -17,6 +18,8 @@ export default function Circle() {
   const [newPost, setNewPost] = useState('');
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [posting, setPosting] = useState(false);
+  const [showPermissionDialog, setShowPermissionDialog] = useState(false);
+  const [hasMediaPermission, setHasMediaPermission] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleReaction = (postId: string, reaction: 'heart' | 'fire' | 'clap') => {
@@ -32,6 +35,22 @@ export default function Circle() {
       }
       setMediaFile(file);
     }
+  };
+
+  const handleMediaButtonClick = () => {
+    if (hasMediaPermission) {
+      fileInputRef.current?.click();
+    } else {
+      setShowPermissionDialog(true);
+    }
+  };
+
+  const handlePermissionGranted = () => {
+    setHasMediaPermission(true);
+    // Trigger file input after permission is granted
+    setTimeout(() => {
+      fileInputRef.current?.click();
+    }, 100);
   };
 
   const handlePost = async () => {
@@ -216,13 +235,13 @@ export default function Circle() {
                   className="hidden"
                 />
                 <button
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={handleMediaButtonClick}
                   className="p-2 text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-secondary"
                 >
                   <Image className="w-5 h-5" />
                 </button>
                 <button
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={handleMediaButtonClick}
                   className="p-2 text-muted-foreground hover:text-foreground transition-colors rounded-lg hover:bg-secondary"
                 >
                   <Video className="w-5 h-5" />
@@ -235,6 +254,13 @@ export default function Circle() {
           </div>
         </div>
       )}
+
+      {/* Media Permission Dialog */}
+      <MediaPermissionDialog
+        open={showPermissionDialog}
+        onOpenChange={setShowPermissionDialog}
+        onAllow={handlePermissionGranted}
+      />
     </div>
   );
 }
