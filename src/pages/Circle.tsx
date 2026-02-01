@@ -209,19 +209,43 @@ export default function Circle() {
                     onChange={(e) => setNewPost(e.target.value)}
                     placeholder="Share your progress..."
                     className="w-full bg-transparent text-foreground text-lg placeholder:text-muted-foreground resize-none focus:outline-none"
-                    rows={4}
+                    rows={3}
                     maxLength={280}
                   />
-                  {mediaFile && (
-                    <div className="mt-3">
-                      <MediaPreview
-                        file={mediaFile}
-                        onRemove={() => setMediaFile(null)}
-                      />
-                    </div>
-                  )}
                 </div>
               </div>
+
+              {/* Media Section */}
+              {mediaFile ? (
+                <div className="mt-4">
+                  <MediaPreview
+                    file={mediaFile}
+                    onRemove={() => setMediaFile(null)}
+                  />
+                </div>
+              ) : (
+                <div className="mt-4">
+                  <button
+                    onClick={handleMediaButtonClick}
+                    className="w-full p-6 rounded-xl border-2 border-dashed border-border hover:border-primary/50 hover:bg-primary/5 transition-all duration-200 group"
+                  >
+                    <div className="flex flex-col items-center gap-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                          <Image className="w-5 h-5 text-primary" />
+                        </div>
+                        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                          <Video className="w-5 h-5 text-primary" />
+                        </div>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-foreground">Add Photos or Videos</p>
+                        <p className="text-xs text-muted-foreground mt-1">Share your workout, meals, or progress</p>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Compose Footer */}
