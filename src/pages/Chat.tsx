@@ -1,67 +1,22 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useChat } from '@/hooks/useChat';
 import { useFriends } from '@/hooks/useFriends';
 import { useAuth } from '@/hooks/useAuth';
 import { Avatar } from '@/components/common/Avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ArrowLeft, Send, MessageCircle, UserPlus, Loader2, Check, X } from 'lucide-react';
+import { UserDiscovery } from '@/components/discover/UserDiscovery';
+import { Search, ArrowLeft, Send, MessageCircle, Loader2, Check, X, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { supabase } from '@/integrations/supabase/client';
-
-interface SearchUser {
-  user_id: string;
-  username: string;
-  avatar_url: string | null;
-}
 
 export default function Chat() {
   const { user } = useAuth();
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const { threads, messages, loading, sendMessage, fetchMessages } = useChat(selectedUserId || undefined);
-  const { friends, pendingRequests, sendFriendRequest, acceptFriendRequest, rejectFriendRequest, refetch: refetchFriends } = useFriends();
+  const [activeTab, setActiveTab] = useState<'chats' | 'discover'>('chats');
+  const { threads, messages, loading, sendMessage } = useChat(selectedUserId || undefined);
+  const { friends, pendingRequests, acceptFriendRequest, rejectFriendRequest } = useFriends();
   const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<SearchUser[]>([]);
-  const [searchLoading, setSearchLoading] = useState(false);
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const [addingFriend, setAddingFriend] = useState<string | null>(null);
-
-  // Instagram-style real-time user search
-  useEffect(() => {
-    const searchUsers = async () => {
-      if (!searchQuery.trim() || searchQuery.length < 1) {
-        setSearchResults([]);
-        return;
-      }
-
-      setSearchLoading(true);
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('user_id, username, avatar_url')
-        .ilike('username', `%${searchQuery}%`)
-        .neq('user_id', user?.id || '')
-        .limit(10);
-
-      if (!error && data) {
-        setSearchResults(data);
-      }
-      setSearchLoading(false);
-    };
-
-    const debounce = setTimeout(searchUsers, 300);
-    return () => clearTimeout(debounce);
-  }, [searchQuery, user?.id]);
-
-  const handleAddFriendFromSearch = async (username: string, userId: string) => {
-    setAddingFriend(userId);
-    await sendFriendRequest(username);
-    await refetchFriends();
-    setAddingFriend(null);
-  };
-
-  const isFriend = (userId: string) => friends.some(f => f.user_id === userId);
-  const hasPendingRequest = (userId: string) => pendingRequests.some(r => r.user_id === userId);
 
   const selectedThread = threads.find(t => t.participantId === selectedUserId);
 
@@ -90,186 +45,175 @@ export default function Chat() {
   // Thread List View
   if (!selectedUserId) {
     return (
-      <div className="min-h-screen bg-background">
-        {/* Header */}
+      <div className="min-h-screen bg-background flex flex-col">
+        {/* Header with Tabs */}
         <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border safe-top">
           <div className="px-4 py-3">
-            <div className="flex items-center justify-between mb-3">
-              <h1 className="text-xl font-display font-bold text-foreground">Chat</h1>
-            </div>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search users..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onFocus={() => setIsSearchFocused(true)}
-                onBlur={() => setTimeout(() => setIsSearchFocused(false), 200)}
-                className="pl-10"
-              />
+            <h1 className="text-xl font-display font-bold text-foreground mb-3">Chat</h1>
+            
+            {/* Tab Switcher */}
+            <div className="flex gap-1 p-1 bg-secondary/50 rounded-xl">
+              <button
+                onClick={() => setActiveTab('chats')}
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-200",
+                  activeTab === 'chats'
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <MessageCircle className="w-4 h-4" />
+                Chats
+              </button>
+              <button
+                onClick={() => setActiveTab('discover')}
+                className={cn(
+                  "flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-lg text-sm font-medium transition-all duration-200",
+                  activeTab === 'discover'
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Users className="w-4 h-4" />
+                Discover
+              </button>
             </div>
           </div>
         </header>
 
-        {/* Search Results Dropdown */}
-        {isSearchFocused && searchQuery.trim() && (
-          <div className="absolute left-0 right-0 mx-4 mt-1 z-50 bg-card border border-border rounded-xl shadow-lg overflow-hidden">
-            {searchLoading ? (
-              <div className="flex items-center justify-center py-4">
-                <Loader2 className="w-5 h-5 animate-spin text-primary" />
+        {/* Content based on active tab */}
+        {activeTab === 'discover' ? (
+          <UserDiscovery onSelectUser={(userId) => {
+            setSelectedUserId(userId);
+            setActiveTab('chats');
+          }} />
+        ) : (
+          <div className="flex-1 flex flex-col">
+            {/* Search in Chats */}
+            <div className="px-4 py-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search conversations..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
               </div>
-            ) : searchResults.length === 0 ? (
-              <div className="py-4 px-4 text-center text-muted-foreground text-sm">
-                No users found
-              </div>
-            ) : (
-              searchResults.map((result) => (
-                <div
-                  key={result.user_id}
-                  className="flex items-center gap-3 p-3 hover:bg-secondary/50 transition-colors"
-                >
-                  <Avatar name={result.username} src={result.avatar_url} size="md" />
-                  <div className="flex-1">
-                    <p className="font-semibold text-foreground">@{result.username}</p>
+            </div>
+
+            {/* Pending Requests */}
+            {pendingRequests.length > 0 && (
+              <div className="px-4 py-3 border-b border-border">
+                <p className="text-sm font-medium text-muted-foreground mb-2">Friend Requests</p>
+                {pendingRequests.map((request) => (
+                  <div key={request.user_id} className="flex items-center gap-3 py-2">
+                    <Avatar name={request.username} src={request.avatar_url} size="md" />
+                    <div className="flex-1">
+                      <p className="font-semibold text-foreground">@{request.username}</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => acceptFriendRequest(request.user_id)}
+                      >
+                        <Check className="w-4 h-4 text-success" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        onClick={() => rejectFriendRequest(request.user_id)}
+                      >
+                        <X className="w-4 h-4 text-destructive" />
+                      </Button>
+                    </div>
                   </div>
-                  {isFriend(result.user_id) ? (
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => setSelectedUserId(result.user_id)}
-                    >
-                      Message
-                    </Button>
-                  ) : hasPendingRequest(result.user_id) ? (
-                    <span className="text-xs text-muted-foreground">Pending</span>
-                  ) : (
-                    <Button
-                      size="sm"
-                      onClick={() => handleAddFriendFromSearch(result.username, result.user_id)}
-                      disabled={addingFriend === result.user_id}
-                    >
-                      {addingFriend === result.user_id ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <>
-                          <UserPlus className="w-4 h-4 mr-1" />
-                          Add
-                        </>
-                      )}
-                    </Button>
-                  )}
-                </div>
-              ))
+                ))}
+              </div>
             )}
-          </div>
-        )}
 
-        {/* Pending Requests */}
-        {pendingRequests.length > 0 && (
-          <div className="px-4 py-3 border-b border-border">
-            <p className="text-sm font-medium text-muted-foreground mb-2">Friend Requests</p>
-            {pendingRequests.map((request) => (
-              <div key={request.user_id} className="flex items-center gap-3 py-2">
-                <Avatar name={request.username} src={request.avatar_url} size="md" />
-                <div className="flex-1">
-                  <p className="font-semibold text-foreground">@{request.username}</p>
+            {/* Thread List */}
+            <div className="flex-1 divide-y divide-border overflow-y-auto">
+              {loading ? (
+                <div className="flex items-center justify-center py-12">
+                  <Loader2 className="w-8 h-8 animate-spin text-primary" />
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() => acceptFriendRequest(request.user_id)}
-                  >
-                    <Check className="w-4 h-4 text-success" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() => rejectFriendRequest(request.user_id)}
-                  >
-                    <X className="w-4 h-4 text-destructive" />
+              ) : threads.length === 0 && friends.length === 0 ? (
+                <div className="text-center py-12 px-4">
+                  <div className="w-16 h-16 rounded-full bg-secondary mx-auto mb-4 flex items-center justify-center">
+                    <MessageCircle className="w-8 h-8 text-muted-foreground" />
+                  </div>
+                  <h3 className="font-semibold text-foreground mb-1">No conversations yet</h3>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Discover new people to connect with!
+                  </p>
+                  <Button onClick={() => setActiveTab('discover')}>
+                    <Users className="w-4 h-4 mr-2" />
+                    Discover People
                   </Button>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {/* Thread List */}
-        <div className="divide-y divide-border">
-          {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-          ) : threads.length === 0 && friends.length === 0 ? (
-            <div className="text-center py-12 px-4">
-              <div className="w-16 h-16 rounded-full bg-secondary mx-auto mb-4 flex items-center justify-center">
-                <MessageCircle className="w-8 h-8 text-muted-foreground" />
-              </div>
-              <h3 className="font-semibold text-foreground mb-1">No conversations yet</h3>
-              <p className="text-sm text-muted-foreground">
-                Search for users above to add friends!
-              </p>
-            </div>
-          ) : (
-            <>
-              {threads
-                .filter(t => !searchQuery || t.participantName.toLowerCase().includes(searchQuery.toLowerCase()))
-                .map((thread) => (
-                  <button
-                    key={thread.participantId}
-                    onClick={() => setSelectedUserId(thread.participantId)}
-                    className="w-full flex items-center gap-3 p-4 hover:bg-secondary/50 transition-colors text-left"
-                  >
-                    <div className="relative">
-                      <Avatar name={thread.participantName} src={thread.participantAvatar} size="lg" />
-                      {thread.unreadCount > 0 && (
-                        <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full gradient-primary flex items-center justify-center">
-                          <span className="text-xs font-bold text-primary-foreground">
-                            {thread.unreadCount}
-                          </span>
+              ) : (
+                <>
+                  {threads
+                    .filter(t => !searchQuery || t.participantName.toLowerCase().includes(searchQuery.toLowerCase()))
+                    .map((thread) => (
+                      <button
+                        key={thread.participantId}
+                        onClick={() => setSelectedUserId(thread.participantId)}
+                        className="w-full flex items-center gap-3 p-4 hover:bg-secondary/50 transition-colors text-left"
+                      >
+                        <div className="relative">
+                          <Avatar name={thread.participantName} src={thread.participantAvatar} size="lg" />
+                          {thread.unreadCount > 0 && (
+                            <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full gradient-primary flex items-center justify-center">
+                              <span className="text-xs font-bold text-primary-foreground">
+                                {thread.unreadCount}
+                              </span>
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-0.5">
-                        <p className="font-semibold text-foreground">@{thread.participantName}</p>
-                        <span className="text-xs text-muted-foreground">
-                          {getTimeDisplay(thread.lastMessageAt)}
-                        </span>
-                      </div>
-                      <p className={cn(
-                        "text-sm truncate",
-                        thread.unreadCount > 0 ? "text-foreground font-medium" : "text-muted-foreground"
-                      )}>
-                        {thread.lastMessage}
-                      </p>
-                    </div>
-                  </button>
-                ))}
-              
-              {/* Friends without threads - show them for quick access */}
-              {friends
-                .filter(f => !threads.some(t => t.participantId === f.user_id))
-                .filter(f => !searchQuery || f.username.toLowerCase().includes(searchQuery.toLowerCase()))
-                .map((friend) => (
-                  <button
-                    key={friend.user_id}
-                    onClick={() => setSelectedUserId(friend.user_id)}
-                    className="w-full flex items-center gap-3 p-4 hover:bg-secondary/50 transition-colors text-left"
-                  >
-                    <Avatar name={friend.username} src={friend.avatar_url} size="lg" />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-foreground">@{friend.username}</p>
-                      <p className="text-sm text-muted-foreground">
-                        🔥 {friend.streak} day streak
-                      </p>
-                    </div>
-                  </button>
-                ))}
-            </>
-          )}
-        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between mb-0.5">
+                            <p className="font-semibold text-foreground">@{thread.participantName}</p>
+                            <span className="text-xs text-muted-foreground">
+                              {getTimeDisplay(thread.lastMessageAt)}
+                            </span>
+                          </div>
+                          <p className={cn(
+                            "text-sm truncate",
+                            thread.unreadCount > 0 ? "text-foreground font-medium" : "text-muted-foreground"
+                          )}>
+                            {thread.lastMessage}
+                          </p>
+                        </div>
+                      </button>
+                    ))}
+                  
+                  {/* Friends without threads - show them for quick access */}
+                  {friends
+                    .filter(f => !threads.some(t => t.participantId === f.user_id))
+                    .filter(f => !searchQuery || f.username.toLowerCase().includes(searchQuery.toLowerCase()))
+                    .map((friend) => (
+                      <button
+                        key={friend.user_id}
+                        onClick={() => setSelectedUserId(friend.user_id)}
+                        className="w-full flex items-center gap-3 p-4 hover:bg-secondary/50 transition-colors text-left"
+                      >
+                        <Avatar name={friend.username} src={friend.avatar_url} size="lg" />
+                        <div className="flex-1 min-w-0">
+                          <p className="font-semibold text-foreground">@{friend.username}</p>
+                          <p className="text-sm text-muted-foreground">
+                            🔥 {friend.streak} day streak
+                          </p>
+                        </div>
+                      </button>
+                    ))}
+                </>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     );
   }
