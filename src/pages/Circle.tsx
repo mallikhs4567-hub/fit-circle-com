@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import { usePosts } from '@/hooks/usePosts';
 import { useProfile } from '@/hooks/useProfile';
+import { useStories } from '@/hooks/useStories';
 import { Avatar } from '@/components/common/Avatar';
 import { TimeLeft } from '@/components/common/TimeLeft';
 import { Button } from '@/components/ui/button';
@@ -8,13 +9,19 @@ import { MediaPreview } from '@/components/circle/MediaPreview';
 import { PostMedia } from '@/components/circle/PostMedia';
 import { StoriesRow } from '@/components/profile/StoriesRow';
 import { MediaPermissionDialog } from '@/components/circle/MediaPermissionDialog';
+import { PostTypeDialog } from '@/components/circle/PostTypeDialog';
 import { Plus, Heart, Flame, Hand, Send, X, Image, Video, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
+type ComposeMode = 'post' | 'story';
 
 export default function Circle() {
   const { posts, loading, createPost, addReaction } = usePosts();
   const { profile } = useProfile();
+  const { myStory, refetch: refetchStories } = useStories();
   const [showCompose, setShowCompose] = useState(false);
+  const [composeMode, setComposeMode] = useState<ComposeMode>('post');
+  const [showTypeDialog, setShowTypeDialog] = useState(false);
   const [newPost, setNewPost] = useState('');
   const [mediaFile, setMediaFile] = useState<File | null>(null);
   const [posting, setPosting] = useState(false);
@@ -53,6 +60,32 @@ export default function Circle() {
     }, 100);
   };
 
+  const handlePlusClick = () => {
+    // If user has an active story, show choice dialog
+    if (myStory) {
+      setShowTypeDialog(true);
+    } else {
+      // No story, default to post
+      setComposeMode('post');
+      setShowCompose(true);
+    }
+  };
+
+  const handleSelectPost = () => {
+    setComposeMode('post');
+    setShowCompose(true);
+  };
+
+  const handleSelectStory = () => {
+    setComposeMode('story');
+    setShowCompose(true);
+  };
+
+  const handleAddStory = () => {
+    setComposeMode('story');
+    setShowCompose(true);
+  };
+
   const handlePost = async () => {
     if (!newPost.trim() && !mediaFile) return;
     
@@ -62,6 +95,9 @@ export default function Circle() {
     setNewPost('');
     setMediaFile(null);
     setShowCompose(false);
+    
+    // Refetch stories to update the UI
+    refetchStories();
   };
 
   const getTimeAgo = (dateStr: string) => {
@@ -83,7 +119,7 @@ export default function Circle() {
           <Button
             variant="default"
             size="icon-sm"
-            onClick={() => setShowCompose(true)}
+            onClick={handlePlusClick}
           >
             <Plus className="w-5 h-5" />
           </Button>
@@ -91,7 +127,7 @@ export default function Circle() {
       </header>
 
       {/* Stories Row */}
-      <StoriesRow onAddStory={() => setShowCompose(true)} />
+      <StoriesRow onAddStory={handleAddStory} />
 
       {/* Feed */}
       <div className="px-4 pb-4 space-y-4">
@@ -181,7 +217,9 @@ export default function Circle() {
               >
                 <X className="w-6 h-6" />
               </button>
-              <h2 className="font-semibold text-foreground">New Post</h2>
+              <h2 className="font-semibold text-foreground">
+                {composeMode === 'story' ? 'New Story' : 'New Post'}
+              </h2>
               <Button
                 size="sm"
                 onClick={handlePost}
@@ -192,7 +230,7 @@ export default function Circle() {
                 ) : (
                   <>
                     <Send className="w-4 h-4" />
-                    Post
+                    {composeMode === 'story' ? 'Share' : 'Post'}
                   </>
                 )}
               </Button>
@@ -284,6 +322,14 @@ export default function Circle() {
         open={showPermissionDialog}
         onOpenChange={setShowPermissionDialog}
         onAllow={handlePermissionGranted}
+      />
+
+      {/* Post Type Choice Dialog */}
+      <PostTypeDialog
+        open={showTypeDialog}
+        onOpenChange={setShowTypeDialog}
+        onSelectPost={handleSelectPost}
+        onSelectStory={handleSelectStory}
       />
     </div>
   );

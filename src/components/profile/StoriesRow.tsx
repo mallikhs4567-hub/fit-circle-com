@@ -12,7 +12,7 @@ interface StoriesRowProps {
 }
 
 export function StoriesRow({ onAddStory }: StoriesRowProps) {
-  const { stories, loading } = useStories();
+  const { stories, myStory, loading, refetch } = useStories();
   const { profile } = useProfile();
   const [selectedStory, setSelectedStory] = useState<Story | null>(null);
   const [currentPostIndex, setCurrentPostIndex] = useState(0);
@@ -32,10 +32,11 @@ export function StoriesRow({ onAddStory }: StoriesRowProps) {
       setCurrentPostIndex(currentPostIndex - 1);
     } else {
       // Go to previous story
-      const currentIdx = stories.findIndex(s => s.userId === selectedStory?.userId);
+      const allStories = myStory ? [myStory, ...stories] : stories;
+      const currentIdx = allStories.findIndex(s => s.userId === selectedStory?.userId);
       if (currentIdx > 0) {
-        setSelectedStory(stories[currentIdx - 1]);
-        setCurrentPostIndex(stories[currentIdx - 1].posts.length - 1);
+        setSelectedStory(allStories[currentIdx - 1]);
+        setCurrentPostIndex(allStories[currentIdx - 1].posts.length - 1);
       }
     }
   };
@@ -45,9 +46,10 @@ export function StoriesRow({ onAddStory }: StoriesRowProps) {
       setCurrentPostIndex(currentPostIndex + 1);
     } else {
       // Go to next story
-      const currentIdx = stories.findIndex(s => s.userId === selectedStory?.userId);
-      if (currentIdx < stories.length - 1) {
-        setSelectedStory(stories[currentIdx + 1]);
+      const allStories = myStory ? [myStory, ...stories] : stories;
+      const currentIdx = allStories.findIndex(s => s.userId === selectedStory?.userId);
+      if (currentIdx < allStories.length - 1) {
+        setSelectedStory(allStories[currentIdx + 1]);
         setCurrentPostIndex(0);
       } else {
         handleClose();
@@ -78,13 +80,16 @@ export function StoriesRow({ onAddStory }: StoriesRowProps) {
           Stories
         </h3>
         <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-          {/* Add Your Story Button */}
-          <button
-            onClick={onAddStory}
-            className="flex flex-col items-center gap-1.5 flex-shrink-0"
-          >
-            <div className="relative">
-              <div className="p-0.5 rounded-full bg-muted">
+          {/* User's Story - shows either add button or their story */}
+          {myStory ? (
+            // User has active story - show it without plus icon
+            <button
+              onClick={() => handleStoryClick(myStory)}
+              className="flex flex-col items-center gap-1.5 flex-shrink-0"
+            >
+              <div
+                className="p-0.5 rounded-full bg-gradient-to-tr from-primary via-streak to-primary"
+              >
                 <div className="p-0.5 bg-background rounded-full">
                   <Avatar
                     name={profile?.username}
@@ -93,13 +98,32 @@ export function StoriesRow({ onAddStory }: StoriesRowProps) {
                   />
                 </div>
               </div>
-              {/* Plus icon overlay */}
-              <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center border-2 border-background">
-                <Plus className="w-3 h-3 text-primary-foreground" />
+              <span className="text-xs text-muted-foreground">Your story</span>
+            </button>
+          ) : (
+            // No active story - show add button with plus icon
+            <button
+              onClick={onAddStory}
+              className="flex flex-col items-center gap-1.5 flex-shrink-0"
+            >
+              <div className="relative">
+                <div className="p-0.5 rounded-full bg-muted">
+                  <div className="p-0.5 bg-background rounded-full">
+                    <Avatar
+                      name={profile?.username}
+                      src={profile?.avatar_url}
+                      size="lg"
+                    />
+                  </div>
+                </div>
+                {/* Plus icon overlay */}
+                <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded-full bg-primary flex items-center justify-center border-2 border-background">
+                  <Plus className="w-3 h-3 text-primary-foreground" />
+                </div>
               </div>
-            </div>
-            <span className="text-xs text-muted-foreground">Your story</span>
-          </button>
+              <span className="text-xs text-muted-foreground">Your story</span>
+            </button>
+          )}
 
           {/* Friends' Stories */}
           {stories.map((story) => (
