@@ -1,10 +1,11 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Users, Dumbbell, MessageCircle, User } from 'lucide-react';
+import { Users, Dumbbell, MessageCircle, User, Search } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const tabs = [
   { id: 'circle', label: 'Circle', icon: Users, path: '/circle' },
   { id: 'fitness', label: 'Fitness', icon: Dumbbell, path: '/fitness' },
+  { id: 'search', label: 'Search', icon: Search, path: '/search' },
   { id: 'chat', label: 'Chat', icon: MessageCircle, path: '/chat' },
   { id: 'profile', label: 'Profile', icon: User, path: '/profile' },
 ];
