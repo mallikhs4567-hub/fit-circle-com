@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 import { toast } from 'sonner';
@@ -21,61 +21,68 @@ export interface Profile {
 
 export function useProfile() {
   const { user } = useAuth();
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
 
-  const fetchProfile = async () => {
-    if (!user) {
-      setProfile(null);
-      setLoading(false);
-      return;
-    }
+  const { data: profile, isLoading: loading, refetch } = useQuery({
+    queryKey: ['profile', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
 
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('user_id', user.id)
-      .maybeSingle();
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
 
-    if (error) {
-      console.error('Error fetching profile:', error);
-      toast.error('Failed to load profile');
-    } else {
-      setProfile(data as Profile);
-    }
-    setLoading(false);
-  };
+      if (error) {
+        console.error('Error fetching profile:', error);
+        throw error;
+      }
+      return data as Profile;
+    },
+    enabled: !!user,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    gcTime: 1000 * 60 * 30, // 30 minutes
+  });
 
-  useEffect(() => {
-    fetchProfile();
-  }, [user]);
+  const updateMutation = useMutation({
+    mutationFn: async (updates: Partial<Profile>) => {
+      if (!user) throw new Error('Not authenticated');
+
+      const { data, error } = await supabase
+        .from('profiles')
+        .update(updates)
+        .eq('user_id', user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data as Profile;
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(['profile', user?.id], data);
+    },
+    onError: () => {
+      toast.error('Failed to update profile');
+    },
+  });
 
   const updateProfile = async (updates: Partial<Profile>) => {
-    if (!user) return { error: new Error('Not authenticated') };
-
-    const { data, error } = await supabase
-      .from('profiles')
-      .update(updates)
-      .eq('user_id', user.id)
-      .select()
-      .single();
-
-    if (error) {
-      toast.error('Failed to update profile');
+    try {
+      const data = await updateMutation.mutateAsync(updates);
+      return { data, error: null };
+    } catch (error) {
       return { error };
     }
-
-    setProfile(data as Profile);
-    return { data, error: null };
   };
 
   const isOnboarded = !!profile?.goal && !!profile?.height && !!profile?.weight && !!profile?.gender;
 
   return {
-    profile,
+    profile: profile ?? null,
     loading,
     updateProfile,
-    refetch: fetchProfile,
+    refetch,
     isOnboarded,
   };
 }

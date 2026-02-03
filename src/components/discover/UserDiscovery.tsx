@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useFriends } from '@/hooks/useFriends';
@@ -7,7 +8,7 @@ import { StreakBadge } from '@/components/common/StreakBadge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Search, UserPlus, Loader2, Users, Sparkles, Check } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { useDebounce } from '@/hooks/useDebounce';
 
 interface DiscoverUser {
   user_id: string;
@@ -22,27 +23,27 @@ interface UserDiscoveryProps {
 
 export function UserDiscovery({ onSelectUser }: UserDiscoveryProps) {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const { friends, pendingRequests, sendFriendRequest, refetch: refetchFriends } = useFriends();
   
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<DiscoverUser[]>([]);
-  const [recommendations, setRecommendations] = useState<DiscoverUser[]>([]);
-  const [searchLoading, setSearchLoading] = useState(false);
-  const [recommendationsLoading, setRecommendationsLoading] = useState(true);
   const [addingFriend, setAddingFriend] = useState<string | null>(null);
+  
+  // Debounce search query for 150ms (faster response)
+  const debouncedSearch = useDebounce(searchQuery, 150);
 
-  // Fetch recommended users (users not yet friends)
-  useEffect(() => {
-    const fetchRecommendations = async () => {
-      if (!user) {
-        setRecommendationsLoading(false);
-        return;
-      }
+  // Memoize exclude IDs
+  const excludeIds = useMemo(() => {
+    const friendIds = friends.map(f => f.user_id);
+    const pendingIds = pendingRequests.map(p => p.user_id);
+    return [user?.id, ...friendIds, ...pendingIds].filter(Boolean);
+  }, [user?.id, friends, pendingRequests]);
 
-      // Get all friend IDs
-      const friendIds = friends.map(f => f.user_id);
-      const pendingIds = pendingRequests.map(p => p.user_id);
-      const excludeIds = [user.id, ...friendIds, ...pendingIds];
+  // Fetch recommendations with React Query
+  const { data: recommendations = [], isLoading: recommendationsLoading } = useQuery({
+    queryKey: ['user-recommendations', user?.id, excludeIds],
+    queryFn: async () => {
+      if (!user || excludeIds.length === 0) return [];
 
       const { data, error } = await supabase
         .from('profiles')
@@ -51,53 +52,42 @@ export function UserDiscovery({ onSelectUser }: UserDiscoveryProps) {
         .order('streak', { ascending: false })
         .limit(10);
 
-      if (!error && data) {
-        setRecommendations(data);
-      }
-      setRecommendationsLoading(false);
-    };
+      if (error) throw error;
+      return data as DiscoverUser[];
+    },
+    enabled: !!user,
+    staleTime: 1000 * 60, // 1 minute
+    gcTime: 1000 * 60 * 5, // 5 minutes
+  });
 
-    fetchRecommendations();
-  }, [user, friends, pendingRequests]);
+  // Search users with React Query
+  const { data: searchResults = [], isLoading: searchLoading } = useQuery({
+    queryKey: ['user-search', debouncedSearch, user?.id],
+    queryFn: async () => {
+      if (!debouncedSearch.trim()) return [];
 
-  // Real-time search with debounce
-  useEffect(() => {
-    const searchUsers = async () => {
-      if (!searchQuery.trim()) {
-        setSearchResults([]);
-        return;
-      }
-
-      setSearchLoading(true);
-      
-      // Use the search function for better performance
       const { data, error } = await supabase
-        .rpc('search_users_by_username', { search_username: searchQuery })
+        .rpc('search_users_by_username', { search_username: debouncedSearch })
         .neq('user_id', user?.id || '');
 
-      if (!error && data) {
-        setSearchResults(data as DiscoverUser[]);
-      }
-      setSearchLoading(false);
-    };
-
-    const debounce = setTimeout(searchUsers, 250);
-    return () => clearTimeout(debounce);
-  }, [searchQuery, user?.id]);
+      if (error) throw error;
+      return data as DiscoverUser[];
+    },
+    enabled: !!debouncedSearch.trim(),
+    staleTime: 1000 * 30, // 30 seconds
+  });
 
   const handleAddFriend = async (username: string, userId: string) => {
     setAddingFriend(userId);
     await sendFriendRequest(username);
     await refetchFriends();
+    // Invalidate recommendations to update the list
+    queryClient.invalidateQueries({ queryKey: ['user-recommendations'] });
     setAddingFriend(null);
   };
 
   const isFriend = (userId: string) => friends.some(f => f.user_id === userId);
   const hasPendingRequest = (userId: string) => pendingRequests.some(r => r.user_id === userId);
-  const hasSentRequest = (userId: string) => {
-    // Check if we sent them a request (they appear in our sent requests)
-    return pendingRequests.some(r => r.user_id === userId);
-  };
 
   const displayUsers = searchQuery.trim() ? searchResults : recommendations;
   const isSearching = searchQuery.trim().length > 0;
