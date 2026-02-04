@@ -77,16 +77,18 @@ export default function Chat() {
             </div>
           </div>
 
-          {/* Friend Requests Section */}
-          {pendingRequests.length > 0 && (
-            <div className="px-4 py-3 bg-secondary/30 border-b border-border">
-              <div className="flex items-center gap-2 mb-3">
-                <UserPlus className="w-4 h-4 text-primary" />
-                <p className="text-sm font-semibold text-foreground">Friend Requests</p>
+          {/* Friend Requests Section - Always visible */}
+          <div className="px-4 py-3 bg-secondary/30 border-b border-border">
+            <div className="flex items-center gap-2 mb-3">
+              <UserPlus className="w-4 h-4 text-primary" />
+              <p className="text-sm font-semibold text-foreground">Friend Requests</p>
+              {pendingRequests.length > 0 && (
                 <span className="ml-auto text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
                   {pendingRequests.length}
                 </span>
-              </div>
+              )}
+            </div>
+            {pendingRequests.length > 0 ? (
               <div className="space-y-2">
                 {pendingRequests.map((request) => (
                   <div 
@@ -119,8 +121,12 @@ export default function Chat() {
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-2">
+                No pending requests
+              </p>
+            )}
+          </div>
 
           {/* Thread List */}
           <div className="flex-1 divide-y divide-border overflow-y-auto">
