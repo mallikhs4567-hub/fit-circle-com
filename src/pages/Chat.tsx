@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { Avatar } from '@/components/common/Avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ArrowLeft, Send, MessageCircle, Loader2, Check, X, UserPlus } from 'lucide-react';
+import { Search, ArrowLeft, Send, MessageCircle, Loader2, Check, X, UserPlus, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function Chat() {
@@ -15,7 +15,7 @@ export default function Chat() {
   const navigate = useNavigate();
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const { threads, messages, loading, sendMessage } = useChat(selectedUserId || undefined);
-  const { friends, pendingRequests, acceptFriendRequest, rejectFriendRequest } = useFriends();
+  const { friends, pendingRequests, sentRequests, acceptFriendRequest, rejectFriendRequest } = useFriends();
   const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -127,6 +127,36 @@ export default function Chat() {
               </p>
             )}
           </div>
+
+          {/* Sent Requests Section */}
+          {sentRequests.length > 0 && (
+            <div className="px-4 py-3 bg-muted/30 border-b border-border">
+              <div className="flex items-center gap-2 mb-3">
+                <Clock className="w-4 h-4 text-muted-foreground" />
+                <p className="text-sm font-semibold text-foreground">Sent Requests</p>
+                <span className="ml-auto text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
+                  {sentRequests.length}
+                </span>
+              </div>
+              <div className="space-y-2">
+                {sentRequests.map((request) => (
+                  <div 
+                    key={request.user_id} 
+                    className="flex items-center gap-3 p-3 bg-background rounded-xl border border-border"
+                  >
+                    <Avatar name={request.username} src={request.avatar_url} size="md" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-foreground truncate">@{request.username}</p>
+                      <p className="text-xs text-muted-foreground">🔥 {request.streak} day streak</p>
+                    </div>
+                    <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
+                      Pending
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Thread List */}
           <div className="flex-1 divide-y divide-border overflow-y-auto">
