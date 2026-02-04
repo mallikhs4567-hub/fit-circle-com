@@ -56,7 +56,7 @@ export function useFriends() {
         }));
       }
 
-      // Get pending requests
+      // Get pending requests (received)
       const { data: pending } = await supabase
         .from('friendships')
         .select('*')
@@ -82,7 +82,24 @@ export function useFriends() {
         }));
       }
 
-      return { friends, pendingRequests };
+      // Get sent requests (outgoing)
+      const { data: sent } = await supabase
+        .from('friendships')
+        .select('*')
+        .eq('user_id', user.id)
+        .eq('status', 'pending');
+
+      let sentRequests: Friend[] = [];
+      if (sent && sent.length > 0) {
+        const sentIds = sent.map(s => s.friend_id);
+        const { data: sentProfiles } = await supabase
+          .from('profiles')
+          .select('id, user_id, username, avatar_url, streak')
+          .in('user_id', sentIds);
+        sentRequests = sentProfiles as Friend[] || [];
+      }
+
+      return { friends, pendingRequests, sentRequests };
     },
     enabled: !!user,
     staleTime: 1000 * 30, // 30 seconds
@@ -238,6 +255,7 @@ export function useFriends() {
   return {
     friends: friendsData?.friends ?? [],
     pendingRequests: friendsData?.pendingRequests ?? [],
+    sentRequests: friendsData?.sentRequests ?? [],
     loading,
     sendFriendRequest,
     acceptFriendRequest,
