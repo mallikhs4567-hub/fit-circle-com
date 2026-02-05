@@ -3,15 +3,14 @@ import { usePosts } from '@/hooks/usePosts';
 import { useProfile } from '@/hooks/useProfile';
 import { useStories } from '@/hooks/useStories';
 import { Avatar } from '@/components/common/Avatar';
-import { TimeLeft } from '@/components/common/TimeLeft';
 import { Button } from '@/components/ui/button';
 import { MediaPreview } from '@/components/circle/MediaPreview';
-import { PostMedia } from '@/components/circle/PostMedia';
 import { StoriesRow } from '@/components/profile/StoriesRow';
 import { MediaPermissionDialog } from '@/components/circle/MediaPermissionDialog';
 import { PostTypeDialog } from '@/components/circle/PostTypeDialog';
-import { Plus, Heart, Flame, Hand, Send, X, Image, Video, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+ import { PostCard } from '@/components/circle/PostCard';
+ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+ import { Plus, Send, X, Image, Video, Loader2, Flame } from 'lucide-react';
 
 type ComposeMode = 'post' | 'story';
 
@@ -109,6 +108,10 @@ export default function Circle() {
     if (minutes > 0) return `${minutes}m ago`;
     return 'Just now';
   };
+
+  // Filter posts by type
+  const stories = posts.filter(p => (p as any).type === 'story' || !(p as any).type);
+  const permanentPosts = posts.filter(p => (p as any).type === 'post');
 
   return (
     <div className="min-h-screen bg-background">
