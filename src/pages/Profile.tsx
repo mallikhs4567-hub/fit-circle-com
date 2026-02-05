@@ -1,8 +1,13 @@
+import { useState, useRef } from 'react';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
+import { usePosts } from '@/hooks/usePosts';
 import { Avatar } from '@/components/common/Avatar';
 import { StreakBadge } from '@/components/common/StreakBadge';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { PostCard } from '@/components/circle/PostCard';
 import {
   Settings, 
   LogOut, 
@@ -10,14 +15,15 @@ import {
   Target, 
   Calendar, 
   Flame,
-  ChevronRight,
-  User,
-  Scale,
-  Ruler,
-  Loader2
+  Loader2,
+  Camera,
+  Edit2,
+  Check,
+  X
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const goalLabels = {
   'weight-loss': 'Weight Loss',
@@ -26,14 +32,61 @@ const goalLabels = {
 };
 
 export default function Profile() {
-  const { profile, loading } = useProfile();
+  const { profile, loading, updateProfile } = useProfile();
   const { signOut } = useAuth();
+  const { posts, addReaction } = usePosts();
   const navigate = useNavigate();
+  const [isEditingBio, setIsEditingBio] = useState(false);
+  const [bioText, setBioText] = useState('');
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleLogout = async () => {
     await signOut();
     navigate('/');
   };
+
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !profile) return;
+
+    setUploadingAvatar(true);
+    
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${profile.user_id}/${Date.now()}.${fileExt}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('post-media')
+      .upload(fileName, file);
+
+    if (uploadError) {
+      toast.error('Failed to upload avatar');
+      setUploadingAvatar(false);
+      return;
+    }
+
+    const { data: urlData } = supabase.storage
+      .from('post-media')
+      .getPublicUrl(fileName);
+
+    await updateProfile({ avatar_url: urlData.publicUrl });
+    toast.success('Profile picture updated!');
+    setUploadingAvatar(false);
+  };
+
+  const handleSaveBio = async () => {
+    await updateProfile({ bio: bioText });
+    setIsEditingBio(false);
+    toast.success('Bio updated!');
+  };
+
+  const startEditBio = () => {
+    setBioText(profile?.bio || '');
+    setIsEditingBio(true);
+  };
+
+  // Filter for user's own posts
+  const myPosts = posts.filter(p => p.user_id === profile?.user_id);
 
   if (loading) {
     return (
@@ -66,17 +119,72 @@ export default function Profile() {
       {/* Profile Card */}
       <div className="px-4 mb-6">
         <div className="card-elevated p-6 text-center">
-          <Avatar 
-            name={profile.username} 
-            src={profile.avatar_url} 
-            size="xl" 
-            showBorder 
-            className="mx-auto mb-4"
-          />
+          <div className="relative inline-block mb-4">
+            <Avatar 
+              name={profile.username} 
+              src={profile.avatar_url} 
+              size="xl" 
+              showBorder 
+            />
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              className="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center border-2 border-background"
+              disabled={uploadingAvatar}
+            >
+              {uploadingAvatar ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Camera className="w-4 h-4" />
+              )}
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleAvatarUpload}
+              className="hidden"
+            />
+          </div>
           <h2 className="text-xl font-display font-bold text-foreground mb-1">
             @{profile.username}
           </h2>
-          <p className="text-sm text-muted-foreground mb-4">{profile.email}</p>
+          
+          {/* Bio Section */}
+          <div className="mb-4">
+            {isEditingBio ? (
+              <div className="space-y-2">
+                <Textarea
+                  value={bioText}
+                  onChange={(e) => setBioText(e.target.value)}
+                  placeholder="Write something about yourself..."
+                  className="text-center"
+                  maxLength={150}
+                />
+                <div className="flex justify-center gap-2">
+                  <Button size="sm" onClick={handleSaveBio}>
+                    <Check className="w-4 h-4" />
+                    Save
+                  </Button>
+                  <Button size="sm" variant="ghost" onClick={() => setIsEditingBio(false)}>
+                    <X className="w-4 h-4" />
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center gap-2">
+                <p className="text-sm text-muted-foreground">
+                  {profile.bio || 'No bio yet'}
+                </p>
+                <button
+                  onClick={startEditBio}
+                  className="p-1 text-muted-foreground hover:text-foreground"
+                >
+                  <Edit2 className="w-3 h-3" />
+                </button>
+              </div>
+            )}
+          </div>
           
           {/* Streak Display */}
           <div className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-streak/10 border border-streak/20">
@@ -118,28 +226,27 @@ export default function Profile() {
         </div>
       </div>
 
-      {/* Details Section */}
+      {/* My Posts Section */}
       <div className="px-4 mb-6">
         <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-          Personal Details
+          My Posts
         </h3>
-        <div className="card-elevated divide-y divide-border">
-          <DetailRow
-            icon={User}
-            label="Gender"
-            value={profile.gender ? profile.gender.charAt(0).toUpperCase() + profile.gender.slice(1) : 'Not set'}
-          />
-          <DetailRow
-            icon={Ruler}
-            label="Height"
-            value={profile.height ? `${profile.height} cm` : 'Not set'}
-          />
-          <DetailRow
-            icon={Scale}
-            label="Weight"
-            value={profile.weight ? `${profile.weight} kg` : 'Not set'}
-          />
-        </div>
+        {myPosts.length === 0 ? (
+          <p className="text-center text-muted-foreground py-8">
+            No posts yet
+          </p>
+        ) : (
+          <div className="space-y-4">
+            {myPosts.map((post) => (
+              <PostCard
+                key={post.id}
+                post={post}
+                onReaction={addReaction}
+                isStory={post.type === 'story'}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Actions */}
@@ -170,34 +277,11 @@ function StatCard({
 }) {
   return (
     <div className="card-elevated p-4">
-      <div className={cn("flex items-center gap-2 mb-1", iconColor)}>
+      <div className={`flex items-center gap-2 mb-1 ${iconColor}`}>
         <Icon className="w-4 h-4" />
         <span className="text-xs font-medium">{label}</span>
       </div>
       <p className="text-lg font-display font-bold text-foreground">{value}</p>
-    </div>
-  );
-}
-
-function DetailRow({
-  icon: Icon,
-  label,
-  value,
-}: {
-  icon: typeof User;
-  label: string;
-  value: string;
-}) {
-  return (
-    <div className="flex items-center justify-between p-4">
-      <div className="flex items-center gap-3">
-        <Icon className="w-5 h-5 text-muted-foreground" />
-        <span className="text-foreground">{label}</span>
-      </div>
-      <div className="flex items-center gap-2 text-muted-foreground">
-        <span>{value}</span>
-        <ChevronRight className="w-4 h-4" />
-      </div>
     </div>
   );
 }
