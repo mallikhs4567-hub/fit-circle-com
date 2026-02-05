@@ -15,6 +15,9 @@ export interface Post {
   username?: string;
   avatar_url?: string;
   userReaction?: 'heart' | 'fire' | 'clap';
+  type?: 'story' | 'post';
+  view_count?: number;
+  like_count?: number;
 }
 
 export type MediaType = 'image' | 'video' | null;

@@ -347,6 +347,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      delete_chat_for_user: {
+        Args: { other_user_id: string }
+        Returns: undefined
+      }
       search_users_by_username: {
         Args: { search_username: string }
         Returns: {
