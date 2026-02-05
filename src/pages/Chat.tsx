@@ -295,12 +295,14 @@ export default function Chat() {
                 <DropdownMenuItem 
                   onClick={async () => {
                     if (!selectedUserId) return;
-                    const { error } = await supabase.rpc('delete_chat_for_user', { 
-                      other_user_id: selectedUserId 
-                    });
-                    if (!error) {
+                    try {
+                      await supabase.rpc('delete_chat_for_user' as any, { 
+                        other_user_id: selectedUserId 
+                      });
                       toast.success('Chat deleted');
                       setSelectedUserId(null);
+                    } catch (e) {
+                      toast.error('Failed to delete chat');
                     }
                   }}
                   className="text-destructive"

@@ -180,9 +180,10 @@
                            avatar_url: profile.avatar_url || undefined,
                            reactions: post.reactions || { heart: 0, fire: 0, clap: 0 },
                            expires_at: post.expires_at || new Date(Date.now() + 86400000).toISOString(),
+                          type: post.type as 'story' | 'post',
                          }}
                          onReaction={() => {}}
-                         isStory={post.type === 'story'}
+                        isStory={post.type === 'story' || !post.type}
                        />
                      ))}
                    </div>
