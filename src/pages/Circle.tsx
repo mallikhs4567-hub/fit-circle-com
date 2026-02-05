@@ -89,7 +89,7 @@ export default function Circle() {
     if (!newPost.trim() && !mediaFile) return;
     
     setPosting(true);
-    await createPost(newPost.trim(), mediaFile || undefined);
+    await createPost(newPost.trim(), mediaFile || undefined, composeMode);
     setPosting(false);
     setNewPost('');
     setMediaFile(null);
