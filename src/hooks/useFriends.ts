@@ -225,6 +225,45 @@ export function useFriends() {
     },
   });
 
+  const cancelRequestMutation = useMutation({
+    mutationFn: async (friendUserId: string) => {
+      if (!user) throw new Error('Not authenticated');
+
+      const { error } = await supabase
+        .from('friendships')
+        .delete()
+        .eq('user_id', user.id)
+        .eq('friend_id', friendUserId)
+        .eq('status', 'pending');
+
+      if (error) throw error;
+    },
+    onMutate: async (friendUserId) => {
+      await queryClient.cancelQueries({ queryKey: ['friends', user?.id] });
+      const previous = queryClient.getQueryData(['friends', user?.id]);
+      
+      queryClient.setQueryData(['friends', user?.id], (old: any) => {
+        if (!old) return old;
+        return {
+          ...old,
+          sentRequests: old.sentRequests?.filter((r: Friend) => r.user_id !== friendUserId) || [],
+        };
+      });
+      
+      return { previous };
+    },
+    onSuccess: () => {
+      toast.success('Request cancelled');
+    },
+    onError: (_, __, context) => {
+      queryClient.setQueryData(['friends', user?.id], context?.previous);
+      toast.error('Failed to cancel request');
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['friends', user?.id] });
+    },
+  });
+
   const sendFriendRequest = async (friendUsername: string) => {
     try {
       await sendRequestMutation.mutateAsync(friendUsername);
@@ -252,6 +291,15 @@ export function useFriends() {
     }
   };
 
+  const cancelFriendRequest = async (friendUserId: string) => {
+    try {
+      await cancelRequestMutation.mutateAsync(friendUserId);
+      return { error: null };
+    } catch (error) {
+      return { error };
+    }
+  };
+
   return {
     friends: friendsData?.friends ?? [],
     pendingRequests: friendsData?.pendingRequests ?? [],
@@ -260,6 +308,7 @@ export function useFriends() {
     sendFriendRequest,
     acceptFriendRequest,
     rejectFriendRequest,
+    cancelFriendRequest,
     refetch,
   };
 }

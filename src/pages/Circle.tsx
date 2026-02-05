@@ -3,15 +3,14 @@ import { usePosts } from '@/hooks/usePosts';
 import { useProfile } from '@/hooks/useProfile';
 import { useStories } from '@/hooks/useStories';
 import { Avatar } from '@/components/common/Avatar';
-import { TimeLeft } from '@/components/common/TimeLeft';
 import { Button } from '@/components/ui/button';
 import { MediaPreview } from '@/components/circle/MediaPreview';
-import { PostMedia } from '@/components/circle/PostMedia';
 import { StoriesRow } from '@/components/profile/StoriesRow';
 import { MediaPermissionDialog } from '@/components/circle/MediaPermissionDialog';
 import { PostTypeDialog } from '@/components/circle/PostTypeDialog';
-import { Plus, Heart, Flame, Hand, Send, X, Image, Video, Loader2 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+ import { PostCard } from '@/components/circle/PostCard';
+ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+ import { Plus, Send, X, Image, Video, Loader2, Flame } from 'lucide-react';
 
 type ComposeMode = 'post' | 'story';
 
@@ -90,7 +89,7 @@ export default function Circle() {
     if (!newPost.trim() && !mediaFile) return;
     
     setPosting(true);
-    await createPost(newPost.trim(), mediaFile || undefined);
+    await createPost(newPost.trim(), mediaFile || undefined, composeMode);
     setPosting(false);
     setNewPost('');
     setMediaFile(null);
@@ -109,6 +108,10 @@ export default function Circle() {
     if (minutes > 0) return `${minutes}m ago`;
     return 'Just now';
   };
+
+  // Filter posts by type
+  const stories = posts.filter(p => (p as any).type === 'story' || !(p as any).type);
+  const permanentPosts = posts.filter(p => (p as any).type === 'post');
 
   return (
     <div className="min-h-screen bg-background">
@@ -129,81 +132,61 @@ export default function Circle() {
       {/* Stories Row */}
       <StoriesRow onAddStory={handleAddStory} />
 
-      {/* Feed */}
-      <div className="px-4 pb-4 space-y-4">
+      {/* Feed with Tabs */}
+      <Tabs defaultValue="stories" className="px-4 pb-4">
+        <TabsList className="w-full mb-4">
+          <TabsTrigger value="stories" className="flex-1">Stories</TabsTrigger>
+          <TabsTrigger value="posts" className="flex-1">Posts</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="stories" className="space-y-4">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
-        ) : posts.length === 0 ? (
+        ) : stories.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-16 h-16 rounded-full bg-secondary mx-auto mb-4 flex items-center justify-center">
               <Flame className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="font-semibold text-foreground mb-1">No posts yet</h3>
+            <h3 className="font-semibold text-foreground mb-1">No stories yet</h3>
             <p className="text-sm text-muted-foreground">
-              Be the first to share your progress!
+              Stories disappear after 24 hours
             </p>
           </div>
         ) : (
-          posts.map((post, index) => (
-            <article
-              key={post.id}
-              className="card-elevated p-4 animate-fade-up"
-              style={{ animationDelay: `${index * 50}ms` }}
-            >
-              {/* Header */}
-              <div className="flex items-start justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <Avatar name={post.username} src={post.avatar_url} size="md" />
-                  <div>
-                    <p className="font-semibold text-foreground">@{post.username}</p>
-                    <p className="text-xs text-muted-foreground">{getTimeAgo(post.created_at)}</p>
-                  </div>
-                </div>
-                <TimeLeft expiresAt={new Date(post.expires_at)} />
-              </div>
-
-              {/* Content */}
-              <p className="text-foreground text-base leading-relaxed">
-                {post.content}
-              </p>
-
-              {/* Media */}
-              {post.image_url && (
-                <PostMedia url={post.image_url} />
-              )}
-
-              <div className="mt-4" />
-
-              {/* Reactions */}
-              <div className="flex items-center gap-2">
-                <ReactionButton
-                  icon={Heart}
-                  count={post.reactions.heart}
-                  active={post.userReaction === 'heart'}
-                  onClick={() => handleReaction(post.id, 'heart')}
-                  activeColor="text-pink-500"
-                />
-                <ReactionButton
-                  icon={Flame}
-                  count={post.reactions.fire}
-                  active={post.userReaction === 'fire'}
-                  onClick={() => handleReaction(post.id, 'fire')}
-                  activeColor="text-streak"
-                />
-                <ReactionButton
-                  icon={Hand}
-                  count={post.reactions.clap}
-                  active={post.userReaction === 'clap'}
-                  onClick={() => handleReaction(post.id, 'clap')}
-                  activeColor="text-primary"
-                />
-              </div>
-            </article>
+          stories.map((post, index) => (
+            <div key={post.id} style={{ animationDelay: `${index * 50}ms` }}>
+              <PostCard post={post} onReaction={handleReaction} isStory />
+            </div>
           ))
         )}
-      </div>
+        </TabsContent>
+        
+        <TabsContent value="posts" className="space-y-4">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : permanentPosts.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 rounded-full bg-secondary mx-auto mb-4 flex items-center justify-center">
+                <Flame className="w-8 h-8 text-muted-foreground" />
+              </div>
+              <h3 className="font-semibold text-foreground mb-1">No posts yet</h3>
+              <p className="text-sm text-muted-foreground">
+                Posts are permanent and visible to everyone
+              </p>
+            </div>
+          ) : (
+            permanentPosts.map((post, index) => (
+              <div key={post.id} style={{ animationDelay: `${index * 50}ms` }}>
+                <PostCard post={post} onReaction={handleReaction} isStory={false} />
+              </div>
+            ))
+          )}
+        </TabsContent>
+      </Tabs>
 
       {/* Compose Modal */}
       {showCompose && (
@@ -332,34 +315,5 @@ export default function Circle() {
         onSelectStory={handleSelectStory}
       />
     </div>
-  );
-}
-
-function ReactionButton({
-  icon: Icon,
-  count,
-  active,
-  onClick,
-  activeColor,
-}: {
-  icon: typeof Heart;
-  count: number;
-  active: boolean;
-  onClick: () => void;
-  activeColor: string;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className={cn(
-        "flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-200",
-        active
-          ? `${activeColor} bg-current/10`
-          : "text-muted-foreground hover:bg-secondary"
-      )}
-    >
-      <Icon className={cn("w-4 h-4", active && "fill-current")} />
-      <span className="text-sm font-medium">{count > 0 ? count : ''}</span>
-    </button>
   );
 }

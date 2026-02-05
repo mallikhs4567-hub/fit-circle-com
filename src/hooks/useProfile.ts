@@ -17,6 +17,7 @@ export interface Profile {
   total_active_days: number;
   created_at: string;
   updated_at: string;
+  bio: string | null;
 }
 
 export function useProfile() {

@@ -15,6 +15,9 @@ export interface Post {
   username?: string;
   avatar_url?: string;
   userReaction?: 'heart' | 'fire' | 'clap';
+  type?: 'story' | 'post';
+  view_count?: number;
+  like_count?: number;
 }
 
 export type MediaType = 'image' | 'video' | null;
@@ -65,10 +68,13 @@ export function usePosts() {
       image_url: post.image_url,
       reactions: post.reactions || { heart: 0, fire: 0, clap: 0 },
       created_at: post.created_at,
-      expires_at: post.expires_at,
+      expires_at: post.expires_at || new Date(Date.now() + 86400000).toISOString(),
       username: post.profiles?.username || 'unknown',
       avatar_url: post.profiles?.avatar_url,
       userReaction: userReactions.get(post.id),
+      type: post.type || 'story',
+      view_count: post.view_count || 0,
+      like_count: post.like_count || 0,
     }));
 
     // If no real posts, merge with demo posts for showcase
@@ -136,7 +142,7 @@ export function usePosts() {
     };
   };
 
-  const createPost = async (content: string, mediaFile?: File) => {
+  const createPost = async (content: string, mediaFile?: File, type: 'story' | 'post' = 'story') => {
     if (!user) return { error: new Error('Not authenticated') };
 
     let mediaUrl: string | null = null;
@@ -147,13 +153,21 @@ export function usePosts() {
       mediaUrl = result.url;
     }
 
+    const insertData: any = {
+      user_id: user.id,
+      content,
+      image_url: mediaUrl,
+      type,
+    };
+
+    // Only set expires_at to null for permanent posts
+    if (type === 'post') {
+      insertData.expires_at = null;
+    }
+
     const { data, error } = await supabase
       .from('posts')
-      .insert({
-        user_id: user.id,
-        content,
-        image_url: mediaUrl,
-      })
+      .insert(insertData)
       .select()
       .single();
 
@@ -162,7 +176,7 @@ export function usePosts() {
       return { error };
     }
 
-    toast.success('Posted to your Circle!');
+    toast.success(type === 'story' ? 'Story posted!' : 'Post created!');
     // Refetch posts to show the new post immediately
     await fetchPosts();
     return { data, error: null };
