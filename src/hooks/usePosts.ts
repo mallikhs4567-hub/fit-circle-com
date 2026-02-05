@@ -68,10 +68,13 @@ export function usePosts() {
       image_url: post.image_url,
       reactions: post.reactions || { heart: 0, fire: 0, clap: 0 },
       created_at: post.created_at,
-      expires_at: post.expires_at,
+      expires_at: post.expires_at || new Date(Date.now() + 86400000).toISOString(),
       username: post.profiles?.username || 'unknown',
       avatar_url: post.profiles?.avatar_url,
       userReaction: userReactions.get(post.id),
+      type: post.type || 'story',
+      view_count: post.view_count || 0,
+      like_count: post.like_count || 0,
     }));
 
     // If no real posts, merge with demo posts for showcase
