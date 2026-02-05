@@ -3,11 +3,21 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useChat } from '@/hooks/useChat';
 import { useFriends } from '@/hooks/useFriends';
 import { useAuth } from '@/hooks/useAuth';
+ import { useBlocking } from '@/hooks/useBlocking';
 import { Avatar } from '@/components/common/Avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, ArrowLeft, Send, MessageCircle, Loader2, Check, X, UserPlus, Clock } from 'lucide-react';
+ import { Search, ArrowLeft, Send, MessageCircle, Loader2, Check, X, UserPlus, Clock, MoreVertical, Ban, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+ import {
+   DropdownMenu,
+   DropdownMenuContent,
+   DropdownMenuItem,
+   DropdownMenuTrigger,
+ } from '@/components/ui/dropdown-menu';
+ import { supabase } from '@/integrations/supabase/client';
+ import { toast } from 'sonner';
 
 export default function Chat() {
   const { user } = useAuth();
@@ -15,7 +25,8 @@ export default function Chat() {
   const navigate = useNavigate();
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const { threads, messages, loading, sendMessage } = useChat(selectedUserId || undefined);
-  const { friends, pendingRequests, sentRequests, acceptFriendRequest, rejectFriendRequest } = useFriends();
+  const { friends, pendingRequests, sentRequests, acceptFriendRequest, rejectFriendRequest, cancelFriendRequest } = useFriends();
+  const { isBlocked, blockUser, unblockUser, blockedUsers } = useBlocking();
   const [newMessage, setNewMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -77,86 +88,89 @@ export default function Chat() {
             </div>
           </div>
 
-          {/* Friend Requests Section - Always visible */}
-          <div className="px-4 py-3 bg-secondary/30 border-b border-border">
-            <div className="flex items-center gap-2 mb-3">
-              <UserPlus className="w-4 h-4 text-primary" />
-              <p className="text-sm font-semibold text-foreground">Friend Requests</p>
-              {pendingRequests.length > 0 && (
-                <span className="ml-auto text-xs bg-primary text-primary-foreground px-2 py-0.5 rounded-full">
-                  {pendingRequests.length}
-                </span>
-              )}
-            </div>
-            {pendingRequests.length > 0 ? (
-              <div className="space-y-2">
-                {pendingRequests.map((request) => (
-                  <div 
-                    key={request.user_id} 
-                    className="flex items-center gap-3 p-3 bg-background rounded-xl border border-border"
-                  >
-                    <Avatar name={request.username} src={request.avatar_url} size="md" />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-foreground truncate">@{request.username}</p>
-                      <p className="text-xs text-muted-foreground">🔥 {request.streak} day streak</p>
+          {/* Friend Requests Section with Tabs */}
+          <Tabs defaultValue="received" className="px-4 py-3 bg-secondary/30 border-b border-border">
+            <TabsList className="w-full mb-3">
+              <TabsTrigger value="received" className="flex-1">
+                Received {pendingRequests.length > 0 && `(${pendingRequests.length})`}
+              </TabsTrigger>
+              <TabsTrigger value="sent" className="flex-1">
+                Sent {sentRequests.length > 0 && `(${sentRequests.length})`}
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="received">
+              {pendingRequests.length > 0 ? (
+                <div className="space-y-2">
+                  {pendingRequests.map((request) => (
+                    <div 
+                      key={request.user_id} 
+                      className="flex items-center gap-3 p-3 bg-background rounded-xl border border-border"
+                    >
+                      <Avatar name={request.username} src={request.avatar_url} size="md" />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-foreground truncate">@{request.username}</p>
+                        <p className="text-xs text-muted-foreground">🔥 {request.streak} day streak</p>
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => acceptFriendRequest(request.user_id)}
+                          className="h-8 px-3"
+                        >
+                          <Check className="w-4 h-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => rejectFriendRequest(request.user_id)}
+                          className="h-8 px-3"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="default"
-                        size="sm"
-                        onClick={() => acceptFriendRequest(request.user_id)}
-                        className="h-8 px-3"
-                      >
-                        <Check className="w-4 h-4" />
-                      </Button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-2">
+                  No pending requests
+                </p>
+              )}
+            </TabsContent>
+            
+            <TabsContent value="sent">
+              {sentRequests.length > 0 ? (
+                <div className="space-y-2">
+                  {sentRequests.map((request) => (
+                    <div 
+                      key={request.user_id} 
+                      className="flex items-center gap-3 p-3 bg-background rounded-xl border border-border"
+                    >
+                      <Avatar name={request.username} src={request.avatar_url} size="md" />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-semibold text-foreground truncate">@{request.username}</p>
+                        <p className="text-xs text-muted-foreground">🔥 {request.streak} day streak</p>
+                      </div>
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => rejectFriendRequest(request.user_id)}
-                        className="h-8 px-3"
+                        onClick={() => cancelFriendRequest(request.user_id)}
+                        className="h-8 px-3 text-destructive hover:text-destructive"
                       >
-                        <X className="w-4 h-4" />
+                        Cancel
                       </Button>
                     </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground text-center py-2">
-                No pending requests
-              </p>
-            )}
-          </div>
-
-          {/* Sent Requests Section */}
-          {sentRequests.length > 0 && (
-            <div className="px-4 py-3 bg-muted/30 border-b border-border">
-              <div className="flex items-center gap-2 mb-3">
-                <Clock className="w-4 h-4 text-muted-foreground" />
-                <p className="text-sm font-semibold text-foreground">Sent Requests</p>
-                <span className="ml-auto text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
-                  {sentRequests.length}
-                </span>
-              </div>
-              <div className="space-y-2">
-                {sentRequests.map((request) => (
-                  <div 
-                    key={request.user_id} 
-                    className="flex items-center gap-3 p-3 bg-background rounded-xl border border-border"
-                  >
-                    <Avatar name={request.username} src={request.avatar_url} size="md" />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-foreground truncate">@{request.username}</p>
-                      <p className="text-xs text-muted-foreground">🔥 {request.streak} day streak</p>
-                    </div>
-                    <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full">
-                      Pending
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-2">
+                  No sent requests
+                </p>
+              )}
+            </TabsContent>
+          </Tabs>
 
           {/* Thread List */}
           <div className="flex-1 divide-y divide-border overflow-y-auto">
@@ -258,6 +272,44 @@ export default function Chat() {
           <div>
             <p className="font-semibold text-foreground">@{selectedThread?.participantName}</p>
             <p className="text-xs text-muted-foreground">Active now</p>
+          </div>
+          <div className="ml-auto">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon-sm">
+                  <MoreVertical className="w-5 h-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {isBlocked(selectedUserId!) ? (
+                  <DropdownMenuItem onClick={() => unblockUser(selectedUserId!)}>
+                    <Ban className="w-4 h-4 mr-2" />
+                    Unblock
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem onClick={() => blockUser(selectedUserId!)} className="text-destructive">
+                    <Ban className="w-4 h-4 mr-2" />
+                    Block User
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem 
+                  onClick={async () => {
+                    if (!selectedUserId) return;
+                    const { error } = await supabase.rpc('delete_chat_for_user', { 
+                      other_user_id: selectedUserId 
+                    });
+                    if (!error) {
+                      toast.success('Chat deleted');
+                      setSelectedUserId(null);
+                    }
+                  }}
+                  className="text-destructive"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete Chat
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>
