@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { usePosts } from '@/hooks/usePosts';
 import { useProfile } from '@/hooks/useProfile';
 import { useStories } from '@/hooks/useStories';
@@ -8,14 +8,15 @@ import { MediaPreview } from '@/components/circle/MediaPreview';
 import { StoriesRow } from '@/components/profile/StoriesRow';
 import { MediaPermissionDialog } from '@/components/circle/MediaPermissionDialog';
 import { PostTypeDialog } from '@/components/circle/PostTypeDialog';
- import { PostCard } from '@/components/circle/PostCard';
- 
- import { Plus, Send, X, Image, Video, Loader2, Flame } from 'lucide-react';
+import { PostCard } from '@/components/circle/PostCard';
+import { PullToRefresh } from '@/components/common/PullToRefresh';
+import { NotificationCenter } from '@/components/common/NotificationCenter';
+import { Plus, Send, X, Image, Video, Loader2, Flame } from 'lucide-react';
 
 type ComposeMode = 'post' | 'story';
 
 export default function Circle() {
-  const { posts, loading, createPost, addReaction } = usePosts();
+  const { posts, loading, createPost, addReaction, refetch: refetchPosts } = usePosts();
   const { profile } = useProfile();
   const { myStory, refetch: refetchStories } = useStories();
   const [showCompose, setShowCompose] = useState(false);
@@ -99,6 +100,10 @@ export default function Circle() {
     refetchStories();
   };
 
+  const handleRefresh = useCallback(async () => {
+    await Promise.all([refetchPosts(), refetchStories()]);
+  }, [refetchPosts, refetchStories]);
+
   const getTimeAgo = (dateStr: string) => {
     const diff = Date.now() - new Date(dateStr).getTime();
     const hours = Math.floor(diff / (1000 * 60 * 60));
@@ -119,18 +124,22 @@ export default function Circle() {
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border safe-top">
         <div className="flex items-center justify-between px-4 py-3">
           <h1 className="text-xl font-display font-bold text-foreground">Circle</h1>
-          <Button
-            variant="default"
-            size="icon-sm"
-            onClick={handlePlusClick}
-          >
-            <Plus className="w-5 h-5" />
-          </Button>
+          <div className="flex items-center gap-1">
+            <NotificationCenter />
+            <Button
+              variant="default"
+              size="icon-sm"
+              onClick={handlePlusClick}
+            >
+              <Plus className="w-5 h-5" />
+            </Button>
+          </div>
         </div>
       </header>
 
-      {/* Stories Row */}
-      <StoriesRow onAddStory={handleAddStory} />
+      <PullToRefresh onRefresh={handleRefresh} className="flex-1">
+        {/* Stories Row */}
+        <StoriesRow onAddStory={handleAddStory} />
 
       {/* Feed */}
       <div className="px-4 pb-4 space-y-4">
@@ -156,6 +165,7 @@ export default function Circle() {
           ))
         )}
       </div>
+      </PullToRefresh>
 
       {/* Compose Modal */}
       {showCompose && (

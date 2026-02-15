@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useProfile } from '@/hooks/useProfile';
 import { useAuth } from '@/hooks/useAuth';
 import { usePosts } from '@/hooks/usePosts';
@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { PostCard } from '@/components/circle/PostCard';
+import { PullToRefresh } from '@/components/common/PullToRefresh';
+import { NotificationCenter } from '@/components/common/NotificationCenter';
 import {
   Settings, 
   LogOut, 
@@ -32,9 +34,9 @@ const goalLabels = {
 };
 
 export default function Profile() {
-  const { profile, loading, updateProfile } = useProfile();
+  const { profile, loading, updateProfile, refetch: refetchProfile } = useProfile();
   const { signOut } = useAuth();
-  const { posts, addReaction } = usePosts();
+  const { posts, addReaction, refetch: refetchPosts } = usePosts();
   const navigate = useNavigate();
   const [isEditingBio, setIsEditingBio] = useState(false);
   const [bioText, setBioText] = useState('');
@@ -88,6 +90,10 @@ export default function Profile() {
   // Filter for user's own posts
   const myPosts = posts.filter(p => p.user_id === profile?.user_id);
 
+  const handleRefresh = useCallback(async () => {
+    await Promise.all([refetchProfile(), refetchPosts()]);
+  }, [refetchProfile, refetchPosts]);
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -110,11 +116,16 @@ export default function Profile() {
       <header className="safe-top px-4 pt-6 pb-4">
         <div className="flex items-center justify-between">
           <h1 className="text-xl font-display font-bold text-foreground">Profile</h1>
-          <Button variant="ghost" size="icon-sm">
-            <Settings className="w-5 h-5" />
-          </Button>
+          <div className="flex items-center gap-1">
+            <NotificationCenter />
+            <Button variant="ghost" size="icon-sm">
+              <Settings className="w-5 h-5" />
+            </Button>
+          </div>
         </div>
       </header>
+
+      <PullToRefresh onRefresh={handleRefresh}>
 
       {/* Profile Card */}
       <div className="px-4 mb-6">
@@ -260,6 +271,7 @@ export default function Profile() {
           Log Out
         </Button>
       </div>
+      </PullToRefresh>
     </div>
   );
 }

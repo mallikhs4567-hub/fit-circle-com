@@ -1,13 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useChat } from '@/hooks/useChat';
 import { useFriends } from '@/hooks/useFriends';
 import { useAuth } from '@/hooks/useAuth';
- import { useBlocking } from '@/hooks/useBlocking';
+import { useBlocking } from '@/hooks/useBlocking';
 import { Avatar } from '@/components/common/Avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
- import { Search, ArrowLeft, Send, MessageCircle, Loader2, Check, X, UserPlus, Clock, MoreVertical, Ban, Trash2 } from 'lucide-react';
+import { PullToRefresh } from '@/components/common/PullToRefresh';
+import { NotificationCenter } from '@/components/common/NotificationCenter';
+import { Search, ArrowLeft, Send, MessageCircle, Loader2, Check, X, UserPlus, Clock, MoreVertical, Ban, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
  
  import {
@@ -24,7 +26,7 @@ export default function Chat() {
   const location = useLocation();
   const navigate = useNavigate();
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
-  const { threads, messages, loading, sendMessage } = useChat(selectedUserId || undefined);
+  const { threads, messages, loading, sendMessage, refetchThreads } = useChat(selectedUserId || undefined);
   const { friends, pendingRequests, sentRequests, acceptFriendRequest, rejectFriendRequest, cancelFriendRequest } = useFriends();
   const { isBlocked, blockUser, unblockUser, blockedUsers } = useBlocking();
   const [newMessage, setNewMessage] = useState('');
@@ -63,18 +65,23 @@ export default function Chat() {
     return 'Now';
   };
 
+  const handleChatRefresh = useCallback(async () => {
+    await refetchThreads();
+  }, [refetchThreads]);
+
   // Thread List View
   if (!selectedUserId) {
     return (
       <div className="min-h-screen bg-background flex flex-col">
         {/* Header */}
         <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border safe-top">
-          <div className="px-4 py-3">
+          <div className="px-4 py-3 flex items-center justify-between">
             <h1 className="text-xl font-display font-bold text-foreground">Chat</h1>
+            <NotificationCenter />
           </div>
         </header>
 
-        <div className="flex-1 flex flex-col">
+        <PullToRefresh onRefresh={handleChatRefresh} className="flex-1 flex flex-col">
           {/* Search */}
           <div className="px-4 py-3">
             <div className="relative">
@@ -237,7 +244,7 @@ export default function Chat() {
               </>
             )}
           </div>
-        </div>
+        </PullToRefresh>
       </div>
     );
   }
