@@ -41,13 +41,13 @@ export function useChecklist() {
     }
 
     if (!data) {
-      // Create today's checklist
+      // Create today's checklist using upsert to avoid race conditions
       const { data: newChecklist, error: createError } = await supabase
         .from('daily_checklists')
-        .insert({
-          user_id: user.id,
-          date: today,
-        })
+        .upsert(
+          { user_id: user.id, date: today },
+          { onConflict: 'user_id,date' }
+        )
         .select()
         .single();
 

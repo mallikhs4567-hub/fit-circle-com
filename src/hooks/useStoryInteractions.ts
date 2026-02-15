@@ -24,36 +24,36 @@
    };
  
    // Get viewers
-   const { data: viewers = [] } = useQuery({
-     queryKey: ['story-viewers', storyId],
-     queryFn: async () => {
-       if (storyId.startsWith('demo-')) return [];
-       
-       const { data } = await supabase
-         .from('post_views')
-         .select('user_id, created_at')
-         .eq('post_id', storyId);
-       
-       return data || [];
-     },
-     enabled: !!user && !storyId.startsWith('demo-'),
-   });
+  const { data: viewers = [] } = useQuery({
+    queryKey: ['story-viewers', storyId],
+    queryFn: async () => {
+      if (!storyId || storyId.startsWith('demo-')) return [];
+      
+      const { data } = await supabase
+        .from('post_views')
+        .select('user_id, created_at')
+        .eq('post_id', storyId);
+      
+      return data || [];
+    },
+    enabled: !!user && !!storyId && !storyId.startsWith('demo-'),
+  });
  
    // Get reactions for this story
-   const { data: reactions = [] } = useQuery({
-     queryKey: ['story-reactions', storyId],
-     queryFn: async () => {
-       if (storyId.startsWith('demo-')) return [];
-       
-       const { data } = await supabase
-         .from('post_reactions')
-         .select('user_id, reaction_type, created_at')
-         .eq('post_id', storyId);
-       
-       return data || [];
-     },
-     enabled: !!user && !storyId.startsWith('demo-'),
-   });
+  const { data: reactions = [] } = useQuery({
+    queryKey: ['story-reactions', storyId],
+    queryFn: async () => {
+      if (!storyId || storyId.startsWith('demo-')) return [];
+      
+      const { data } = await supabase
+        .from('post_reactions')
+        .select('user_id, reaction_type, created_at')
+        .eq('post_id', storyId);
+      
+      return data || [];
+    },
+    enabled: !!user && !!storyId && !storyId.startsWith('demo-'),
+  });
  
    // Add reaction
    const addReactionMutation = useMutation({

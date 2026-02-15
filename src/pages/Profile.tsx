@@ -188,7 +188,7 @@ export default function Profile() {
           
           {/* Streak Display */}
           <div className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-full bg-streak/10 border border-streak/20">
-            <StreakBadge streak={profile.streak} size="md" animate={profile.streak > 0} />
+            <StreakBadge streak={profile.streak ?? 0} size="md" animate={(profile.streak ?? 0) > 0} />
           </div>
         </div>
       </div>
