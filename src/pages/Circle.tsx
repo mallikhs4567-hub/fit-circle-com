@@ -9,7 +9,7 @@ import { StoriesRow } from '@/components/profile/StoriesRow';
 import { MediaPermissionDialog } from '@/components/circle/MediaPermissionDialog';
 import { PostTypeDialog } from '@/components/circle/PostTypeDialog';
  import { PostCard } from '@/components/circle/PostCard';
- import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+ 
  import { Plus, Send, X, Image, Video, Loader2, Flame } from 'lucide-react';
 
 type ComposeMode = 'post' | 'story';
@@ -132,61 +132,30 @@ export default function Circle() {
       {/* Stories Row */}
       <StoriesRow onAddStory={handleAddStory} />
 
-      {/* Feed with Tabs */}
-      <Tabs defaultValue="stories" className="px-4 pb-4">
-        <TabsList className="w-full mb-4">
-          <TabsTrigger value="stories" className="flex-1">Stories</TabsTrigger>
-          <TabsTrigger value="posts" className="flex-1">Posts</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="stories" className="space-y-4">
+      {/* Feed */}
+      <div className="px-4 pb-4 space-y-4">
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
-        ) : stories.length === 0 ? (
+        ) : posts.length === 0 ? (
           <div className="text-center py-12">
             <div className="w-16 h-16 rounded-full bg-secondary mx-auto mb-4 flex items-center justify-center">
               <Flame className="w-8 h-8 text-muted-foreground" />
             </div>
-            <h3 className="font-semibold text-foreground mb-1">No stories yet</h3>
+            <h3 className="font-semibold text-foreground mb-1">No posts yet</h3>
             <p className="text-sm text-muted-foreground">
-              Stories disappear after 24 hours
+              Share your progress with your circle
             </p>
           </div>
         ) : (
-          stories.map((post, index) => (
+          posts.map((post, index) => (
             <div key={post.id} style={{ animationDelay: `${index * 50}ms` }}>
-              <PostCard post={post} onReaction={handleReaction} isStory />
+              <PostCard post={post} onReaction={handleReaction} isStory={(post as any).type === 'story' || !(post as any).type} />
             </div>
           ))
         )}
-        </TabsContent>
-        
-        <TabsContent value="posts" className="space-y-4">
-          {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-          ) : permanentPosts.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 rounded-full bg-secondary mx-auto mb-4 flex items-center justify-center">
-                <Flame className="w-8 h-8 text-muted-foreground" />
-              </div>
-              <h3 className="font-semibold text-foreground mb-1">No posts yet</h3>
-              <p className="text-sm text-muted-foreground">
-                Posts are permanent and visible to everyone
-              </p>
-            </div>
-          ) : (
-            permanentPosts.map((post, index) => (
-              <div key={post.id} style={{ animationDelay: `${index * 50}ms` }}>
-                <PostCard post={post} onReaction={handleReaction} isStory={false} />
-              </div>
-            ))
-          )}
-        </TabsContent>
-      </Tabs>
+      </div>
 
       {/* Compose Modal */}
       {showCompose && (
