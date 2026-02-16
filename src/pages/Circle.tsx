@@ -143,6 +143,9 @@ export default function Circle() {
 
       {/* Feed */}
       <div className="px-4 pb-4 space-y-4">
+        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+          Posts
+        </h3>
         {loading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
