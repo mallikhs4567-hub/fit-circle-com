@@ -16,6 +16,7 @@ const typeIcons: Record<string, typeof Bell> = {
   like: Heart,
   story_reply: MessageSquare,
   story_view: Eye,
+  chat_message: MessageSquare,
 };
 
 const typeColors: Record<string, string> = {
@@ -24,6 +25,7 @@ const typeColors: Record<string, string> = {
   like: 'text-pink-500 bg-pink-500/10',
   story_reply: 'text-blue-500 bg-blue-500/10',
   story_view: 'text-muted-foreground bg-secondary',
+  chat_message: 'text-green-500 bg-green-500/10',
 };
 
 function getTimeAgo(dateStr: string) {
