@@ -42,7 +42,7 @@ export function usePosts() {
         *,
         profiles!posts_user_id_profiles_fkey(username, avatar_url)
       `)
-      .gt('expires_at', new Date().toISOString())
+      .or(`expires_at.gt.${new Date().toISOString()},expires_at.is.null`)
       .order('created_at', { ascending: false });
 
     if (error) {
