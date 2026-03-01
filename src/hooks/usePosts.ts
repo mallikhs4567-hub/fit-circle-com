@@ -40,7 +40,7 @@ export function usePosts() {
       .from('posts')
       .select(`
         *,
-        profiles!posts_user_id_profiles_fkey(username, avatar_url)
+        profiles!posts_user_id_profiles_fkey(username, avatar_url, goal, streak)
       `)
       .or(`expires_at.gt.${new Date().toISOString()},expires_at.is.null`)
       .order('created_at', { ascending: false });
