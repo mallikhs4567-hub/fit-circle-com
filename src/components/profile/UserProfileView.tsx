@@ -8,7 +8,7 @@ import { LevelIndicator } from '@/components/common/LevelIndicator';
  import { Button } from '@/components/ui/button';
  import { Dialog, DialogContent } from '@/components/ui/dialog';
  import { PostCard } from '@/components/circle/PostCard';
- import { ArrowLeft, MessageCircle, UserPlus, Loader2 } from 'lucide-react';
+ import { ArrowLeft, MessageCircle, UserPlus, Loader2, Flame } from 'lucide-react';
  import { useFriends } from '@/hooks/useFriends';
  import { useAuth } from '@/hooks/useAuth';
  import { toast } from 'sonner';
