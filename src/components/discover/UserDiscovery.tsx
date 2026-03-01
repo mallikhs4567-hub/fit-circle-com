@@ -16,6 +16,7 @@ interface DiscoverUser {
   username: string;
   avatar_url: string | null;
   streak: number;
+  goal: string | null;
 }
 
 interface UserDiscoveryProps {
