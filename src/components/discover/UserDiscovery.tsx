@@ -49,7 +49,7 @@ export function UserDiscovery({ onSelectUser }: UserDiscoveryProps) {
 
       const { data, error } = await supabase
         .from('profiles')
-        .select('user_id, username, avatar_url, streak')
+        .select('user_id, username, avatar_url, streak, goal')
         .not('user_id', 'in', `(${excludeIds.join(',')})`)
         .order('streak', { ascending: false })
         .limit(10);
