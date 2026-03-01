@@ -161,9 +161,16 @@ export default function Profile() {
               className="hidden"
             />
           </div>
-          <h2 className="text-xl font-display font-bold text-foreground mb-1">
-            @{profile.username}
-          </h2>
+          <LevelIndicator className="mb-2" />
+          <div className="flex items-center justify-center gap-1.5 mb-1">
+            <h2 className="text-xl font-display font-bold text-foreground">
+              @{profile.username}
+            </h2>
+            {(profile.streak ?? 0) > 0 && (
+              <Flame className="w-4 h-4 fill-streak text-streak" />
+            )}
+          </div>
+          {profile.goal && <GoalBadge goal={profile.goal} size="md" className="mb-2" />}
           
           {/* Bio Section */}
           <div className="mb-4">
