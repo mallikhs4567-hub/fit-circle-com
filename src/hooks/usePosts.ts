@@ -75,6 +75,8 @@ export function usePosts() {
       type: post.type || 'story',
       view_count: post.view_count || 0,
       like_count: post.like_count || 0,
+      goal: post.profiles?.goal,
+      streak: post.profiles?.streak || 0,
     }));
 
     // If no real posts, merge with demo posts for showcase
