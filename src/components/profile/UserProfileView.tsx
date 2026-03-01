@@ -1,8 +1,10 @@
  import { useEffect, useState } from 'react';
  import { useNavigate } from 'react-router-dom';
  import { supabase } from '@/integrations/supabase/client';
- import { Avatar } from '@/components/common/Avatar';
- import { StreakBadge } from '@/components/common/StreakBadge';
+import { Avatar } from '@/components/common/Avatar';
+import { StreakBadge } from '@/components/common/StreakBadge';
+import { GoalBadge } from '@/components/common/GoalBadge';
+import { LevelIndicator } from '@/components/common/LevelIndicator';
  import { Button } from '@/components/ui/button';
  import { Dialog, DialogContent } from '@/components/ui/dialog';
  import { PostCard } from '@/components/circle/PostCard';
