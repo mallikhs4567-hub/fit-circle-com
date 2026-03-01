@@ -59,11 +59,11 @@ interface UserProfile {
        setLoading(true);
  
        // Fetch profile
-       const { data: profileData } = await supabase
-         .from('profiles')
-         .select('user_id, username, avatar_url, bio, streak')
-         .eq('user_id', userId)
-         .single();
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('user_id, username, avatar_url, bio, streak, goal')
+          .eq('user_id', userId)
+          .single();
  
        if (profileData) {
          setProfile(profileData as UserProfile);
