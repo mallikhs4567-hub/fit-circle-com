@@ -105,11 +105,17 @@ export function UserDiscovery({ onSelectUser }: UserDiscoveryProps) {
       >
         <Avatar name={discoverUser.username} src={discoverUser.avatar_url} size="lg" />
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-foreground truncate">@{discoverUser.username}</p>
+          <div className="flex items-center gap-1.5">
+            <p className="font-semibold text-foreground truncate">@{discoverUser.username}</p>
+            {discoverUser.streak > 0 && (
+              <Flame className="w-3.5 h-3.5 fill-streak text-streak" />
+            )}
+          </div>
           <div className="flex items-center gap-2 mt-0.5">
             {discoverUser.streak > 0 && (
               <StreakBadge streak={discoverUser.streak} size="sm" />
             )}
+            {discoverUser.goal && <GoalBadge goal={discoverUser.goal} size="sm" />}
           </div>
         </div>
         {isFriendUser ? (
