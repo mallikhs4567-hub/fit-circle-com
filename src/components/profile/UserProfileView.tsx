@@ -18,13 +18,14 @@ import { LevelIndicator } from '@/components/common/LevelIndicator';
    onClose: () => void;
  }
  
- interface UserProfile {
-   user_id: string;
-   username: string;
-   avatar_url: string | null;
-   bio: string | null;
-   streak: number;
- }
+interface UserProfile {
+  user_id: string;
+  username: string;
+  avatar_url: string | null;
+  bio: string | null;
+  streak: number;
+  goal: string | null;
+}
  
  interface UserPost {
    id: string;
