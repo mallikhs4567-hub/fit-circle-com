@@ -1,6 +1,7 @@
  import { useState } from 'react';
  import { Avatar } from '@/components/common/Avatar';
  import { TimeLeft } from '@/components/common/TimeLeft';
+ import { GoalBadge } from '@/components/common/GoalBadge';
  import { PostMedia } from './PostMedia';
  import { Button } from '@/components/ui/button';
  import { 
@@ -86,12 +87,20 @@
      <article className="card-elevated p-4 animate-fade-up">
        {/* Header */}
        <div className="flex items-start justify-between mb-3">
-         <div className="flex items-center gap-3">
-           <Avatar name={post.username} src={post.avatar_url} size="md" />
-           <div>
-             <p className="font-semibold text-foreground">@{post.username}</p>
-             <p className="text-xs text-muted-foreground">{getTimeAgo(post.created_at)}</p>
-           </div>
+        <div className="flex items-center gap-3">
+            <Avatar name={post.username} src={post.avatar_url} size="md" />
+            <div>
+              <div className="flex items-center gap-1.5">
+                <p className="font-semibold text-foreground">@{post.username}</p>
+                {(post as any).streak > 0 && (
+                  <Flame className="w-3.5 h-3.5 fill-streak text-streak" />
+                )}
+              </div>
+              <div className="flex items-center gap-2 mt-0.5">
+                <p className="text-xs text-muted-foreground">{getTimeAgo(post.created_at)}</p>
+                {(post as any).goal && <GoalBadge goal={(post as any).goal} size="sm" />}
+              </div>
+            </div>
          </div>
          <div className="flex items-center gap-2">
            {isStory && post.expires_at && (

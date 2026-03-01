@@ -4,6 +4,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { usePosts } from '@/hooks/usePosts';
 import { Avatar } from '@/components/common/Avatar';
 import { StreakBadge } from '@/components/common/StreakBadge';
+import { GoalBadge } from '@/components/common/GoalBadge';
+import { LevelIndicator } from '@/components/common/LevelIndicator';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -27,10 +29,13 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-const goalLabels = {
+const goalLabels: Record<string, string> = {
   'weight-loss': 'Weight Loss',
   'muscle-gain': 'Muscle Gain',
   'healthy-routine': 'Healthy Routine',
+  'yoga': 'Yoga',
+  'runner': 'Runner',
+  'general-fitness': 'General Fitness',
 };
 
 export default function Profile() {
@@ -156,9 +161,16 @@ export default function Profile() {
               className="hidden"
             />
           </div>
-          <h2 className="text-xl font-display font-bold text-foreground mb-1">
-            @{profile.username}
-          </h2>
+          <LevelIndicator className="mb-2" />
+          <div className="flex items-center justify-center gap-1.5 mb-1">
+            <h2 className="text-xl font-display font-bold text-foreground">
+              @{profile.username}
+            </h2>
+            {(profile.streak ?? 0) > 0 && (
+              <Flame className="w-4 h-4 fill-streak text-streak" />
+            )}
+          </div>
+          {profile.goal && <GoalBadge goal={profile.goal} size="md" className="mb-2" />}
           
           {/* Bio Section */}
           <div className="mb-4">

@@ -1,12 +1,14 @@
  import { useEffect, useState } from 'react';
  import { useNavigate } from 'react-router-dom';
  import { supabase } from '@/integrations/supabase/client';
- import { Avatar } from '@/components/common/Avatar';
- import { StreakBadge } from '@/components/common/StreakBadge';
+import { Avatar } from '@/components/common/Avatar';
+import { StreakBadge } from '@/components/common/StreakBadge';
+import { GoalBadge } from '@/components/common/GoalBadge';
+import { LevelIndicator } from '@/components/common/LevelIndicator';
  import { Button } from '@/components/ui/button';
  import { Dialog, DialogContent } from '@/components/ui/dialog';
  import { PostCard } from '@/components/circle/PostCard';
- import { ArrowLeft, MessageCircle, UserPlus, Loader2 } from 'lucide-react';
+ import { ArrowLeft, MessageCircle, UserPlus, Loader2, Flame } from 'lucide-react';
  import { useFriends } from '@/hooks/useFriends';
  import { useAuth } from '@/hooks/useAuth';
  import { toast } from 'sonner';
@@ -16,13 +18,14 @@
    onClose: () => void;
  }
  
- interface UserProfile {
-   user_id: string;
-   username: string;
-   avatar_url: string | null;
-   bio: string | null;
-   streak: number;
- }
+interface UserProfile {
+  user_id: string;
+  username: string;
+  avatar_url: string | null;
+  bio: string | null;
+  streak: number;
+  goal: string | null;
+}
  
  interface UserPost {
    id: string;
@@ -56,11 +59,11 @@
        setLoading(true);
  
        // Fetch profile
-       const { data: profileData } = await supabase
-         .from('profiles')
-         .select('user_id, username, avatar_url, bio, streak')
-         .eq('user_id', userId)
-         .single();
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('user_id, username, avatar_url, bio, streak, goal')
+          .eq('user_id', userId)
+          .single();
  
        if (profileData) {
          setProfile(profileData as UserProfile);
@@ -123,10 +126,17 @@
                    size="xl"
                    showBorder
                    className="mx-auto mb-4"
-                 />
-                 <h2 className="text-xl font-display font-bold text-foreground mb-1">
-                   @{profile.username}
-                 </h2>
+                  />
+                  <LevelIndicator className="mb-2" />
+                  <div className="flex items-center justify-center gap-1.5 mb-1">
+                    <h2 className="text-xl font-display font-bold text-foreground">
+                      @{profile.username}
+                    </h2>
+                    {profile.streak > 0 && (
+                      <Flame className="w-4 h-4 fill-streak text-streak" />
+                    )}
+                  </div>
+                  {profile.goal && <GoalBadge goal={profile.goal} size="md" className="mb-2" />}
                  {profile.bio && (
                    <p className="text-sm text-muted-foreground mb-3">{profile.bio}</p>
                  )}

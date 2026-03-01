@@ -5,9 +5,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { useFriends } from '@/hooks/useFriends';
 import { Avatar } from '@/components/common/Avatar';
 import { StreakBadge } from '@/components/common/StreakBadge';
+import { GoalBadge } from '@/components/common/GoalBadge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, UserPlus, Loader2, Users, Sparkles, Check } from 'lucide-react';
+import { Search, UserPlus, Loader2, Users, Sparkles, Check, Flame } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
 
 interface DiscoverUser {
@@ -15,6 +16,7 @@ interface DiscoverUser {
   username: string;
   avatar_url: string | null;
   streak: number;
+  goal: string | null;
 }
 
 interface UserDiscoveryProps {
@@ -47,7 +49,7 @@ export function UserDiscovery({ onSelectUser }: UserDiscoveryProps) {
 
       const { data, error } = await supabase
         .from('profiles')
-        .select('user_id, username, avatar_url, streak')
+        .select('user_id, username, avatar_url, streak, goal')
         .not('user_id', 'in', `(${excludeIds.join(',')})`)
         .order('streak', { ascending: false })
         .limit(10);
@@ -103,11 +105,17 @@ export function UserDiscovery({ onSelectUser }: UserDiscoveryProps) {
       >
         <Avatar name={discoverUser.username} src={discoverUser.avatar_url} size="lg" />
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-foreground truncate">@{discoverUser.username}</p>
+          <div className="flex items-center gap-1.5">
+            <p className="font-semibold text-foreground truncate">@{discoverUser.username}</p>
+            {discoverUser.streak > 0 && (
+              <Flame className="w-3.5 h-3.5 fill-streak text-streak" />
+            )}
+          </div>
           <div className="flex items-center gap-2 mt-0.5">
             {discoverUser.streak > 0 && (
               <StreakBadge streak={discoverUser.streak} size="sm" />
             )}
+            {discoverUser.goal && <GoalBadge goal={discoverUser.goal} size="sm" />}
           </div>
         </div>
         {isFriendUser ? (

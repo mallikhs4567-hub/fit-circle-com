@@ -9,7 +9,8 @@ export interface Profile {
   username: string;
   email: string | null;
   avatar_url: string | null;
-  goal: 'weight-loss' | 'muscle-gain' | 'healthy-routine' | null;
+  goal: 'weight-loss' | 'muscle-gain' | 'yoga' | 'runner' | 'general-fitness' | 'healthy-routine' | null;
+  experience_level: 'beginner' | 'intermediate' | 'advanced' | null;
   height: number | null;
   weight: number | null;
   gender: 'male' | 'female' | 'other' | null;
