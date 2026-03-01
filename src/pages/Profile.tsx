@@ -4,6 +4,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { usePosts } from '@/hooks/usePosts';
 import { Avatar } from '@/components/common/Avatar';
 import { StreakBadge } from '@/components/common/StreakBadge';
+import { GoalBadge } from '@/components/common/GoalBadge';
+import { LevelIndicator } from '@/components/common/LevelIndicator';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -27,10 +29,13 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-const goalLabels = {
+const goalLabels: Record<string, string> = {
   'weight-loss': 'Weight Loss',
   'muscle-gain': 'Muscle Gain',
   'healthy-routine': 'Healthy Routine',
+  'yoga': 'Yoga',
+  'runner': 'Runner',
+  'general-fitness': 'General Fitness',
 };
 
 export default function Profile() {
