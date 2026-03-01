@@ -8,7 +8,7 @@ import { StreakBadge } from '@/components/common/StreakBadge';
 import { GoalBadge } from '@/components/common/GoalBadge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Search, UserPlus, Loader2, Users, Sparkles, Check } from 'lucide-react';
+import { Search, UserPlus, Loader2, Users, Sparkles, Check, Flame } from 'lucide-react';
 import { useDebounce } from '@/hooks/useDebounce';
 
 interface DiscoverUser {
