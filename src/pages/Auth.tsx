@@ -4,7 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useAuth } from '@/hooks/useAuth';
+import { lovable } from '@/integrations/lovable/index';
 import { Flame, Mail, Lock, User, ArrowRight, ArrowLeft, Loader2, Check } from 'lucide-react';
+import { toast } from 'sonner';
 
 type AuthMode = 'login' | 'signup' | 'forgot';
 type ForgotStep = 'email' | 'otp' | 'password' | 'success';
