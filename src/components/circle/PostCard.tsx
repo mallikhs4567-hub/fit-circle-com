@@ -4,6 +4,7 @@
  import { GoalBadge } from '@/components/common/GoalBadge';
  import { LevelIndicator } from '@/components/common/LevelIndicator';
  import { PostMedia } from './PostMedia';
+ import { CommentSection } from './CommentSection';
  import { Button } from '@/components/ui/button';
  import { 
    Heart, Flame, Hand, MoreVertical, Share2, Trash2, Eye, ThumbsUp 
