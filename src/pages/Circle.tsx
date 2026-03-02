@@ -2,6 +2,7 @@ import { useState, useRef, useCallback } from 'react';
 import { usePosts } from '@/hooks/usePosts';
 import { useProfile } from '@/hooks/useProfile';
 import { useStories } from '@/hooks/useStories';
+import { useXP } from '@/hooks/useXP';
 import { Avatar } from '@/components/common/Avatar';
 import { Button } from '@/components/ui/button';
 import { MediaPreview } from '@/components/circle/MediaPreview';
@@ -11,6 +12,7 @@ import { PostTypeDialog } from '@/components/circle/PostTypeDialog';
 import { PostCard } from '@/components/circle/PostCard';
 import { PullToRefresh } from '@/components/common/PullToRefresh';
 import { NotificationCenter } from '@/components/common/NotificationCenter';
+import { LevelUpModal } from '@/components/common/LevelUpModal';
 import { Plus, Send, X, Image, Video, Loader2, Flame } from 'lucide-react';
 
 type ComposeMode = 'post' | 'story';
