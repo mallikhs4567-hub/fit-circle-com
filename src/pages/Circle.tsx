@@ -94,11 +94,17 @@ export default function Circle() {
     if (!newPost.trim() && !mediaFile) return;
     
     setPosting(true);
-    await createPost(newPost.trim(), mediaFile || undefined, composeMode);
+    const result = await createPost(newPost.trim(), mediaFile || undefined, composeMode);
     setPosting(false);
     setNewPost('');
     setMediaFile(null);
     setShowCompose(false);
+    
+    // Award XP for creating a post
+    if (result && !('error' in result && result.error)) {
+      const xpResult = await awardXP('post_created');
+      if (xpResult?.leveledUp) setLevelUpLevel(xpResult.newLevel);
+    }
     
     // Refetch stories to update the UI
     refetchStories();
