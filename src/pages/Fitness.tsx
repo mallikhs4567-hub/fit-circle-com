@@ -80,9 +80,11 @@ const fitnessPlans: Record<FitnessGoal, FitnessPlan> = {
 export default function Fitness() {
   const { profile, loading: profileLoading, refetch: refetchProfile } = useProfile();
   const { checklist, loading: checklistLoading, updateChecklist } = useChecklist();
+  const { awardXP } = useXP();
   const [showPlan, setShowPlan] = useState<'workout' | 'diet' | null>(null);
   const [workoutTasks, setWorkoutTasks] = useState<WorkoutTask[]>([]);
   const [dietTasks, setDietTasks] = useState<WorkoutTask[]>([]);
+  const [levelUpLevel, setLevelUpLevel] = useState<number | null>(null);
 
   const plan = profile?.goal ? fitnessPlans[profile.goal as FitnessGoal] : null;
   
