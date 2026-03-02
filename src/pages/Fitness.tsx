@@ -141,6 +141,8 @@ export default function Fitness() {
     const nowAllDone = updated.every(t => t.completed);
     if (nowAllDone && !checklist?.diet_followed) {
       await updateChecklist('diet');
+      const result = await awardXP('diet_completed');
+      if (result?.leveledUp) setLevelUpLevel(result.newLevel);
       if (allWorkoutDone) {
         refetchProfile();
       }
