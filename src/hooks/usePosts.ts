@@ -77,6 +77,7 @@ export function usePosts() {
       like_count: post.like_count || 0,
       goal: post.profiles?.goal,
       streak: post.profiles?.streak || 0,
+      xp: post.profiles?.xp || 0,
     }));
 
     // If no real posts, merge with demo posts for showcase
