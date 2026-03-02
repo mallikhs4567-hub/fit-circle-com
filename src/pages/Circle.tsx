@@ -130,6 +130,11 @@ export default function Circle() {
 
   return (
     <div className="min-h-screen bg-background">
+      <LevelUpModal
+        open={levelUpLevel !== null}
+        level={levelUpLevel ?? 1}
+        onClose={() => setLevelUpLevel(null)}
+      />
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border safe-top">
         <div className="flex items-center justify-between px-4 py-3">
