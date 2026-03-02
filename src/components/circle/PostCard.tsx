@@ -189,12 +189,15 @@
          )}
  
          {/* View count */}
-         <div className="flex items-center gap-1 text-muted-foreground text-xs">
-           <Eye className="w-3.5 h-3.5" />
-           <span>{(post as any).view_count || 0}</span>
-         </div>
-       </div>
-     </article>
+        <div className="flex items-center gap-1 text-muted-foreground text-xs">
+          <Eye className="w-3.5 h-3.5" />
+          <span>{(post as any).view_count || 0}</span>
+        </div>
+      </div>
+
+      {/* Comments */}
+      <CommentSection postId={post.id} isDemo={post.id.startsWith('demo-')} />
+    </article>
    );
  }
  
