@@ -181,7 +181,7 @@ export function usePosts() {
     toast.success(type === 'story' ? 'Story posted!' : 'Post created!');
     // Refetch posts to show the new post immediately
     await fetchPosts();
-    return { data, error: null };
+    return { data, error: null, xpAction: 'post_created' as const };
   };
 
   const addReaction = async (postId: string, reactionType: 'heart' | 'fire' | 'clap') => {
