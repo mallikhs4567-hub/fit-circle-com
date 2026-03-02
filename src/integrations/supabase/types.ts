@@ -309,6 +309,7 @@ export type Database = {
           user_id: string
           username: string
           weight: number | null
+          xp: number | null
         }
         Insert: {
           avatar_url?: string | null
@@ -326,6 +327,7 @@ export type Database = {
           user_id: string
           username: string
           weight?: number | null
+          xp?: number | null
         }
         Update: {
           avatar_url?: string | null
@@ -343,6 +345,7 @@ export type Database = {
           user_id?: string
           username?: string
           weight?: number | null
+          xp?: number | null
         }
         Relationships: []
       }
@@ -408,11 +411,43 @@ export type Database = {
           },
         ]
       }
+      weekly_xp_leaderboard: {
+        Row: {
+          created_at: string
+          id: string
+          user_id: string
+          week_start: string
+          xp: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          user_id: string
+          week_start: string
+          xp?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          user_id?: string
+          week_start?: string
+          xp?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      award_xp: {
+        Args: { p_amount: number; p_user_id: string }
+        Returns: {
+          leveled_up: boolean
+          new_level: number
+          new_xp: number
+        }[]
+      }
       delete_chat_for_user: {
         Args: { other_user_id: string }
         Returns: undefined
