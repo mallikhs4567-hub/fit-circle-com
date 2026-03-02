@@ -38,16 +38,18 @@ export function useComments(postId: string) {
       
       const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
 
-    if (!error && data) {
-      const mapped: Comment[] = data.map((c: any) => ({
-        id: c.id,
-        post_id: c.post_id,
-        user_id: c.user_id,
-        content: c.content,
-        created_at: c.created_at,
-        username: c.profiles?.username,
-        avatar_url: c.profiles?.avatar_url,
-      }));
+      const mapped: Comment[] = data.map((c: any) => {
+        const profile = profileMap.get(c.user_id);
+        return {
+          id: c.id,
+          post_id: c.post_id,
+          user_id: c.user_id,
+          content: c.content,
+          created_at: c.created_at,
+          username: profile?.username || 'unknown',
+          avatar_url: profile?.avatar_url,
+        };
+      });
       setComments(mapped);
       setCount(mapped.length);
     }
