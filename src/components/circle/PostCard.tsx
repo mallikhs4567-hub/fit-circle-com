@@ -4,6 +4,7 @@
  import { GoalBadge } from '@/components/common/GoalBadge';
  import { LevelIndicator } from '@/components/common/LevelIndicator';
  import { PostMedia } from './PostMedia';
+ import { CommentSection } from './CommentSection';
  import { Button } from '@/components/ui/button';
  import { 
    Heart, Flame, Hand, MoreVertical, Share2, Trash2, Eye, ThumbsUp 
@@ -188,12 +189,15 @@
          )}
  
          {/* View count */}
-         <div className="flex items-center gap-1 text-muted-foreground text-xs">
-           <Eye className="w-3.5 h-3.5" />
-           <span>{(post as any).view_count || 0}</span>
-         </div>
-       </div>
-     </article>
+        <div className="flex items-center gap-1 text-muted-foreground text-xs">
+          <Eye className="w-3.5 h-3.5" />
+          <span>{(post as any).view_count || 0}</span>
+        </div>
+      </div>
+
+      {/* Comments */}
+      <CommentSection postId={post.id} isDemo={post.id.startsWith('demo-')} />
+    </article>
    );
  }
  
