@@ -167,6 +167,11 @@ export default function Fitness() {
 
   return (
     <div className="min-h-screen bg-background">
+      <LevelUpModal
+        open={levelUpLevel !== null}
+        level={levelUpLevel ?? 1}
+        onClose={() => setLevelUpLevel(null)}
+      />
       {/* Header */}
       <header className="safe-top px-4 pt-6 pb-4">
         <div className="flex items-center justify-between mb-6">
