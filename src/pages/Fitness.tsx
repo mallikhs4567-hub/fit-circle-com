@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useProfile } from '@/hooks/useProfile';
 import { useChecklist } from '@/hooks/useChecklist';
+import { useXP } from '@/hooks/useXP';
+import { LevelUpModal } from '@/components/common/LevelUpModal';
 import { StreakBadge } from '@/components/common/StreakBadge';
 import { Check, Dumbbell, Utensils, Trophy, Flame, ChevronRight, Loader2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
