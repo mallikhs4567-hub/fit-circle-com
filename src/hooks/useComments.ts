@@ -22,11 +22,21 @@ export function useComments(postId: string) {
     if (!postId || postId.startsWith('demo-')) return;
     setLoading(true);
 
+    // Fetch comments
     const { data, error } = await supabase
       .from('comments')
-      .select('*, profiles!inner(username, avatar_url)')
+      .select('*')
       .eq('post_id', postId)
       .order('created_at', { ascending: true });
+
+    if (!error && data) {
+      // Fetch profiles for commenters
+      const userIds = [...new Set(data.map((c: any) => c.user_id))];
+      const { data: profiles } = userIds.length > 0
+        ? await supabase.from('profiles').select('user_id, username, avatar_url').in('user_id', userIds)
+        : { data: [] };
+      
+      const profileMap = new Map((profiles || []).map((p: any) => [p.user_id, p]));
 
     if (!error && data) {
       const mapped: Comment[] = data.map((c: any) => ({
