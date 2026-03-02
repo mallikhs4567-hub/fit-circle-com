@@ -40,7 +40,7 @@ export function usePosts() {
       .from('posts')
       .select(`
         *,
-        profiles!posts_user_id_profiles_fkey(username, avatar_url, goal, streak)
+        profiles!posts_user_id_profiles_fkey(username, avatar_url, goal, streak, xp)
       `)
       .or(`expires_at.gt.${new Date().toISOString()},expires_at.is.null`)
       .order('created_at', { ascending: false });
@@ -77,6 +77,7 @@ export function usePosts() {
       like_count: post.like_count || 0,
       goal: post.profiles?.goal,
       streak: post.profiles?.streak || 0,
+      xp: post.profiles?.xp || 0,
     }));
 
     // If no real posts, merge with demo posts for showcase
@@ -181,7 +182,7 @@ export function usePosts() {
     toast.success(type === 'story' ? 'Story posted!' : 'Post created!');
     // Refetch posts to show the new post immediately
     await fetchPosts();
-    return { data, error: null };
+    return { data, error: null, xpAction: 'post_created' as const };
   };
 
   const addReaction = async (postId: string, reactionType: 'heart' | 'fire' | 'clap') => {

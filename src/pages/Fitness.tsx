@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useProfile } from '@/hooks/useProfile';
 import { useChecklist } from '@/hooks/useChecklist';
+import { useXP } from '@/hooks/useXP';
+import { LevelUpModal } from '@/components/common/LevelUpModal';
 import { StreakBadge } from '@/components/common/StreakBadge';
 import { Check, Dumbbell, Utensils, Trophy, Flame, ChevronRight, Loader2, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -78,9 +80,11 @@ const fitnessPlans: Record<FitnessGoal, FitnessPlan> = {
 export default function Fitness() {
   const { profile, loading: profileLoading, refetch: refetchProfile } = useProfile();
   const { checklist, loading: checklistLoading, updateChecklist } = useChecklist();
+  const { awardXP } = useXP();
   const [showPlan, setShowPlan] = useState<'workout' | 'diet' | null>(null);
   const [workoutTasks, setWorkoutTasks] = useState<WorkoutTask[]>([]);
   const [dietTasks, setDietTasks] = useState<WorkoutTask[]>([]);
+  const [levelUpLevel, setLevelUpLevel] = useState<number | null>(null);
 
   const plan = profile?.goal ? fitnessPlans[profile.goal as FitnessGoal] : null;
   
@@ -120,6 +124,8 @@ export default function Fitness() {
     const nowAllDone = updated.every(t => t.completed);
     if (nowAllDone && !checklist?.workout_completed) {
       await updateChecklist('workout');
+      const result = await awardXP('workout_completed');
+      if (result?.leveledUp) setLevelUpLevel(result.newLevel);
       if (allDietDone) {
         refetchProfile();
       }
@@ -135,6 +141,8 @@ export default function Fitness() {
     const nowAllDone = updated.every(t => t.completed);
     if (nowAllDone && !checklist?.diet_followed) {
       await updateChecklist('diet');
+      const result = await awardXP('diet_completed');
+      if (result?.leveledUp) setLevelUpLevel(result.newLevel);
       if (allWorkoutDone) {
         refetchProfile();
       }
@@ -159,6 +167,11 @@ export default function Fitness() {
 
   return (
     <div className="min-h-screen bg-background">
+      <LevelUpModal
+        open={levelUpLevel !== null}
+        level={levelUpLevel ?? 1}
+        onClose={() => setLevelUpLevel(null)}
+      />
       {/* Header */}
       <header className="safe-top px-4 pt-6 pb-4">
         <div className="flex items-center justify-between mb-6">

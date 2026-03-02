@@ -19,6 +19,7 @@ export interface Profile {
   created_at: string;
   updated_at: string;
   bio: string | null;
+  xp: number;
 }
 
 export function useProfile() {

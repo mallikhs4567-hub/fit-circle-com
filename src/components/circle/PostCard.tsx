@@ -2,6 +2,7 @@
  import { Avatar } from '@/components/common/Avatar';
  import { TimeLeft } from '@/components/common/TimeLeft';
  import { GoalBadge } from '@/components/common/GoalBadge';
+ import { LevelIndicator } from '@/components/common/LevelIndicator';
  import { PostMedia } from './PostMedia';
  import { Button } from '@/components/ui/button';
  import { 
@@ -95,6 +96,7 @@
                 {(post as any).streak > 0 && (
                   <Flame className="w-3.5 h-3.5 fill-streak text-streak" />
                 )}
+                <LevelIndicator xp={(post as any).xp ?? 0} />
               </div>
               <div className="flex items-center gap-2 mt-0.5">
                 <p className="text-xs text-muted-foreground">{getTimeAgo(post.created_at)}</p>

@@ -1,11 +1,14 @@
 import { cn } from '@/lib/utils';
+import { getLevel } from '@/hooks/useXP';
+import { Zap } from 'lucide-react';
 
 interface LevelIndicatorProps {
-  level?: number;
+  xp?: number;
   className?: string;
 }
 
-export function LevelIndicator({ level = 1, className }: LevelIndicatorProps) {
+export function LevelIndicator({ xp = 0, className }: LevelIndicatorProps) {
+  const level = getLevel(xp);
   return (
     <span
       className={cn(
@@ -13,6 +16,7 @@ export function LevelIndicator({ level = 1, className }: LevelIndicatorProps) {
         className
       )}
     >
+      <Zap className="w-3 h-3" />
       LVL {level}
     </span>
   );

@@ -2,6 +2,7 @@ import { useState, useRef, useCallback } from 'react';
 import { usePosts } from '@/hooks/usePosts';
 import { useProfile } from '@/hooks/useProfile';
 import { useStories } from '@/hooks/useStories';
+import { useXP } from '@/hooks/useXP';
 import { Avatar } from '@/components/common/Avatar';
 import { Button } from '@/components/ui/button';
 import { MediaPreview } from '@/components/circle/MediaPreview';
@@ -11,6 +12,7 @@ import { PostTypeDialog } from '@/components/circle/PostTypeDialog';
 import { PostCard } from '@/components/circle/PostCard';
 import { PullToRefresh } from '@/components/common/PullToRefresh';
 import { NotificationCenter } from '@/components/common/NotificationCenter';
+import { LevelUpModal } from '@/components/common/LevelUpModal';
 import { Plus, Send, X, Image, Video, Loader2, Flame } from 'lucide-react';
 
 type ComposeMode = 'post' | 'story';
@@ -19,7 +21,9 @@ export default function Circle() {
   const { posts, loading, createPost, addReaction, refetch: refetchPosts } = usePosts();
   const { profile } = useProfile();
   const { myStory, refetch: refetchStories } = useStories();
+  const { awardXP } = useXP();
   const [showCompose, setShowCompose] = useState(false);
+  const [levelUpLevel, setLevelUpLevel] = useState<number | null>(null);
   const [composeMode, setComposeMode] = useState<ComposeMode>('post');
   const [showTypeDialog, setShowTypeDialog] = useState(false);
   const [newPost, setNewPost] = useState('');
@@ -90,11 +94,17 @@ export default function Circle() {
     if (!newPost.trim() && !mediaFile) return;
     
     setPosting(true);
-    await createPost(newPost.trim(), mediaFile || undefined, composeMode);
+    const result = await createPost(newPost.trim(), mediaFile || undefined, composeMode);
     setPosting(false);
     setNewPost('');
     setMediaFile(null);
     setShowCompose(false);
+    
+    // Award XP for creating a post
+    if (result && !('error' in result && result.error)) {
+      const xpResult = await awardXP('post_created');
+      if (xpResult?.leveledUp) setLevelUpLevel(xpResult.newLevel);
+    }
     
     // Refetch stories to update the UI
     refetchStories();
@@ -120,6 +130,11 @@ export default function Circle() {
 
   return (
     <div className="min-h-screen bg-background">
+      <LevelUpModal
+        open={levelUpLevel !== null}
+        level={levelUpLevel ?? 1}
+        onClose={() => setLevelUpLevel(null)}
+      />
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border safe-top">
         <div className="flex items-center justify-between px-4 py-3">

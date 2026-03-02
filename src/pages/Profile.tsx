@@ -6,6 +6,7 @@ import { Avatar } from '@/components/common/Avatar';
 import { StreakBadge } from '@/components/common/StreakBadge';
 import { GoalBadge } from '@/components/common/GoalBadge';
 import { LevelIndicator } from '@/components/common/LevelIndicator';
+import { XPProgressBar } from '@/components/common/XPProgressBar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -161,7 +162,8 @@ export default function Profile() {
               className="hidden"
             />
           </div>
-          <LevelIndicator className="mb-2" />
+          <LevelIndicator xp={profile.xp ?? 0} className="mb-2" />
+          <XPProgressBar xp={profile.xp ?? 0} className="mx-auto mb-2" />
           <div className="flex items-center justify-center gap-1.5 mb-1">
             <h2 className="text-xl font-display font-bold text-foreground">
               @{profile.username}
