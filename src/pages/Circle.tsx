@@ -21,7 +21,9 @@ export default function Circle() {
   const { posts, loading, createPost, addReaction, refetch: refetchPosts } = usePosts();
   const { profile } = useProfile();
   const { myStory, refetch: refetchStories } = useStories();
+  const { awardXP } = useXP();
   const [showCompose, setShowCompose] = useState(false);
+  const [levelUpLevel, setLevelUpLevel] = useState<number | null>(null);
   const [composeMode, setComposeMode] = useState<ComposeMode>('post');
   const [showTypeDialog, setShowTypeDialog] = useState(false);
   const [newPost, setNewPost] = useState('');
