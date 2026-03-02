@@ -162,7 +162,8 @@ export default function Profile() {
               className="hidden"
             />
           </div>
-          <LevelIndicator className="mb-2" />
+          <LevelIndicator xp={profile.xp ?? 0} className="mb-2" />
+          <XPProgressBar xp={profile.xp ?? 0} className="mx-auto mb-2" />
           <div className="flex items-center justify-center gap-1.5 mb-1">
             <h2 className="text-xl font-display font-bold text-foreground">
               @{profile.username}
