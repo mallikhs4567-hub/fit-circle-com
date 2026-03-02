@@ -2,6 +2,7 @@
  import { Avatar } from '@/components/common/Avatar';
  import { TimeLeft } from '@/components/common/TimeLeft';
  import { GoalBadge } from '@/components/common/GoalBadge';
+ import { LevelIndicator } from '@/components/common/LevelIndicator';
  import { PostMedia } from './PostMedia';
  import { Button } from '@/components/ui/button';
  import { 
