@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useComments, Comment } from '@/hooks/useComments';
 import { useAuth } from '@/hooks/useAuth';
 import { useXP } from '@/hooks/useXP';
@@ -142,12 +143,15 @@ function CommentItem({
   onDelete: () => void;
   timeAgo: string;
 }) {
+  const navigate = useNavigate();
   return (
     <div className="flex gap-2 group">
-      <Avatar name={comment.username} src={comment.avatar_url} size="sm" />
+      <button onClick={() => navigate(`/user/${comment.user_id}`)} className="shrink-0">
+        <Avatar name={comment.username} src={comment.avatar_url} size="sm" />
+      </button>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-foreground">@{comment.username}</span>
+          <button onClick={() => navigate(`/user/${comment.user_id}`)} className="text-xs font-semibold text-foreground hover:text-primary transition-colors">@{comment.username}</button>
           <span className="text-[10px] text-muted-foreground">{timeAgo}</span>
           {isOwner && (
             <button
