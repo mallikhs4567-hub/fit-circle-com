@@ -1,4 +1,5 @@
  import { useState } from 'react';
+ import { useNavigate } from 'react-router-dom';
  import { Avatar } from '@/components/common/Avatar';
  import { TimeLeft } from '@/components/common/TimeLeft';
  import { GoalBadge } from '@/components/common/GoalBadge';
