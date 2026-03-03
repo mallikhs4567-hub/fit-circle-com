@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useComments, Comment } from '@/hooks/useComments';
 import { useAuth } from '@/hooks/useAuth';
 import { useXP } from '@/hooks/useXP';
