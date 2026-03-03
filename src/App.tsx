@@ -13,6 +13,7 @@ import Fitness from "@/pages/Fitness";
 import Search from "@/pages/Search";
 import Chat from "@/pages/Chat";
 import Profile from "@/pages/Profile";
+import UserProfile from "@/pages/UserProfile";
 import NotFound from "@/pages/NotFound";
 import { Loader2 } from "lucide-react";
 
