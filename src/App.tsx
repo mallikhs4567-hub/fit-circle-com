@@ -62,6 +62,7 @@ function AppRoutes() {
         <Route path="/search" element={<Search />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/user/:userId" element={<UserProfile />} />
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>
