@@ -33,8 +33,9 @@
  }
  
  export function PostCard({ post, onReaction, isStory = true }: PostCardProps) {
-   const { user } = useAuth();
-   const queryClient = useQueryClient();
+  const { user } = useAuth();
+    const navigate = useNavigate();
+    const queryClient = useQueryClient();
    const { isLiked, toggleLike } = usePostLikes(post.id);
    const { recordView } = usePostViews();
    
