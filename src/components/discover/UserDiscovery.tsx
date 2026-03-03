@@ -26,6 +26,7 @@ interface UserDiscoveryProps {
 
 export function UserDiscovery({ onSelectUser }: UserDiscoveryProps) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { friends, pendingRequests, sendFriendRequest, refetch: refetchFriends } = useFriends();
   
