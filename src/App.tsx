@@ -13,7 +13,6 @@ import Fitness from "@/pages/Fitness";
 import Search from "@/pages/Search";
 import Chat from "@/pages/Chat";
 import Profile from "@/pages/Profile";
-import UserProfile from "@/pages/UserProfile";
 import NotFound from "@/pages/NotFound";
 import { Loader2 } from "lucide-react";
 
@@ -62,7 +61,6 @@ function AppRoutes() {
         <Route path="/search" element={<Search />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/user/:userId" element={<UserProfile />} />
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>

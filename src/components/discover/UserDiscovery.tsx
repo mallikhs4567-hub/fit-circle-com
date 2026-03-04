@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -26,7 +25,6 @@ interface UserDiscoveryProps {
 
 export function UserDiscovery({ onSelectUser }: UserDiscoveryProps) {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { friends, pendingRequests, sendFriendRequest, refetch: refetchFriends } = useFriends();
   
@@ -105,12 +103,10 @@ export function UserDiscovery({ onSelectUser }: UserDiscoveryProps) {
         key={discoverUser.user_id}
         className="flex items-center gap-3 p-4 bg-card rounded-xl border border-border hover:border-primary/30 transition-all duration-200"
       >
-        <button onClick={() => navigate(`/user/${discoverUser.user_id}`)} className="shrink-0">
-          <Avatar name={discoverUser.username} src={discoverUser.avatar_url} size="lg" />
-        </button>
+        <Avatar name={discoverUser.username} src={discoverUser.avatar_url} size="lg" />
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-1.5">
-            <button onClick={() => navigate(`/user/${discoverUser.user_id}`)} className="font-semibold text-foreground truncate hover:text-primary transition-colors">@{discoverUser.username}</button>
+            <p className="font-semibold text-foreground truncate">@{discoverUser.username}</p>
             {discoverUser.streak > 0 && (
               <Flame className="w-3.5 h-3.5 fill-streak text-streak" />
             )}

@@ -1,5 +1,4 @@
  import { useState } from 'react';
- import { useNavigate } from 'react-router-dom';
  import { Avatar } from '@/components/common/Avatar';
  import { TimeLeft } from '@/components/common/TimeLeft';
  import { GoalBadge } from '@/components/common/GoalBadge';
@@ -33,9 +32,8 @@
  }
  
  export function PostCard({ post, onReaction, isStory = true }: PostCardProps) {
-  const { user } = useAuth();
-    const navigate = useNavigate();
-    const queryClient = useQueryClient();
+   const { user } = useAuth();
+   const queryClient = useQueryClient();
    const { isLiked, toggleLike } = usePostLikes(post.id);
    const { recordView } = usePostViews();
    
@@ -92,17 +90,15 @@
        {/* Header */}
        <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
-            <button onClick={() => navigate(`/user/${post.user_id}`)} className="shrink-0">
-              <Avatar name={post.username} src={post.avatar_url} size="md" />
-            </button>
-             <div>
-               <div className="flex items-center gap-1.5">
-                 <button onClick={() => navigate(`/user/${post.user_id}`)} className="font-semibold text-foreground hover:text-primary transition-colors">@{post.username}</button>
-                 {(post as any).streak > 0 && (
-                   <Flame className="w-3.5 h-3.5 fill-streak text-streak" />
-                 )}
-                 <LevelIndicator xp={(post as any).xp ?? 0} />
-               </div>
+            <Avatar name={post.username} src={post.avatar_url} size="md" />
+            <div>
+              <div className="flex items-center gap-1.5">
+                <p className="font-semibold text-foreground">@{post.username}</p>
+                {(post as any).streak > 0 && (
+                  <Flame className="w-3.5 h-3.5 fill-streak text-streak" />
+                )}
+                <LevelIndicator xp={(post as any).xp ?? 0} />
+              </div>
               <div className="flex items-center gap-2 mt-0.5">
                 <p className="text-xs text-muted-foreground">{getTimeAgo(post.created_at)}</p>
                 {(post as any).goal && <GoalBadge goal={(post as any).goal} size="sm" />}
