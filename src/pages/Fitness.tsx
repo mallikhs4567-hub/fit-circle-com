@@ -10,6 +10,9 @@ import { DietSection } from '@/components/fitness/DietSection';
 import { TrackersSection } from '@/components/fitness/TrackersSection';
 import { ProgressAnalytics } from '@/components/fitness/ProgressAnalytics';
 import { AIInsights } from '@/components/fitness/AIInsights';
+import { AIWorkoutLauncher } from '@/components/fitness/AIWorkoutLauncher';
+import { BodyProgress } from '@/components/fitness/BodyProgress';
+import { EnhancedLeaderboard } from '@/components/fitness/EnhancedLeaderboard';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -164,6 +167,9 @@ export default function Fitness() {
       />
 
       <div className="px-4 space-y-4">
+        {/* AI Workout Launcher */}
+        <AIWorkoutLauncher />
+
         <WorkoutSection
           tasks={workoutTasks}
           allDone={allWorkoutDone}
@@ -190,12 +196,18 @@ export default function Fitness() {
           onLogWeight={logWeight}
         />
 
+        {/* Body Progress Tracking */}
+        <BodyProgress />
+
         <ProgressAnalytics
           streak={profile?.streak || 0}
           totalActiveDays={profile?.total_active_days || 0}
           weekData={getWeekData()}
           leaderboard={leaderboard}
         />
+
+        {/* Enhanced Leaderboard */}
+        <EnhancedLeaderboard />
 
         <AIInsights
           streak={profile?.streak || 0}
