@@ -35,6 +35,39 @@ export type Database = {
         }
         Relationships: []
       }
+      body_metrics: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          posture_score: number | null
+          shoulder_width_ratio: number | null
+          user_id: string
+          waist_ratio: number | null
+          weight: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          posture_score?: number | null
+          shoulder_width_ratio?: number | null
+          user_id: string
+          waist_ratio?: number | null
+          weight?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          posture_score?: number | null
+          shoulder_width_ratio?: number | null
+          user_id?: string
+          waist_ratio?: number | null
+          weight?: number | null
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           content: string
@@ -464,6 +497,42 @@ export type Database = {
           user_id?: string
           week_start?: string
           xp?: number
+        }
+        Relationships: []
+      }
+      workout_results: {
+        Row: {
+          avg_form_score: number
+          calories_burned: number
+          created_at: string
+          duration_seconds: number
+          exercise_name: string
+          id: string
+          reps_completed: number
+          user_id: string
+          xp_earned: number
+        }
+        Insert: {
+          avg_form_score?: number
+          calories_burned?: number
+          created_at?: string
+          duration_seconds?: number
+          exercise_name: string
+          id?: string
+          reps_completed?: number
+          user_id: string
+          xp_earned?: number
+        }
+        Update: {
+          avg_form_score?: number
+          calories_burned?: number
+          created_at?: string
+          duration_seconds?: number
+          exercise_name?: string
+          id?: string
+          reps_completed?: number
+          user_id?: string
+          xp_earned?: number
         }
         Relationships: []
       }
