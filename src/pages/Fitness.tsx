@@ -10,6 +10,9 @@ import { DietSection } from '@/components/fitness/DietSection';
 import { TrackersSection } from '@/components/fitness/TrackersSection';
 import { ProgressAnalytics } from '@/components/fitness/ProgressAnalytics';
 import { AIInsights } from '@/components/fitness/AIInsights';
+import { AIWorkoutLauncher } from '@/components/fitness/AIWorkoutLauncher';
+import { BodyProgress } from '@/components/fitness/BodyProgress';
+import { EnhancedLeaderboard } from '@/components/fitness/EnhancedLeaderboard';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
