@@ -65,10 +65,10 @@ export function CameraFeed({ onFrame, active }: CameraFeedProps) {
         }
 
         // Dynamically import MediaPipe Pose
-        const { Pose } = await import('@mediapipe/pose');
+        const  mpPose  = await import('@mediapipe/pose');
         const { Camera } = await import('@mediapipe/camera_utils');
 
-        pose = new Pose({
+        pose = new mpPose.Pose({
           locateFile: (file: string) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`,
         });
 
