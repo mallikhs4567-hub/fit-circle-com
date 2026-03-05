@@ -113,7 +113,7 @@ export function CameraFeed({ onFrame, active }: CameraFeedProps) {
         poseRef.current = pose;
 
         if (videoRef.current) {
-          const camera = new Camera(videoRef.current, {
+          const camera = new CameraConstructor(videoRef.current, {
             onFrame: async () => {
               if (poseRef.current && videoRef.current) {
                 await poseRef.current.send({ image: videoRef.current });
