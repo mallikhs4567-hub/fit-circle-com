@@ -5,7 +5,7 @@
 
 import { calculateAngle, LANDMARKS, type Point } from './angleUtils';
 
-export type ExerciseType = 'pushup' | 'squat' | 'lunge' | 'shoulder_press' | 'bicep_curl';
+export type ExerciseType = 'pushup' | 'squat' | 'lunge' | 'shoulder_press' | 'bicep_curl' | 'jumping_jack' | 'high_knee' | 'deadlift' | 'plank_hold' | 'tricep_dip';
 
 interface RepState {
   phase: 'up' | 'down' | 'idle';
@@ -20,14 +20,22 @@ export interface ExerciseConfig {
   type: ExerciseType;
   targetReps: number;
   caloriesPerRep: number;
+  category: 'upper' | 'lower' | 'full' | 'cardio';
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  icon: string;
 }
 
 export const EXERCISE_LIBRARY: ExerciseConfig[] = [
-  { name: 'Push-ups', type: 'pushup', targetReps: 10, caloriesPerRep: 0.5 },
-  { name: 'Squats', type: 'squat', targetReps: 15, caloriesPerRep: 0.4 },
-  { name: 'Lunges', type: 'lunge', targetReps: 12, caloriesPerRep: 0.4 },
-  { name: 'Shoulder Press', type: 'shoulder_press', targetReps: 10, caloriesPerRep: 0.3 },
-  { name: 'Bicep Curls', type: 'bicep_curl', targetReps: 12, caloriesPerRep: 0.25 },
+  { name: 'Push-ups', type: 'pushup', targetReps: 10, caloriesPerRep: 0.5, category: 'upper', difficulty: 'beginner', icon: '💪' },
+  { name: 'Squats', type: 'squat', targetReps: 15, caloriesPerRep: 0.4, category: 'lower', difficulty: 'beginner', icon: '🦵' },
+  { name: 'Lunges', type: 'lunge', targetReps: 12, caloriesPerRep: 0.4, category: 'lower', difficulty: 'intermediate', icon: '🏃' },
+  { name: 'Shoulder Press', type: 'shoulder_press', targetReps: 10, caloriesPerRep: 0.3, category: 'upper', difficulty: 'intermediate', icon: '🏋️' },
+  { name: 'Bicep Curls', type: 'bicep_curl', targetReps: 12, caloriesPerRep: 0.25, category: 'upper', difficulty: 'beginner', icon: '💪' },
+  { name: 'Jumping Jacks', type: 'jumping_jack', targetReps: 20, caloriesPerRep: 0.3, category: 'cardio', difficulty: 'beginner', icon: '⭐' },
+  { name: 'High Knees', type: 'high_knee', targetReps: 20, caloriesPerRep: 0.35, category: 'cardio', difficulty: 'beginner', icon: '🔥' },
+  { name: 'Deadlift', type: 'deadlift', targetReps: 10, caloriesPerRep: 0.6, category: 'full', difficulty: 'advanced', icon: '🏋️' },
+  { name: 'Plank Hold', type: 'plank_hold', targetReps: 10, caloriesPerRep: 0.2, category: 'full', difficulty: 'intermediate', icon: '🧘' },
+  { name: 'Tricep Dips', type: 'tricep_dip', targetReps: 12, caloriesPerRep: 0.35, category: 'upper', difficulty: 'intermediate', icon: '💎' },
 ];
 
 export function createRepState(): RepState {
