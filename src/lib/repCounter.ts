@@ -5,7 +5,7 @@
 
 import { calculateAngle, LANDMARKS, type Point } from './angleUtils';
 
-export type ExerciseType = 'pushup' | 'squat' | 'lunge' | 'shoulder_press' | 'bicep_curl';
+export type ExerciseType = 'pushup' | 'squat' | 'lunge' | 'shoulder_press' | 'bicep_curl' | 'jumping_jack' | 'high_knee' | 'deadlift' | 'plank_hold' | 'tricep_dip';
 
 interface RepState {
   phase: 'up' | 'down' | 'idle';
@@ -20,14 +20,22 @@ export interface ExerciseConfig {
   type: ExerciseType;
   targetReps: number;
   caloriesPerRep: number;
+  category: 'upper' | 'lower' | 'full' | 'cardio';
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  icon: string;
 }
 
 export const EXERCISE_LIBRARY: ExerciseConfig[] = [
-  { name: 'Push-ups', type: 'pushup', targetReps: 10, caloriesPerRep: 0.5 },
-  { name: 'Squats', type: 'squat', targetReps: 15, caloriesPerRep: 0.4 },
-  { name: 'Lunges', type: 'lunge', targetReps: 12, caloriesPerRep: 0.4 },
-  { name: 'Shoulder Press', type: 'shoulder_press', targetReps: 10, caloriesPerRep: 0.3 },
-  { name: 'Bicep Curls', type: 'bicep_curl', targetReps: 12, caloriesPerRep: 0.25 },
+  { name: 'Push-ups', type: 'pushup', targetReps: 10, caloriesPerRep: 0.5, category: 'upper', difficulty: 'beginner', icon: '💪' },
+  { name: 'Squats', type: 'squat', targetReps: 15, caloriesPerRep: 0.4, category: 'lower', difficulty: 'beginner', icon: '🦵' },
+  { name: 'Lunges', type: 'lunge', targetReps: 12, caloriesPerRep: 0.4, category: 'lower', difficulty: 'intermediate', icon: '🏃' },
+  { name: 'Shoulder Press', type: 'shoulder_press', targetReps: 10, caloriesPerRep: 0.3, category: 'upper', difficulty: 'intermediate', icon: '🏋️' },
+  { name: 'Bicep Curls', type: 'bicep_curl', targetReps: 12, caloriesPerRep: 0.25, category: 'upper', difficulty: 'beginner', icon: '💪' },
+  { name: 'Jumping Jacks', type: 'jumping_jack', targetReps: 20, caloriesPerRep: 0.3, category: 'cardio', difficulty: 'beginner', icon: '⭐' },
+  { name: 'High Knees', type: 'high_knee', targetReps: 20, caloriesPerRep: 0.35, category: 'cardio', difficulty: 'beginner', icon: '🔥' },
+  { name: 'Deadlift', type: 'deadlift', targetReps: 10, caloriesPerRep: 0.6, category: 'full', difficulty: 'advanced', icon: '🏋️' },
+  { name: 'Plank Hold', type: 'plank_hold', targetReps: 10, caloriesPerRep: 0.2, category: 'full', difficulty: 'intermediate', icon: '🧘' },
+  { name: 'Tricep Dips', type: 'tricep_dip', targetReps: 12, caloriesPerRep: 0.35, category: 'upper', difficulty: 'intermediate', icon: '💎' },
 ];
 
 export function createRepState(): RepState {
@@ -135,6 +143,87 @@ export function processFrame(
         state = { ...state, phase: 'up', count: state.count + 1, lastTransition: now };
       } else if (lElbow > 150 && state.phase === 'up' && now - state.lastTransition > DEBOUNCE_MS) {
         state = { ...state, phase: 'down', lastTransition: now };
+      }
+      break;
+    }
+
+    case 'jumping_jack': {
+      // Detect arm spread — wrists above shoulders = up
+      const lWrist = landmarks[LANDMARKS.LEFT_WRIST];
+      const rWrist = landmarks[LANDMARKS.RIGHT_WRIST];
+      const lShoulder = landmarks[LANDMARKS.LEFT_SHOULDER];
+      const rShoulder = landmarks[LANDMARKS.RIGHT_SHOULDER];
+      const armsUp = lWrist.y < lShoulder.y && rWrist.y < rShoulder.y;
+      angles.armSpread = armsUp ? 1 : 0;
+
+      if (armsUp && state.phase !== 'up' && now - state.lastTransition > DEBOUNCE_MS) {
+        state = { ...state, phase: 'up', count: state.count + 1, lastTransition: now };
+      } else if (!armsUp && state.phase === 'up' && now - state.lastTransition > DEBOUNCE_MS) {
+        state = { ...state, phase: 'down', lastTransition: now };
+      }
+      break;
+    }
+
+    case 'high_knee': {
+      const lKnee = landmarks[LANDMARKS.LEFT_KNEE];
+      const rKnee = landmarks[LANDMARKS.RIGHT_KNEE];
+      const lHip = landmarks[LANDMARKS.LEFT_HIP];
+      const rHip = landmarks[LANDMARKS.RIGHT_HIP];
+      const kneeUp = lKnee.y < lHip.y || rKnee.y < rHip.y;
+      angles.kneeHeight = kneeUp ? 1 : 0;
+
+      if (kneeUp && state.phase !== 'up' && now - state.lastTransition > DEBOUNCE_MS) {
+        state = { ...state, phase: 'up', count: state.count + 1, lastTransition: now };
+      } else if (!kneeUp && state.phase === 'up' && now - state.lastTransition > DEBOUNCE_MS) {
+        state = { ...state, phase: 'down', lastTransition: now };
+      }
+      break;
+    }
+
+    case 'deadlift': {
+      const hipAngle = calculateAngle(
+        landmarks[LANDMARKS.LEFT_SHOULDER],
+        landmarks[LANDMARKS.LEFT_HIP],
+        landmarks[LANDMARKS.LEFT_KNEE]
+      );
+      angles.hip = hipAngle;
+
+      if (hipAngle < 100 && state.phase !== 'down' && now - state.lastTransition > DEBOUNCE_MS) {
+        state = { ...state, phase: 'down', lastTransition: now };
+      } else if (hipAngle > 160 && state.phase === 'down' && now - state.lastTransition > DEBOUNCE_MS) {
+        state = { ...state, phase: 'up', count: state.count + 1, lastTransition: now };
+      }
+      break;
+    }
+
+    case 'plank_hold': {
+      // Count "hold reps" — each second of holding counts as a rep
+      const hipAngle = calculateAngle(
+        landmarks[LANDMARKS.LEFT_SHOULDER],
+        landmarks[LANDMARKS.LEFT_HIP],
+        landmarks[LANDMARKS.LEFT_ANKLE]
+      );
+      angles.hip = hipAngle;
+      const isHolding = hipAngle > 150 && hipAngle < 190;
+
+      if (isHolding && now - state.lastTransition > 1000) {
+        state = { ...state, phase: 'up', count: state.count + 1, lastTransition: now };
+      }
+      break;
+    }
+
+    case 'tricep_dip': {
+      const lElbow = calculateAngle(
+        landmarks[LANDMARKS.LEFT_SHOULDER],
+        landmarks[LANDMARKS.LEFT_ELBOW],
+        landmarks[LANDMARKS.LEFT_WRIST]
+      );
+      angles.elbow = lElbow;
+
+      if (lElbow < 90 && state.phase !== 'down' && now - state.lastTransition > DEBOUNCE_MS) {
+        state = { ...state, phase: 'down', lastTransition: now };
+      } else if (lElbow > 150 && state.phase === 'down' && now - state.lastTransition > DEBOUNCE_MS) {
+        state = { ...state, phase: 'up', count: state.count + 1, lastTransition: now };
       }
       break;
     }
