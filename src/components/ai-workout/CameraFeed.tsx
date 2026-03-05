@@ -66,9 +66,12 @@ export function CameraFeed({ onFrame, active }: CameraFeedProps) {
 
         // Dynamically import MediaPipe Pose
         const mpPose = await import('@mediapipe/pose');
-        const { Camera } = await import('@mediapipe/camera_utils');
+        const mpCamera = await import('@mediapipe/camera_utils');
 
-        pose = new mpPose.Pose({
+        const PoseConstructor = mpPose.Pose || (mpPose as any).default?.Pose || (mpPose as any).default;
+        const CameraConstructor = mpCamera.Camera || (mpCamera as any).default?.Camera || (mpCamera as any).default;
+
+        pose = new PoseConstructor({
           locateFile: (file: string) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`,
         });
 
@@ -110,7 +113,7 @@ export function CameraFeed({ onFrame, active }: CameraFeedProps) {
         poseRef.current = pose;
 
         if (videoRef.current) {
-          const camera = new Camera(videoRef.current, {
+          const camera = new CameraConstructor(videoRef.current, {
             onFrame: async () => {
               if (poseRef.current && videoRef.current) {
                 await poseRef.current.send({ image: videoRef.current });
