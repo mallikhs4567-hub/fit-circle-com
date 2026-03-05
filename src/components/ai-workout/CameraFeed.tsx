@@ -13,16 +13,32 @@ const POSE_CONNECTIONS: [number, number][] = [
   [25, 27], [26, 28],
 ];
 
+/** Load a script from CDN and return a promise */
+function loadScript(src: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) {
+      resolve();
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = src;
+    script.crossOrigin = 'anonymous';
+    script.onload = () => resolve();
+    script.onerror = () => reject(new Error(`Failed to load ${src}`));
+    document.head.appendChild(script);
+  });
+}
+
 export function CameraFeed({ onFrame, active }: CameraFeedProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const poseRef = useRef<any>(null);
-  const rafRef = useRef<number>(0);
+  const cameraRef = useRef<any>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const drawSkeleton = useCallback((ctx: CanvasRenderingContext2D, landmarks: Point[], w: number, h: number) => {
-    // Draw connections
     ctx.strokeStyle = 'hsl(82, 85%, 55%)';
     ctx.lineWidth = 3;
     for (const [a, b] of POSE_CONNECTIONS) {
@@ -34,7 +50,6 @@ export function CameraFeed({ onFrame, active }: CameraFeedProps) {
       }
     }
 
-    // Draw joints
     for (const idx of Object.values(LANDMARKS)) {
       const pt = landmarks[idx];
       if (pt && (pt.visibility ?? 0) > 0.5) {
@@ -49,29 +64,35 @@ export function CameraFeed({ onFrame, active }: CameraFeedProps) {
   useEffect(() => {
     if (!active) return;
 
-    let stream: MediaStream | null = null;
-    let pose: any = null;
-    let animFrame = 0;
+    let cancelled = false;
 
     const init = async () => {
       try {
-        stream = await navigator.mediaDevices.getUserMedia({
+        // Get camera stream
+        const stream = await navigator.mediaDevices.getUserMedia({
           video: { facingMode: 'user', width: 640, height: 480 },
         });
+        streamRef.current = stream;
+
+        if (cancelled) { stream.getTracks().forEach(t => t.stop()); return; }
 
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
           await videoRef.current.play();
         }
 
-        // Dynamically import MediaPipe Pose
-        const mpPose = await import('@mediapipe/pose');
-        const mpCamera = await import('@mediapipe/camera_utils');
+        // Load MediaPipe from CDN (avoids Vite bundling issues)
+        await loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js');
+        await loadScript('https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js');
 
-        const PoseConstructor = mpPose.Pose || (mpPose as any).default?.Pose || (mpPose as any).default;
-        const CameraConstructor = mpCamera.Camera || (mpCamera as any).default?.Camera || (mpCamera as any).default;
+        if (cancelled) return;
 
-        pose = new PoseConstructor({
+        const win = window as any;
+        if (!win.Pose) {
+          throw new Error('MediaPipe Pose failed to load');
+        }
+
+        const pose = new win.Pose({
           locateFile: (file: string) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`,
         });
 
@@ -100,7 +121,6 @@ export function CameraFeed({ onFrame, active }: CameraFeedProps) {
           ctx.restore();
 
           if (results.poseLandmarks) {
-            // Mirror x coordinates for display
             const mirrored = results.poseLandmarks.map((lm: any) => ({
               ...lm,
               x: 1 - lm.x,
@@ -112,8 +132,8 @@ export function CameraFeed({ onFrame, active }: CameraFeedProps) {
 
         poseRef.current = pose;
 
-        if (videoRef.current) {
-          const camera = new CameraConstructor(videoRef.current, {
+        if (videoRef.current && win.Camera) {
+          const camera = new win.Camera(videoRef.current, {
             onFrame: async () => {
               if (poseRef.current && videoRef.current) {
                 await poseRef.current.send({ image: videoRef.current });
@@ -122,27 +142,36 @@ export function CameraFeed({ onFrame, active }: CameraFeedProps) {
             width: 640,
             height: 480,
           });
+          cameraRef.current = camera;
           camera.start();
         }
 
         setLoading(false);
       } catch (err: any) {
         console.error('Camera/MediaPipe init error:', err);
-        setError(err.message || 'Failed to access camera');
-        setLoading(false);
+        if (!cancelled) {
+          setError(err.message || 'Failed to access camera');
+          setLoading(false);
+        }
       }
     };
 
     init();
 
     return () => {
-      if (stream) {
-        stream.getTracks().forEach(t => t.stop());
+      cancelled = true;
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(t => t.stop());
+        streamRef.current = null;
       }
-      if (pose) {
-        pose.close?.();
+      if (cameraRef.current) {
+        cameraRef.current.stop?.();
+        cameraRef.current = null;
       }
-      cancelAnimationFrame(animFrame);
+      if (poseRef.current) {
+        poseRef.current.close?.();
+        poseRef.current = null;
+      }
     };
   }, [active, onFrame, drawSkeleton]);
 
