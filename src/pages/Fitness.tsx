@@ -166,24 +166,28 @@ export default function Fitness() {
         dietDone={allDietDone}
       />
 
-      <div className="px-4 space-y-4">
-        {/* AI Workout Launcher */}
+      <div className="px-4 space-y-5">
+        {/* AI Workout — top priority */}
         <AIWorkoutLauncher />
 
-        <WorkoutSection
-          tasks={workoutTasks}
-          allDone={allWorkoutDone}
-          onToggle={toggleWorkoutTask}
-          weekDays={weekDays}
-        />
+        {/* Core daily tasks */}
+        <div className="grid grid-cols-1 gap-4">
+          <WorkoutSection
+            tasks={workoutTasks}
+            allDone={allWorkoutDone}
+            onToggle={toggleWorkoutTask}
+            weekDays={weekDays}
+          />
 
-        <DietSection
-          tasks={dietTasks}
-          allDone={allDietDone}
-          onToggle={toggleDietTask}
-          goal={profile?.goal || null}
-        />
+          <DietSection
+            tasks={dietTasks}
+            allDone={allDietDone}
+            onToggle={toggleDietTask}
+            goal={profile?.goal || null}
+          />
+        </div>
 
+        {/* Health trackers */}
         <TrackersSection
           water={trackers.water}
           steps={trackers.steps}
@@ -196,18 +200,21 @@ export default function Fitness() {
           onLogWeight={logWeight}
         />
 
-        {/* Body Progress Tracking */}
-        <BodyProgress />
+        {/* Progress & Analytics section */}
+        <div className="space-y-4">
+          <h2 className="text-sm font-display font-bold text-foreground px-1">Progress & Analytics</h2>
+          
+          <BodyProgress />
 
-        <ProgressAnalytics
-          streak={profile?.streak || 0}
-          totalActiveDays={profile?.total_active_days || 0}
-          weekData={getWeekData()}
-          leaderboard={leaderboard}
-        />
+          <ProgressAnalytics
+            streak={profile?.streak || 0}
+            totalActiveDays={profile?.total_active_days || 0}
+            weekData={getWeekData()}
+            leaderboard={leaderboard}
+          />
 
-        {/* Enhanced Leaderboard */}
-        <EnhancedLeaderboard />
+          <EnhancedLeaderboard />
+        </div>
 
         <AIInsights
           streak={profile?.streak || 0}

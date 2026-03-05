@@ -146,6 +146,87 @@ export function processFrame(
       }
       break;
     }
+
+    case 'jumping_jack': {
+      // Detect arm spread — wrists above shoulders = up
+      const lWrist = landmarks[LANDMARKS.LEFT_WRIST];
+      const rWrist = landmarks[LANDMARKS.RIGHT_WRIST];
+      const lShoulder = landmarks[LANDMARKS.LEFT_SHOULDER];
+      const rShoulder = landmarks[LANDMARKS.RIGHT_SHOULDER];
+      const armsUp = lWrist.y < lShoulder.y && rWrist.y < rShoulder.y;
+      angles.armSpread = armsUp ? 1 : 0;
+
+      if (armsUp && state.phase !== 'up' && now - state.lastTransition > DEBOUNCE_MS) {
+        state = { ...state, phase: 'up', count: state.count + 1, lastTransition: now };
+      } else if (!armsUp && state.phase === 'up' && now - state.lastTransition > DEBOUNCE_MS) {
+        state = { ...state, phase: 'down', lastTransition: now };
+      }
+      break;
+    }
+
+    case 'high_knee': {
+      const lKnee = landmarks[LANDMARKS.LEFT_KNEE];
+      const rKnee = landmarks[LANDMARKS.RIGHT_KNEE];
+      const lHip = landmarks[LANDMARKS.LEFT_HIP];
+      const rHip = landmarks[LANDMARKS.RIGHT_HIP];
+      const kneeUp = lKnee.y < lHip.y || rKnee.y < rHip.y;
+      angles.kneeHeight = kneeUp ? 1 : 0;
+
+      if (kneeUp && state.phase !== 'up' && now - state.lastTransition > DEBOUNCE_MS) {
+        state = { ...state, phase: 'up', count: state.count + 1, lastTransition: now };
+      } else if (!kneeUp && state.phase === 'up' && now - state.lastTransition > DEBOUNCE_MS) {
+        state = { ...state, phase: 'down', lastTransition: now };
+      }
+      break;
+    }
+
+    case 'deadlift': {
+      const hipAngle = calculateAngle(
+        landmarks[LANDMARKS.LEFT_SHOULDER],
+        landmarks[LANDMARKS.LEFT_HIP],
+        landmarks[LANDMARKS.LEFT_KNEE]
+      );
+      angles.hip = hipAngle;
+
+      if (hipAngle < 100 && state.phase !== 'down' && now - state.lastTransition > DEBOUNCE_MS) {
+        state = { ...state, phase: 'down', lastTransition: now };
+      } else if (hipAngle > 160 && state.phase === 'down' && now - state.lastTransition > DEBOUNCE_MS) {
+        state = { ...state, phase: 'up', count: state.count + 1, lastTransition: now };
+      }
+      break;
+    }
+
+    case 'plank_hold': {
+      // Count "hold reps" — each second of holding counts as a rep
+      const hipAngle = calculateAngle(
+        landmarks[LANDMARKS.LEFT_SHOULDER],
+        landmarks[LANDMARKS.LEFT_HIP],
+        landmarks[LANDMARKS.LEFT_ANKLE]
+      );
+      angles.hip = hipAngle;
+      const isHolding = hipAngle > 150 && hipAngle < 190;
+
+      if (isHolding && now - state.lastTransition > 1000) {
+        state = { ...state, phase: 'up', count: state.count + 1, lastTransition: now };
+      }
+      break;
+    }
+
+    case 'tricep_dip': {
+      const lElbow = calculateAngle(
+        landmarks[LANDMARKS.LEFT_SHOULDER],
+        landmarks[LANDMARKS.LEFT_ELBOW],
+        landmarks[LANDMARKS.LEFT_WRIST]
+      );
+      angles.elbow = lElbow;
+
+      if (lElbow < 90 && state.phase !== 'down' && now - state.lastTransition > DEBOUNCE_MS) {
+        state = { ...state, phase: 'down', lastTransition: now };
+      } else if (lElbow > 150 && state.phase === 'down' && now - state.lastTransition > DEBOUNCE_MS) {
+        state = { ...state, phase: 'up', count: state.count + 1, lastTransition: now };
+      }
+      break;
+    }
   }
 
   return { state, angles };
