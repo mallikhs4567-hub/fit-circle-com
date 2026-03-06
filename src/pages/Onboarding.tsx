@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useProfile } from '@/hooks/useProfile';
-import { Dumbbell, Target, Salad, ArrowRight, Check, Flame, Loader2, Footprints, Sparkles } from 'lucide-react';
+import { Dumbbell, Target, Salad, ArrowRight, Check, Flame, Loader2, Footprints, Sparkles, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type FitnessGoal = 'weight-loss' | 'muscle-gain' | 'yoga' | 'runner' | 'general-fitness';
@@ -25,18 +25,22 @@ const experienceLevels: { id: ExperienceLevel; title: string; description: strin
 
 export default function Onboarding() {
   const navigate = useNavigate();
-  const { updateProfile } = useProfile();
+  const { profile, updateProfile } = useProfile();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [displayName, setDisplayName] = useState(profile?.username || '');
   const [selectedGoal, setSelectedGoal] = useState<FitnessGoal | null>(null);
   const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel | null>(null);
   const [height, setHeight] = useState('');
   const [weight, setWeight] = useState('');
   const [gender, setGender] = useState<'male' | 'female' | 'other' | null>(null);
 
+  const totalSteps = 4;
+
   const handleComplete = async () => {
     setLoading(true);
     const { error } = await updateProfile({
+      username: displayName.trim(),
       goal: selectedGoal!,
       experience_level: experienceLevel!,
       height: Number(height),
@@ -49,14 +53,13 @@ export default function Onboarding() {
 
   const canProceed = () => {
     switch (step) {
-      case 1: return selectedGoal !== null;
-      case 2: return experienceLevel !== null;
-      case 3: return height && weight && gender;
+      case 1: return displayName.trim().length >= 3;
+      case 2: return selectedGoal !== null;
+      case 3: return experienceLevel !== null;
+      case 4: return height && weight && gender;
       default: return false;
     }
   };
-
-  const totalSteps = 3;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -73,7 +76,7 @@ export default function Onboarding() {
             <div
               key={s}
               className={cn(
-                "h-1 flex-1 rounded-full transition-all duration-300",
+                "h-1 flex-1 rounded-full transition-all duration-500",
                 s <= step ? "gradient-primary" : "bg-secondary"
               )}
             />
@@ -84,6 +87,32 @@ export default function Onboarding() {
       {/* Content */}
       <div className="flex-1 px-6 py-6 overflow-y-auto">
         {step === 1 && (
+          <div className="animate-fade-up space-y-6">
+            <div>
+              <h2 className="text-2xl font-display font-bold text-foreground mb-2">What should we call you? 👋</h2>
+              <p className="text-muted-foreground">Choose a name that your friends will recognize</p>
+            </div>
+            <div className="space-y-4">
+              <div className="card-elevated p-6 flex flex-col items-center gap-4">
+                <div className="w-20 h-20 rounded-full bg-secondary flex items-center justify-center">
+                  <User className="w-10 h-10 text-muted-foreground" />
+                </div>
+                <Input
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="Your name"
+                  className="text-center text-lg font-semibold"
+                  maxLength={30}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {displayName.trim().length < 3 ? 'At least 3 characters' : '✓ Looks great!'}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {step === 2 && (
           <div className="animate-fade-up space-y-6">
             <div>
               <h2 className="text-2xl font-display font-bold text-foreground mb-2">What's your goal? 🎯</h2>
@@ -126,7 +155,7 @@ export default function Onboarding() {
           </div>
         )}
 
-        {step === 2 && (
+        {step === 3 && (
           <div className="animate-fade-up space-y-6">
             <div>
               <h2 className="text-2xl font-display font-bold text-foreground mb-2">Experience level 💪</h2>
@@ -162,7 +191,7 @@ export default function Onboarding() {
           </div>
         )}
 
-        {step === 3 && (
+        {step === 4 && (
           <div className="animate-fade-up space-y-6">
             <div>
               <h2 className="text-2xl font-display font-bold text-foreground mb-2">About you 📊</h2>
@@ -204,14 +233,24 @@ export default function Onboarding() {
       </div>
 
       {/* Footer */}
-      <div className="px-6 pb-8 safe-bottom">
+      <div className="px-6 pb-8 safe-bottom flex gap-3">
+        {step > 1 && (
+          <Button
+            variant="outline"
+            onClick={() => setStep(step - 1)}
+            size="lg"
+            className="px-6"
+          >
+            Back
+          </Button>
+        )}
         <Button
           onClick={() => {
             if (step < totalSteps) setStep(step + 1);
             else handleComplete();
           }}
           disabled={!canProceed() || loading}
-          className="w-full"
+          className="flex-1"
           size="lg"
         >
           {loading ? (

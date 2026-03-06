@@ -124,7 +124,7 @@ export default function Profile() {
           <h1 className="text-xl font-display font-bold text-foreground">Profile</h1>
           <div className="flex items-center gap-1">
             <NotificationCenter />
-            <Button variant="ghost" size="icon-sm">
+            <Button variant="ghost" size="icon-sm" onClick={() => navigate('/settings')}>
               <Settings className="w-5 h-5" />
             </Button>
           </div>
