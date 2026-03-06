@@ -136,7 +136,6 @@ export function AIWorkoutSession({ exercise, onClose }: AIWorkoutSessionProps) {
   const handleStart = () => {
     setShowPrivacy(false);
     setStarted(true);
-    voiceCoach.announceWorkoutStart(exercise.name);
   };
 
   const handleCloseComplete = () => {
