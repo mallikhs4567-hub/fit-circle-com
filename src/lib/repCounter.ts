@@ -69,7 +69,17 @@ export function processFrame(
       const elbowAngle = (lElbow + rElbow) / 2;
       angles.elbow = elbowAngle;
 
-      if (elbowAngle < 90 && state.phase !== 'down' && now - state.lastTransition > DEBOUNCE_MS) {
+      // Body alignment check (shoulder-hip-ankle)
+      const bodyAngle = calculateAngle(
+        landmarks[LANDMARKS.LEFT_SHOULDER],
+        landmarks[LANDMARKS.LEFT_HIP],
+        landmarks[LANDMARKS.LEFT_ANKLE]
+      );
+      angles.body = bodyAngle;
+      const bodyStraight = bodyAngle > 140;
+
+      // Strict: elbow < 90° at bottom AND body straight
+      if (elbowAngle < 90 && bodyStraight && state.phase !== 'down' && now - state.lastTransition > DEBOUNCE_MS) {
         state = { ...state, phase: 'down', lastTransition: now };
       } else if (elbowAngle > 160 && state.phase === 'down' && now - state.lastTransition > DEBOUNCE_MS) {
         state = { ...state, phase: 'up', count: state.count + 1, lastTransition: now };
@@ -91,7 +101,13 @@ export function processFrame(
       const kneeAngle = (lKnee + rKnee) / 2;
       angles.knee = kneeAngle;
 
-      if (kneeAngle < 100 && state.phase !== 'down' && now - state.lastTransition > DEBOUNCE_MS) {
+      // Hip below shoulder check
+      const hipY = (landmarks[LANDMARKS.LEFT_HIP].y + landmarks[LANDMARKS.RIGHT_HIP].y) / 2;
+      const shoulderY = (landmarks[LANDMARKS.LEFT_SHOULDER].y + landmarks[LANDMARKS.RIGHT_SHOULDER].y) / 2;
+      const hipBelowShoulder = hipY > shoulderY;
+
+      // Strict: knee < 90° at bottom AND hip below shoulder
+      if (kneeAngle < 90 && hipBelowShoulder && state.phase !== 'down' && now - state.lastTransition > DEBOUNCE_MS) {
         state = { ...state, phase: 'down', lastTransition: now };
       } else if (kneeAngle > 160 && state.phase === 'down' && now - state.lastTransition > DEBOUNCE_MS) {
         state = { ...state, phase: 'up', count: state.count + 1, lastTransition: now };
@@ -105,9 +121,20 @@ export function processFrame(
         landmarks[LANDMARKS.LEFT_KNEE],
         landmarks[LANDMARKS.LEFT_ANKLE]
       );
+      const backKnee = calculateAngle(
+        landmarks[LANDMARKS.RIGHT_HIP],
+        landmarks[LANDMARKS.RIGHT_KNEE],
+        landmarks[LANDMARKS.RIGHT_ANKLE]
+      );
       angles.knee = frontKnee;
+      angles.backKnee = backKnee;
 
-      if (frontKnee < 100 && state.phase !== 'down' && now - state.lastTransition > DEBOUNCE_MS) {
+      // Front knee ~90° AND back knee close to ground (ankle near knee Y)
+      const backKneeY = landmarks[LANDMARKS.RIGHT_KNEE].y;
+      const backAnkleY = landmarks[LANDMARKS.RIGHT_ANKLE].y;
+      const backKneeNearGround = Math.abs(backKneeY - backAnkleY) < 0.15;
+
+      if (frontKnee < 100 && backKneeNearGround && state.phase !== 'down' && now - state.lastTransition > DEBOUNCE_MS) {
         state = { ...state, phase: 'down', lastTransition: now };
       } else if (frontKnee > 155 && state.phase === 'down' && now - state.lastTransition > DEBOUNCE_MS) {
         state = { ...state, phase: 'up', count: state.count + 1, lastTransition: now };
@@ -148,17 +175,25 @@ export function processFrame(
     }
 
     case 'jumping_jack': {
-      // Detect arm spread — wrists above shoulders = up
+      // Arms above head check
       const lWrist = landmarks[LANDMARKS.LEFT_WRIST];
       const rWrist = landmarks[LANDMARKS.RIGHT_WRIST];
       const lShoulder = landmarks[LANDMARKS.LEFT_SHOULDER];
       const rShoulder = landmarks[LANDMARKS.RIGHT_SHOULDER];
       const armsUp = lWrist.y < lShoulder.y && rWrist.y < rShoulder.y;
-      angles.armSpread = armsUp ? 1 : 0;
 
-      if (armsUp && state.phase !== 'up' && now - state.lastTransition > DEBOUNCE_MS) {
+      // Feet spread wider than shoulders
+      const shoulderWidth = Math.abs(lShoulder.x - rShoulder.x);
+      const footWidth = Math.abs(landmarks[LANDMARKS.LEFT_ANKLE].x - landmarks[LANDMARKS.RIGHT_ANKLE].x);
+      const feetWide = footWidth > shoulderWidth * 1.2;
+
+      angles.armSpread = armsUp ? 1 : 0;
+      angles.feetSpread = feetWide ? 1 : 0;
+
+      // Both arms up AND feet wide = full jack position
+      if (armsUp && feetWide && state.phase !== 'up' && now - state.lastTransition > DEBOUNCE_MS) {
         state = { ...state, phase: 'up', count: state.count + 1, lastTransition: now };
-      } else if (!armsUp && state.phase === 'up' && now - state.lastTransition > DEBOUNCE_MS) {
+      } else if (!armsUp && !feetWide && state.phase === 'up' && now - state.lastTransition > DEBOUNCE_MS) {
         state = { ...state, phase: 'down', lastTransition: now };
       }
       break;

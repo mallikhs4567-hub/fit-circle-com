@@ -3,13 +3,14 @@ import { CameraFeed } from './CameraFeed';
 import { WorkoutComplete } from './WorkoutComplete';
 import { createRepState, processFrame, type ExerciseConfig } from '@/lib/repCounter';
 import { analyzeForm, getXPMultiplier, type FormResult } from '@/lib/formAnalyzer';
+import { createRecognitionState, recognizeExercise, type RecognitionResult } from '@/lib/exerciseRecognition';
 import * as voiceCoach from '@/lib/voiceCoach';
 import { type Point } from '@/lib/angleUtils';
 import { useAuth } from '@/hooks/useAuth';
 import { useXP } from '@/hooks/useXP';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
-import { X, Volume2, VolumeX, Camera } from 'lucide-react';
+import { X, Volume2, VolumeX, Camera, AlertTriangle } from 'lucide-react';
 
 interface AIWorkoutSessionProps {
   exercise: ExerciseConfig;
@@ -27,8 +28,12 @@ export function AIWorkoutSession({ exercise, onClose }: AIWorkoutSessionProps) {
   const [completed, setCompleted] = useState(false);
   const [duration, setDuration] = useState(0);
   const [xpEarned, setXpEarned] = useState(0);
+  const [recognized, setRecognized] = useState(false);
+  const [recognitionMsg, setRecognitionMsg] = useState('Getting into position...');
+  const [recognitionConfidence, setRecognitionConfidence] = useState(0);
 
   const repStateRef = useRef(createRepState());
+  const recognitionStateRef = useRef(createRecognitionState());
   const formScoresRef = useRef<number[]>([]);
   const startTimeRef = useRef<number>(0);
   const timerRef = useRef<ReturnType<typeof setInterval>>();
@@ -53,34 +58,48 @@ export function AIWorkoutSession({ exercise, onClose }: AIWorkoutSessionProps) {
 
   const handleFrame = useCallback((landmarks: Point[]) => {
     frameCountRef.current++;
-    // Process every 3rd frame for performance
     if (frameCountRef.current % 3 !== 0) return;
 
+    // Step 1: Exercise recognition — must pass before rep counting
+    const { state: newRecState, result: recResult } = recognizeExercise(
+      landmarks, exercise.type, recognitionStateRef.current
+    );
+    recognitionStateRef.current = newRecState;
+    setRecognitionMsg(recResult.message);
+    setRecognitionConfidence(recResult.confidence);
+
+    if (!recResult.recognized) {
+      setRecognized(false);
+      return; // Don't count reps until exercise is recognized
+    }
+
+    if (!recognized) {
+      setRecognized(true);
+      voiceCoach.announceWorkoutStart(exercise.name);
+    }
+
+    // Step 2: Rep counting (only after recognition)
     const { state: newState, angles } = processFrame(landmarks, exercise.type, repStateRef.current);
     
-    // Rep completed
     if (newState.count > repStateRef.current.count) {
       setReps(newState.count);
       voiceCoach.announceRepComplete(newState.count, exercise.targetReps);
 
-      // Form analysis on each rep
       const result = analyzeForm(landmarks, exercise.type, angles);
       setFormResult(result);
       formScoresRef.current.push(result.score);
 
-      // Voice feedback on form
       if (result.score < 75 && result.mistakes.length > 0) {
         setTimeout(() => voiceCoach.announceFormFeedback(result.mistakes), 1500);
       }
 
-      // Check completion
       if (newState.count >= exercise.targetReps) {
         handleWorkoutComplete(newState.count);
       }
     }
 
     repStateRef.current = newState;
-  }, [exercise]);
+  }, [exercise, recognized]);
 
   const handleWorkoutComplete = async (totalReps: number) => {
     setCompleted(true);
@@ -117,7 +136,6 @@ export function AIWorkoutSession({ exercise, onClose }: AIWorkoutSessionProps) {
   const handleStart = () => {
     setShowPrivacy(false);
     setStarted(true);
-    voiceCoach.announceWorkoutStart(exercise.name);
   };
 
   const handleCloseComplete = () => {
@@ -195,6 +213,22 @@ export function AIWorkoutSession({ exercise, onClose }: AIWorkoutSessionProps) {
 
       {/* HUD */}
       <div className="p-4 space-y-3 safe-bottom">
+        {/* Recognition banner */}
+        {!recognized && (
+          <div className="card-elevated p-3 flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-accent shrink-0" />
+            <div className="flex-1">
+              <p className="text-xs font-semibold text-foreground">{recognitionMsg}</p>
+              <div className="w-full h-1.5 bg-secondary rounded-full mt-1.5 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-accent transition-all duration-300"
+                  style={{ width: `${recognitionConfidence * 100}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Rep counter */}
         <div className="flex items-center gap-4">
           <div className="flex-1">
@@ -220,7 +254,7 @@ export function AIWorkoutSession({ exercise, onClose }: AIWorkoutSessionProps) {
         <div className="flex gap-2">
           <div className="flex-1 card-elevated p-3 text-center">
             <p className={cn("text-xl font-display font-bold", formColor)}>
-              {formResult.score}%
+              {recognized ? `${formResult.score}%` : '—'}
             </p>
             <p className="text-[10px] text-muted-foreground">Form Score</p>
           </div>
@@ -233,7 +267,7 @@ export function AIWorkoutSession({ exercise, onClose }: AIWorkoutSessionProps) {
         </div>
 
         {/* Form feedback */}
-        {formResult.tips.length > 0 && (
+        {recognized && formResult.tips.length > 0 && (
           <div className="card-elevated p-3">
             <p className="text-xs text-accent font-medium">💡 {formResult.tips[0]}</p>
           </div>
