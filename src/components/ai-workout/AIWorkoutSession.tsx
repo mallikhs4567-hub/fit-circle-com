@@ -28,8 +28,12 @@ export function AIWorkoutSession({ exercise, onClose }: AIWorkoutSessionProps) {
   const [completed, setCompleted] = useState(false);
   const [duration, setDuration] = useState(0);
   const [xpEarned, setXpEarned] = useState(0);
+  const [recognized, setRecognized] = useState(false);
+  const [recognitionMsg, setRecognitionMsg] = useState('Getting into position...');
+  const [recognitionConfidence, setRecognitionConfidence] = useState(0);
 
   const repStateRef = useRef(createRepState());
+  const recognitionStateRef = useRef(createRecognitionState());
   const formScoresRef = useRef<number[]>([]);
   const startTimeRef = useRef<number>(0);
   const timerRef = useRef<ReturnType<typeof setInterval>>();
