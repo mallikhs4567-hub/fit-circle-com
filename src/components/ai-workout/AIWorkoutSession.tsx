@@ -213,6 +213,22 @@ export function AIWorkoutSession({ exercise, onClose }: AIWorkoutSessionProps) {
 
       {/* HUD */}
       <div className="p-4 space-y-3 safe-bottom">
+        {/* Recognition banner */}
+        {!recognized && (
+          <div className="card-elevated p-3 flex items-center gap-3">
+            <AlertTriangle className="w-5 h-5 text-accent shrink-0" />
+            <div className="flex-1">
+              <p className="text-xs font-semibold text-foreground">{recognitionMsg}</p>
+              <div className="w-full h-1.5 bg-secondary rounded-full mt-1.5 overflow-hidden">
+                <div
+                  className="h-full rounded-full bg-accent transition-all duration-300"
+                  style={{ width: `${recognitionConfidence * 100}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Rep counter */}
         <div className="flex items-center gap-4">
           <div className="flex-1">
@@ -238,7 +254,7 @@ export function AIWorkoutSession({ exercise, onClose }: AIWorkoutSessionProps) {
         <div className="flex gap-2">
           <div className="flex-1 card-elevated p-3 text-center">
             <p className={cn("text-xl font-display font-bold", formColor)}>
-              {formResult.score}%
+              {recognized ? `${formResult.score}%` : '—'}
             </p>
             <p className="text-[10px] text-muted-foreground">Form Score</p>
           </div>
@@ -251,7 +267,7 @@ export function AIWorkoutSession({ exercise, onClose }: AIWorkoutSessionProps) {
         </div>
 
         {/* Form feedback */}
-        {formResult.tips.length > 0 && (
+        {recognized && formResult.tips.length > 0 && (
           <div className="card-elevated p-3">
             <p className="text-xs text-accent font-medium">💡 {formResult.tips[0]}</p>
           </div>
