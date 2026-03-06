@@ -58,34 +58,48 @@ export function AIWorkoutSession({ exercise, onClose }: AIWorkoutSessionProps) {
 
   const handleFrame = useCallback((landmarks: Point[]) => {
     frameCountRef.current++;
-    // Process every 3rd frame for performance
     if (frameCountRef.current % 3 !== 0) return;
 
+    // Step 1: Exercise recognition — must pass before rep counting
+    const { state: newRecState, result: recResult } = recognizeExercise(
+      landmarks, exercise.type, recognitionStateRef.current
+    );
+    recognitionStateRef.current = newRecState;
+    setRecognitionMsg(recResult.message);
+    setRecognitionConfidence(recResult.confidence);
+
+    if (!recResult.recognized) {
+      setRecognized(false);
+      return; // Don't count reps until exercise is recognized
+    }
+
+    if (!recognized) {
+      setRecognized(true);
+      voiceCoach.announceWorkoutStart(exercise.name);
+    }
+
+    // Step 2: Rep counting (only after recognition)
     const { state: newState, angles } = processFrame(landmarks, exercise.type, repStateRef.current);
     
-    // Rep completed
     if (newState.count > repStateRef.current.count) {
       setReps(newState.count);
       voiceCoach.announceRepComplete(newState.count, exercise.targetReps);
 
-      // Form analysis on each rep
       const result = analyzeForm(landmarks, exercise.type, angles);
       setFormResult(result);
       formScoresRef.current.push(result.score);
 
-      // Voice feedback on form
       if (result.score < 75 && result.mistakes.length > 0) {
         setTimeout(() => voiceCoach.announceFormFeedback(result.mistakes), 1500);
       }
 
-      // Check completion
       if (newState.count >= exercise.targetReps) {
         handleWorkoutComplete(newState.count);
       }
     }
 
     repStateRef.current = newState;
-  }, [exercise]);
+  }, [exercise, recognized]);
 
   const handleWorkoutComplete = async (totalReps: number) => {
     setCompleted(true);
