@@ -3,13 +3,14 @@ import { CameraFeed } from './CameraFeed';
 import { WorkoutComplete } from './WorkoutComplete';
 import { createRepState, processFrame, type ExerciseConfig } from '@/lib/repCounter';
 import { analyzeForm, getXPMultiplier, type FormResult } from '@/lib/formAnalyzer';
+import { createRecognitionState, recognizeExercise, type RecognitionResult } from '@/lib/exerciseRecognition';
 import * as voiceCoach from '@/lib/voiceCoach';
 import { type Point } from '@/lib/angleUtils';
 import { useAuth } from '@/hooks/useAuth';
 import { useXP } from '@/hooks/useXP';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
-import { X, Volume2, VolumeX, Camera } from 'lucide-react';
+import { X, Volume2, VolumeX, Camera, AlertTriangle } from 'lucide-react';
 
 interface AIWorkoutSessionProps {
   exercise: ExerciseConfig;
