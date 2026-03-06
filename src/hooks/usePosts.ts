@@ -227,22 +227,13 @@ export function usePosts() {
     const hasReaction = post.userReaction === reactionType;
 
     if (hasReaction) {
-      // Remove reaction
+      // Remove reaction — trigger auto-syncs counts
       await supabase
         .from('post_reactions')
         .delete()
         .eq('post_id', postId)
         .eq('user_id', user.id)
         .eq('reaction_type', reactionType);
-
-      // Update post reactions count
-      const newReactions = { ...post.reactions };
-      newReactions[reactionType] = Math.max(0, newReactions[reactionType] - 1);
-
-      await supabase
-        .from('posts')
-        .update({ reactions: newReactions })
-        .eq('id', postId);
     } else {
       // Remove any existing reaction first
       if (post.userReaction) {
@@ -251,17 +242,9 @@ export function usePosts() {
           .delete()
           .eq('post_id', postId)
           .eq('user_id', user.id);
-
-        const oldReactions = { ...post.reactions };
-        oldReactions[post.userReaction] = Math.max(0, oldReactions[post.userReaction] - 1);
-        
-        await supabase
-          .from('posts')
-          .update({ reactions: oldReactions })
-          .eq('id', postId);
       }
 
-      // Add new reaction
+      // Add new reaction — trigger auto-syncs counts
       await supabase
         .from('post_reactions')
         .insert({
@@ -269,18 +252,6 @@ export function usePosts() {
           user_id: user.id,
           reaction_type: reactionType,
         });
-
-      // Update post reactions count
-      const newReactions = { ...post.reactions };
-      if (post.userReaction) {
-        newReactions[post.userReaction] = Math.max(0, newReactions[post.userReaction] - 1);
-      }
-      newReactions[reactionType] = (newReactions[reactionType] || 0) + 1;
-
-      await supabase
-        .from('posts')
-        .update({ reactions: newReactions })
-        .eq('id', postId);
     }
 
     // Optimistic update
