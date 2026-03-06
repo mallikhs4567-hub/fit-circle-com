@@ -164,17 +164,25 @@ export function processFrame(
     }
 
     case 'jumping_jack': {
-      // Detect arm spread — wrists above shoulders = up
+      // Arms above head check
       const lWrist = landmarks[LANDMARKS.LEFT_WRIST];
       const rWrist = landmarks[LANDMARKS.RIGHT_WRIST];
       const lShoulder = landmarks[LANDMARKS.LEFT_SHOULDER];
       const rShoulder = landmarks[LANDMARKS.RIGHT_SHOULDER];
       const armsUp = lWrist.y < lShoulder.y && rWrist.y < rShoulder.y;
-      angles.armSpread = armsUp ? 1 : 0;
 
-      if (armsUp && state.phase !== 'up' && now - state.lastTransition > DEBOUNCE_MS) {
+      // Feet spread wider than shoulders
+      const shoulderWidth = Math.abs(lShoulder.x - rShoulder.x);
+      const footWidth = Math.abs(landmarks[LANDMARKS.LEFT_ANKLE].x - landmarks[LANDMARKS.RIGHT_ANKLE].x);
+      const feetWide = footWidth > shoulderWidth * 1.2;
+
+      angles.armSpread = armsUp ? 1 : 0;
+      angles.feetSpread = feetWide ? 1 : 0;
+
+      // Both arms up AND feet wide = full jack position
+      if (armsUp && feetWide && state.phase !== 'up' && now - state.lastTransition > DEBOUNCE_MS) {
         state = { ...state, phase: 'up', count: state.count + 1, lastTransition: now };
-      } else if (!armsUp && state.phase === 'up' && now - state.lastTransition > DEBOUNCE_MS) {
+      } else if (!armsUp && !feetWide && state.phase === 'up' && now - state.lastTransition > DEBOUNCE_MS) {
         state = { ...state, phase: 'down', lastTransition: now };
       }
       break;
