@@ -15,7 +15,6 @@ import { PullToRefresh } from '@/components/common/PullToRefresh';
 import { NotificationCenter } from '@/components/common/NotificationCenter';
 import {
   Settings, 
-  LogOut, 
   Trophy, 
   Target, 
   Calendar, 
