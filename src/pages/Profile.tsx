@@ -274,15 +274,15 @@ export default function Profile() {
         )}
       </div>
 
-      {/* Actions */}
+      {/* Edit Profile */}
       <div className="px-4">
         <Button
-          variant="destructive"
+          variant="outline"
           className="w-full"
-          onClick={handleLogout}
+          onClick={() => navigate('/settings')}
         >
-          <LogOut className="w-5 h-5" />
-          Log Out
+          <Settings className="w-5 h-5" />
+          Edit Profile
         </Button>
       </div>
       </PullToRefresh>
