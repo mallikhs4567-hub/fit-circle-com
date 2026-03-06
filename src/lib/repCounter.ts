@@ -101,7 +101,13 @@ export function processFrame(
       const kneeAngle = (lKnee + rKnee) / 2;
       angles.knee = kneeAngle;
 
-      if (kneeAngle < 100 && state.phase !== 'down' && now - state.lastTransition > DEBOUNCE_MS) {
+      // Hip below shoulder check
+      const hipY = (landmarks[LANDMARKS.LEFT_HIP].y + landmarks[LANDMARKS.RIGHT_HIP].y) / 2;
+      const shoulderY = (landmarks[LANDMARKS.LEFT_SHOULDER].y + landmarks[LANDMARKS.RIGHT_SHOULDER].y) / 2;
+      const hipBelowShoulder = hipY > shoulderY;
+
+      // Strict: knee < 90° at bottom AND hip below shoulder
+      if (kneeAngle < 90 && hipBelowShoulder && state.phase !== 'down' && now - state.lastTransition > DEBOUNCE_MS) {
         state = { ...state, phase: 'down', lastTransition: now };
       } else if (kneeAngle > 160 && state.phase === 'down' && now - state.lastTransition > DEBOUNCE_MS) {
         state = { ...state, phase: 'up', count: state.count + 1, lastTransition: now };
