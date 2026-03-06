@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from 'react';
 import { useProfile } from '@/hooks/useProfile';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth'; // kept for potential future use
 import { usePosts } from '@/hooks/usePosts';
 import { Avatar } from '@/components/common/Avatar';
 import { StreakBadge } from '@/components/common/StreakBadge';
@@ -15,7 +15,6 @@ import { PullToRefresh } from '@/components/common/PullToRefresh';
 import { NotificationCenter } from '@/components/common/NotificationCenter';
 import {
   Settings, 
-  LogOut, 
   Trophy, 
   Target, 
   Calendar, 
@@ -124,7 +123,7 @@ export default function Profile() {
           <h1 className="text-xl font-display font-bold text-foreground">Profile</h1>
           <div className="flex items-center gap-1">
             <NotificationCenter />
-            <Button variant="ghost" size="icon-sm">
+            <Button variant="ghost" size="icon-sm" onClick={() => navigate('/settings')}>
               <Settings className="w-5 h-5" />
             </Button>
           </div>
@@ -274,15 +273,15 @@ export default function Profile() {
         )}
       </div>
 
-      {/* Actions */}
+      {/* Edit Profile */}
       <div className="px-4">
         <Button
-          variant="destructive"
+          variant="outline"
           className="w-full"
-          onClick={handleLogout}
+          onClick={() => navigate('/settings')}
         >
-          <LogOut className="w-5 h-5" />
-          Log Out
+          <Settings className="w-5 h-5" />
+          Edit Profile
         </Button>
       </div>
       </PullToRefresh>
