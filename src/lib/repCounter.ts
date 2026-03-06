@@ -69,7 +69,17 @@ export function processFrame(
       const elbowAngle = (lElbow + rElbow) / 2;
       angles.elbow = elbowAngle;
 
-      if (elbowAngle < 90 && state.phase !== 'down' && now - state.lastTransition > DEBOUNCE_MS) {
+      // Body alignment check (shoulder-hip-ankle)
+      const bodyAngle = calculateAngle(
+        landmarks[LANDMARKS.LEFT_SHOULDER],
+        landmarks[LANDMARKS.LEFT_HIP],
+        landmarks[LANDMARKS.LEFT_ANKLE]
+      );
+      angles.body = bodyAngle;
+      const bodyStraight = bodyAngle > 140;
+
+      // Strict: elbow < 90° at bottom AND body straight
+      if (elbowAngle < 90 && bodyStraight && state.phase !== 'down' && now - state.lastTransition > DEBOUNCE_MS) {
         state = { ...state, phase: 'down', lastTransition: now };
       } else if (elbowAngle > 160 && state.phase === 'down' && now - state.lastTransition > DEBOUNCE_MS) {
         state = { ...state, phase: 'up', count: state.count + 1, lastTransition: now };
