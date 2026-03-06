@@ -121,9 +121,20 @@ export function processFrame(
         landmarks[LANDMARKS.LEFT_KNEE],
         landmarks[LANDMARKS.LEFT_ANKLE]
       );
+      const backKnee = calculateAngle(
+        landmarks[LANDMARKS.RIGHT_HIP],
+        landmarks[LANDMARKS.RIGHT_KNEE],
+        landmarks[LANDMARKS.RIGHT_ANKLE]
+      );
       angles.knee = frontKnee;
+      angles.backKnee = backKnee;
 
-      if (frontKnee < 100 && state.phase !== 'down' && now - state.lastTransition > DEBOUNCE_MS) {
+      // Front knee ~90° AND back knee close to ground (ankle near knee Y)
+      const backKneeY = landmarks[LANDMARKS.RIGHT_KNEE].y;
+      const backAnkleY = landmarks[LANDMARKS.RIGHT_ANKLE].y;
+      const backKneeNearGround = Math.abs(backKneeY - backAnkleY) < 0.15;
+
+      if (frontKnee < 100 && backKneeNearGround && state.phase !== 'down' && now - state.lastTransition > DEBOUNCE_MS) {
         state = { ...state, phase: 'down', lastTransition: now };
       } else if (frontKnee > 155 && state.phase === 'down' && now - state.lastTransition > DEBOUNCE_MS) {
         state = { ...state, phase: 'up', count: state.count + 1, lastTransition: now };
