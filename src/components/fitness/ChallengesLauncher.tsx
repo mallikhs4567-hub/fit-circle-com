@@ -11,21 +11,21 @@ export function ChallengesLauncher() {
   return (
     <button
       onClick={() => navigate('/challenges')}
-      className="w-full card-elevated p-4 flex items-center gap-3 transition-all hover-scale text-left"
+      className="w-full card-elevated p-4 flex items-center gap-3 transition-all text-left press-effect"
     >
-      <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-accent/20 to-accent/5 flex items-center justify-center shrink-0">
-        <Trophy className="w-5 h-5 text-accent" />
+      <div className="w-11 h-11 rounded-lg bg-streak/10 border border-streak/20 flex items-center justify-center shrink-0">
+        <Trophy className="w-5 h-5 text-streak" />
       </div>
       <div className="flex-1 min-w-0">
-        <h3 className="text-sm font-display font-bold text-foreground">Challenges</h3>
-        <p className="text-[10px] text-muted-foreground">
+        <h3 className="text-sm font-display uppercase tracking-wide text-foreground">Challenges</h3>
+        <p className="text-[10px] text-muted-foreground mt-0.5">
           {active > 0 ? (
             <span className="flex items-center gap-1">
-              <Flame className="w-3 h-3 text-accent" />
-              {active} active{completed > 0 && ` · ${completed} completed`}
+              <Flame className="w-3 h-3 text-streak" />
+              {active} active{completed > 0 && ` · ${completed} done`}
             </span>
           ) : (
-            'Join fitness challenges & compete'
+            'Join challenges & compete'
           )}
         </p>
       </div>

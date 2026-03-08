@@ -25,9 +25,9 @@ export function TrackersSection({
     <div className="space-y-3">
       <button
         onClick={() => setExpanded(!expanded)}
-        className="flex items-center justify-between w-full"
+        className="flex items-center justify-between w-full px-1 press-effect"
       >
-        <h2 className="text-sm font-semibold text-foreground">Daily Trackers</h2>
+        <h2 className="text-sm font-display uppercase tracking-wide text-foreground">Daily Trackers</h2>
         {expanded ? (
           <ChevronUp className="w-4 h-4 text-muted-foreground" />
         ) : (
@@ -35,29 +35,29 @@ export function TrackersSection({
         )}
       </button>
 
-      {/* Compact tracker row always visible */}
+      {/* Compact tracker row */}
       <div className="grid grid-cols-4 gap-2">
         <TrackerChip
-          icon={<Droplets className="w-3.5 h-3.5" />}
+          icon={<Droplets className="w-4 h-4" />}
           value={`${water}/8`}
           label="Water"
           active={water >= 8}
           onClick={onAddWater}
         />
         <TrackerChip
-          icon={<Footprints className="w-3.5 h-3.5" />}
+          icon={<Footprints className="w-4 h-4" />}
           value={steps >= 1000 ? `${(steps / 1000).toFixed(1)}k` : `${steps}`}
           label="Steps"
           active={steps >= 8000}
         />
         <TrackerChip
-          icon={<Moon className="w-3.5 h-3.5" />}
+          icon={<Moon className="w-4 h-4" />}
           value={`${sleep}h`}
           label="Sleep"
           active={sleep >= 7}
         />
         <TrackerChip
-          icon={<Scale className="w-3.5 h-3.5" />}
+          icon={<Scale className="w-4 h-4" />}
           value={weightLog.length > 0 ? `${weightLog[weightLog.length - 1].value}` : '—'}
           label="Weight"
           active={false}
@@ -67,41 +67,41 @@ export function TrackersSection({
       {expanded && (
         <div className="space-y-3 animate-fade-up">
           {/* Water */}
-          <div className="card-elevated p-3">
-            <div className="flex items-center justify-between mb-2">
+          <div className="card-elevated p-4">
+            <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Droplets className="w-4 h-4 text-primary" />
-                <span className="text-xs font-medium text-foreground">Water Intake</span>
+                <span className="text-xs font-display uppercase tracking-wider text-foreground">Water</span>
               </div>
-              <span className="text-xs text-muted-foreground">{water} / 8 glasses</span>
+              <span className="text-xs text-muted-foreground">{water} / 8</span>
             </div>
             <div className="flex items-center gap-2">
-              <button onClick={onRemoveWater} className="p-1.5 rounded-lg bg-secondary hover:bg-muted transition-colors">
-                <Minus className="w-3 h-3 text-muted-foreground" />
+              <button onClick={onRemoveWater} className="p-2 rounded-lg bg-secondary hover:bg-muted transition-colors press-effect">
+                <Minus className="w-3.5 h-3.5 text-muted-foreground" />
               </button>
               <div className="flex-1 flex gap-1">
                 {Array.from({ length: 8 }).map((_, i) => (
                   <div
                     key={i}
                     className={cn(
-                      "flex-1 h-4 rounded-sm transition-all",
-                      i < water ? "bg-primary/60" : "bg-secondary"
+                      "flex-1 h-5 rounded transition-all duration-300",
+                      i < water ? "gradient-primary" : "bg-secondary"
                     )}
                   />
                 ))}
               </div>
-              <button onClick={onAddWater} className="p-1.5 rounded-lg bg-secondary hover:bg-muted transition-colors">
-                <Plus className="w-3 h-3 text-muted-foreground" />
+              <button onClick={onAddWater} className="p-2 rounded-lg bg-secondary hover:bg-muted transition-colors press-effect">
+                <Plus className="w-3.5 h-3.5 text-muted-foreground" />
               </button>
             </div>
           </div>
 
           {/* Steps */}
-          <div className="card-elevated p-3">
-            <div className="flex items-center justify-between mb-2">
+          <div className="card-elevated p-4">
+            <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
-                <Footprints className="w-4 h-4 text-accent" />
-                <span className="text-xs font-medium text-foreground">Steps</span>
+                <Footprints className="w-4 h-4 text-streak" />
+                <span className="text-xs font-display uppercase tracking-wider text-foreground">Steps</span>
               </div>
               <span className="text-xs text-muted-foreground">{steps.toLocaleString()} / 8,000</span>
             </div>
@@ -112,16 +112,16 @@ export function TrackersSection({
               step={500}
               value={steps}
               onChange={e => onSetSteps(Number(e.target.value))}
-              className="w-full h-1.5 bg-secondary rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer"
+              className="range-slider w-full"
             />
           </div>
 
           {/* Sleep */}
-          <div className="card-elevated p-3">
-            <div className="flex items-center justify-between mb-2">
+          <div className="card-elevated p-4">
+            <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Moon className="w-4 h-4 text-muted-foreground" />
-                <span className="text-xs font-medium text-foreground">Sleep</span>
+                <span className="text-xs font-display uppercase tracking-wider text-foreground">Sleep</span>
               </div>
               <span className="text-xs text-muted-foreground">{sleep}h / 8h</span>
             </div>
@@ -132,20 +132,20 @@ export function TrackersSection({
               step={0.5}
               value={sleep}
               onChange={e => onSetSleep(Number(e.target.value))}
-              className="w-full h-1.5 bg-secondary rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:cursor-pointer"
+              className="range-slider w-full"
             />
           </div>
 
-          {/* Weight log */}
-          <div className="card-elevated p-3">
-            <div className="flex items-center justify-between mb-2">
+          {/* Weight */}
+          <div className="card-elevated p-4">
+            <div className="flex items-center justify-between mb-3">
               <div className="flex items-center gap-2">
                 <Scale className="w-4 h-4 text-success" />
-                <span className="text-xs font-medium text-foreground">Weight Log</span>
+                <span className="text-xs font-display uppercase tracking-wider text-foreground">Weight</span>
               </div>
             </div>
             {weightLog.length > 1 && (
-              <div className="flex items-end gap-1 h-12 mb-2">
+              <div className="flex items-end gap-1 h-12 mb-3">
                 {weightLog.slice(-7).map((w, i, arr) => {
                   const min = Math.min(...arr.map(a => a.value));
                   const max = Math.max(...arr.map(a => a.value));
@@ -154,7 +154,7 @@ export function TrackersSection({
                   return (
                     <div key={i} className="flex-1 flex flex-col items-center justify-end">
                       <div
-                        className="w-full rounded-t bg-primary/40"
+                        className="w-full rounded-sm gradient-primary"
                         style={{ height: `${Math.max(height, 10)}%` }}
                       />
                     </div>
@@ -168,14 +168,14 @@ export function TrackersSection({
                 value={weightInput}
                 onChange={e => setWeightInput(e.target.value)}
                 placeholder="kg"
-                className="flex-1 bg-secondary rounded-lg px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground outline-none border border-border focus:border-primary transition-colors"
+                className="flex-1 bg-secondary rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground outline-none border border-border focus:border-primary transition-colors"
               />
               <button
                 onClick={() => {
                   const v = parseFloat(weightInput);
                   if (v > 0) { onLogWeight(v); setWeightInput(''); }
                 }}
-                className="px-3 py-1.5 rounded-lg bg-primary text-primary-foreground text-xs font-medium"
+                className="px-4 py-2 rounded-lg gradient-primary text-primary-foreground text-sm font-semibold press-effect"
               >
                 Log
               </button>
@@ -196,13 +196,13 @@ function TrackerChip({
     <button
       onClick={onClick}
       className={cn(
-        "card-elevated p-2.5 flex flex-col items-center gap-1 transition-all",
-        active && "border-primary/30"
+        "card-elevated p-3 flex flex-col items-center gap-1.5 transition-all press-effect",
+        active && "border-primary/25 bg-primary/5"
       )}
     >
       <div className={cn("text-muted-foreground", active && "text-primary")}>{icon}</div>
-      <span className="text-xs font-semibold text-foreground">{value}</span>
-      <span className="text-[9px] text-muted-foreground">{label}</span>
+      <span className="stat-value text-base text-foreground">{value}</span>
+      <span className="text-[9px] text-muted-foreground uppercase tracking-wider">{label}</span>
     </button>
   );
 }

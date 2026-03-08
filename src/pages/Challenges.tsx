@@ -17,18 +17,15 @@ export default function Challenges() {
   const [completedChallenge, setCompletedChallenge] = useState<Challenge | null>(null);
   const prevCompletedRef = useRef<Set<string>>(new Set());
 
-  // Detect newly completed challenges
   useEffect(() => {
     const completedIds = new Set(myParticipations.filter(p => p.completed).map(p => p.challenge_id));
     const prev = prevCompletedRef.current;
-
     completedIds.forEach(id => {
       if (!prev.has(id)) {
         const c = challenges.find(ch => ch.id === id);
         if (c && prev.size > 0) setCompletedChallenge(c);
       }
     });
-
     prevCompletedRef.current = completedIds;
   }, [myParticipations, challenges]);
 
@@ -42,17 +39,11 @@ export default function Challenges() {
   const filtered = useMemo(() => {
     switch (activeTab) {
       case 'my':
-        return challenges.filter(c => {
-          const p = getMyParticipation(c.id);
-          return p && !p.completed;
-        });
+        return challenges.filter(c => { const p = getMyParticipation(c.id); return p && !p.completed; });
       case 'global':
         return challenges.filter(c => c.is_global);
       case 'completed':
-        return challenges.filter(c => {
-          const p = getMyParticipation(c.id);
-          return p?.completed;
-        });
+        return challenges.filter(c => { const p = getMyParticipation(c.id); return p?.completed; });
       default:
         return challenges;
     }
@@ -63,7 +54,6 @@ export default function Challenges() {
 
   return (
     <div className="min-h-screen bg-background pb-24">
-      {/* Completion overlay */}
       {completedChallenge && (
         <ChallengeCompletion
           title={completedChallenge.title}
@@ -72,7 +62,6 @@ export default function Challenges() {
         />
       )}
 
-      {/* Leaderboard overlay */}
       {leaderboardChallenge && (
         <ChallengeLeaderboard
           challenge={leaderboardChallenge}
@@ -82,19 +71,20 @@ export default function Challenges() {
       )}
 
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border">
+      <div className="sticky top-0 z-40 border-b border-border"
+        style={{ background: 'linear-gradient(180deg, hsl(0 0% 8% / 0.98), hsl(0 0% 6% / 0.95))' }}>
         <div className="px-4 pt-4 pb-3 safe-top">
           <div className="flex items-center gap-3">
-            <button onClick={() => navigate('/fitness')} className="p-2 rounded-xl bg-secondary">
+            <button onClick={() => navigate('/fitness')} className="p-2 rounded-lg bg-secondary press-effect">
               <ArrowLeft className="w-5 h-5 text-foreground" />
             </button>
             <div className="flex-1">
-              <h1 className="text-lg font-display font-bold text-foreground">Challenges</h1>
-              <p className="text-[10px] text-muted-foreground">
-                {activeChallenges} active · {completedCount} completed
+              <h1 className="text-lg font-display uppercase tracking-wide text-foreground">Challenges</h1>
+              <p className="text-[10px] text-muted-foreground uppercase tracking-wider">
+                {activeChallenges} active · {completedCount} done
               </p>
             </div>
-            <div className="w-10 h-10 rounded-xl gradient-primary flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg gradient-primary flex items-center justify-center glow-primary">
               <Trophy className="w-5 h-5 text-primary-foreground" />
             </div>
           </div>
@@ -107,9 +97,9 @@ export default function Challenges() {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-medium transition-all whitespace-nowrap",
+                "flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-[11px] font-bold transition-all whitespace-nowrap uppercase tracking-wider press-effect",
                 activeTab === tab.id
-                  ? "gradient-primary text-primary-foreground shadow-md"
+                  ? "gradient-primary text-primary-foreground"
                   : "bg-secondary text-muted-foreground"
               )}
             >
@@ -123,15 +113,15 @@ export default function Challenges() {
       {/* Content */}
       <div className="px-4 pt-4 space-y-3">
         {loading ? (
-          <div className="flex items-center justify-center py-16">
+          <div className="flex items-center justify-center py-20">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         ) : filtered.length === 0 ? (
-          <div className="text-center py-16 space-y-2">
-            <Trophy className="w-10 h-10 text-muted-foreground mx-auto" />
+          <div className="text-center py-20 space-y-3">
+            <Trophy className="w-12 h-12 text-muted-foreground/30 mx-auto" />
             <p className="text-sm text-muted-foreground">
-              {activeTab === 'my' ? 'No active challenges — join one!' :
-               activeTab === 'completed' ? 'No completed challenges yet' :
+              {activeTab === 'my' ? 'No active challenges' :
+               activeTab === 'completed' ? 'No completed challenges' :
                'No challenges available'}
             </p>
           </div>
