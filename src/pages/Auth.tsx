@@ -131,7 +131,7 @@ export default function Auth() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <div className="safe-top px-6 pt-12 pb-8 text-center relative">
+      <div className="safe-top px-6 pt-14 pb-10 text-center relative">
         {mode === 'forgot' && (
           <button
             onClick={() => {
@@ -146,18 +146,18 @@ export default function Auth() {
                 setConfirmPassword('');
               }
             }}
-            className="absolute left-4 top-12 p-2 text-muted-foreground hover:text-foreground transition-colors"
+            className="absolute left-4 top-14 p-2 text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="w-6 h-6" />
           </button>
         )}
-        <div className="inline-flex items-center gap-2 mb-6">
+        <div className="inline-flex items-center gap-2 mb-4">
           <div className="w-12 h-12 rounded-xl gradient-primary flex items-center justify-center">
             <Flame className="w-7 h-7 text-primary-foreground" />
           </div>
         </div>
-        <h1 className="text-3xl font-display font-bold text-foreground mb-2">FitCircle</h1>
-        <p className="text-muted-foreground">{getTitle()}</p>
+        <h1 className="text-3xl font-display font-bold text-foreground mb-1">FitCircle</h1>
+        <p className="text-sm text-muted-foreground">{getTitle()}</p>
       </div>
 
       {/* Form */}
