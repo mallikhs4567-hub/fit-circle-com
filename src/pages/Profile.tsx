@@ -43,6 +43,7 @@ const goalLabels: Record<string, string> = {
 export default function Profile() {
   const { profile, loading, updateProfile, refetch: refetchProfile } = useProfile();
   const { signOut } = useAuth();
+  const { isPremium } = useSubscription();
   const { posts, addReaction, refetch: refetchPosts } = usePosts();
   const navigate = useNavigate();
   const [isEditingBio, setIsEditingBio] = useState(false);
