@@ -136,16 +136,13 @@
        </div>
  
        {/* Content */}
-       <p className="text-foreground text-base leading-relaxed">
+       <p className="text-foreground text-[15px] leading-relaxed">
          {post.content}
        </p>
  
-       {/* Media */}
        {post.image_url && (
          <PostMedia url={post.image_url} />
        )}
- 
-       <div className="mt-4" />
  
        {/* Stats and Actions */}
        <div className="flex items-center justify-between">

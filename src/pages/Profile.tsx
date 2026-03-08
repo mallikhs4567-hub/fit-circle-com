@@ -252,9 +252,7 @@ export default function Profile() {
 
       {/* My Posts Section */}
       <div className="px-4 mb-6">
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-          My Posts
-        </h3>
+        <h3 className="section-header mb-3">My Posts</h3>
         {myPosts.length === 0 ? (
           <p className="text-center text-muted-foreground py-8">
             No posts yet
