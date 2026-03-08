@@ -33,7 +33,7 @@ function PostItem({ post }: { post: GroupPost }) {
 function ChatMessage({ msg, isOwn }: { msg: GroupMessage; isOwn: boolean }) {
   return (
     <div className={`flex gap-2 ${isOwn ? 'flex-row-reverse' : ''}`}>
-      <Avatar src={msg.profile?.avatar_url} fallback={msg.profile?.username?.[0] || '?'} size="sm" />
+      <Avatar src={msg.profile?.avatar_url} name={msg.profile?.username} size="sm" />
       <div className={`max-w-[75%] rounded-2xl px-3 py-2 ${isOwn ? 'bg-primary text-primary-foreground' : 'bg-secondary text-foreground'}`}>
         {!isOwn && <p className="text-[10px] font-bold opacity-70 mb-0.5">{msg.profile?.username}</p>}
         <p className="text-sm">{msg.content}</p>
