@@ -324,6 +324,33 @@ export type Database = {
         }
         Relationships: []
       }
+      feature_usage: {
+        Row: {
+          created_at: string
+          date: string
+          feature_name: string
+          id: string
+          usage_count: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date?: string
+          feature_name: string
+          id?: string
+          usage_count?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date?: string
+          feature_name?: string
+          id?: string
+          usage_count?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       friendships: {
         Row: {
           created_at: string
@@ -834,6 +861,30 @@ export type Database = {
         }
         Relationships: []
       }
+      referrals: {
+        Row: {
+          created_at: string
+          id: string
+          inviter_id: string
+          new_user_id: string
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          inviter_id: string
+          new_user_id: string
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          inviter_id?: string
+          new_user_id?: string
+          status?: string
+        }
+        Relationships: []
+      }
       story_replies: {
         Row: {
           content: string
@@ -868,6 +919,48 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      subscriptions: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          end_date: string | null
+          id: string
+          payment_id: string | null
+          payment_provider: string
+          plan_type: string
+          start_date: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          end_date?: string | null
+          id?: string
+          payment_id?: string | null
+          payment_provider?: string
+          plan_type?: string
+          start_date?: string
+          status?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          end_date?: string | null
+          id?: string
+          payment_id?: string | null
+          payment_provider?: string
+          plan_type?: string
+          start_date?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       wearable_activity: {
         Row: {

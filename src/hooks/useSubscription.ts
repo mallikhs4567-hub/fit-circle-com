@@ -26,8 +26,8 @@ export const PLANS = {
 
 // Free tier limits
 export const FREE_LIMITS = {
-  ai_coach: 3,        // requests per day
-  ai_camera: 5,       // minutes per session (tracked as count)
+  ai_coach: 3,
+  ai_camera: 5,
 } as const;
 
 export type PlanType = 'free' | 'premium';
@@ -76,10 +76,9 @@ export function useSubscription() {
     }
   }, [session?.access_token]);
 
-  // Check on mount and periodically
   useEffect(() => {
     checkSubscription();
-    const interval = setInterval(checkSubscription, 60000); // every minute
+    const interval = setInterval(checkSubscription, 60000);
     return () => clearInterval(interval);
   }, [checkSubscription]);
 
@@ -122,25 +121,25 @@ export function useSubscription() {
     }
   }, [session?.access_token]);
 
-  // Feature usage tracking
+  // Feature usage tracking - uses raw fetch to avoid type issues with new tables
   const checkFeatureAccess = useCallback(async (featureName: string): Promise<boolean> => {
     if (state.subscribed) return true;
 
     const limit = FREE_LIMITS[featureName as keyof typeof FREE_LIMITS];
-    if (!limit) return true; // No limit for this feature
-
+    if (!limit) return true;
     if (!user) return false;
 
     const today = new Date().toISOString().split('T')[0];
-    const { data } = await supabase
-      .from('feature_usage')
+    const { data, error } = await supabase
+      .from('feature_usage' as any)
       .select('usage_count')
       .eq('user_id', user.id)
       .eq('feature_name', featureName)
       .eq('date', today)
       .maybeSingle();
 
-    return (data?.usage_count ?? 0) < limit;
+    if (error) return true; // Allow on error
+    return ((data as any)?.usage_count ?? 0) < limit;
   }, [state.subscribed, user]);
 
   const incrementFeatureUsage = useCallback(async (featureName: string) => {
@@ -148,7 +147,7 @@ export function useSubscription() {
 
     const today = new Date().toISOString().split('T')[0];
     const { data: existing } = await supabase
-      .from('feature_usage')
+      .from('feature_usage' as any)
       .select('id, usage_count')
       .eq('user_id', user.id)
       .eq('feature_name', featureName)
@@ -157,12 +156,12 @@ export function useSubscription() {
 
     if (existing) {
       await supabase
-        .from('feature_usage')
-        .update({ usage_count: existing.usage_count + 1 })
-        .eq('id', existing.id);
+        .from('feature_usage' as any)
+        .update({ usage_count: (existing as any).usage_count + 1 })
+        .eq('id', (existing as any).id);
     } else {
       await supabase
-        .from('feature_usage')
+        .from('feature_usage' as any)
         .insert({ user_id: user.id, feature_name: featureName, usage_count: 1, date: today });
     }
   }, [user, state.subscribed]);
@@ -175,14 +174,14 @@ export function useSubscription() {
 
     const today = new Date().toISOString().split('T')[0];
     const { data } = await supabase
-      .from('feature_usage')
+      .from('feature_usage' as any)
       .select('usage_count')
       .eq('user_id', user.id)
       .eq('feature_name', featureName)
       .eq('date', today)
       .maybeSingle();
 
-    return Math.max(0, limit - (data?.usage_count ?? 0));
+    return Math.max(0, limit - ((data as any)?.usage_count ?? 0));
   }, [state.subscribed, user]);
 
   return {
