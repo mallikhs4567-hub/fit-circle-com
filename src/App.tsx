@@ -20,6 +20,7 @@ import UserProfile from "@/pages/UserProfile";
 import Challenges from "@/pages/Challenges";
 import Groups from "@/pages/Groups";
 import GroupDetail from "@/pages/GroupDetail";
+import AICoach from "@/pages/AICoach";
 import NotFound from "@/pages/NotFound";
 import { Loader2 } from "lucide-react";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
@@ -87,6 +88,7 @@ function AppRoutes() {
         <Route path="/user/:userId" element={<UserProfile />} />
         <Route path="/groups" element={<Groups />} />
         <Route path="/groups/:groupId" element={<GroupDetail />} />
+        <Route path="/ai-coach" element={<AICoach />} />
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>
