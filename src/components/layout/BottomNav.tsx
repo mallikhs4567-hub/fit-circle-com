@@ -1,13 +1,13 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Users, Dumbbell, MessageCircle, User, Search, Trophy } from 'lucide-react';
+import { Users, Dumbbell, MessageCircle, User, Trophy, UsersRound } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const tabs = [
   { id: 'circle', label: 'Feed', icon: Users, path: '/circle' },
   { id: 'fitness', label: 'Train', icon: Dumbbell, path: '/fitness' },
+  { id: 'groups', label: 'Groups', icon: UsersRound, path: '/groups' },
   { id: 'challenges', label: 'Compete', icon: Trophy, path: '/challenges' },
   { id: 'chat', label: 'Chat', icon: MessageCircle, path: '/chat' },
-  { id: 'profile', label: 'Profile', icon: User, path: '/profile' },
 ];
 
 export function BottomNav() {
