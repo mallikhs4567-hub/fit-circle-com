@@ -203,15 +203,15 @@ export default function Fitness() {
           onLogWeight={logWeight}
         />
 
-        {/* Workout History & Weekly Stats */}
-        <div className="space-y-4">
-          <h2 className="text-sm font-display font-bold text-foreground px-1">Workout History</h2>
+        {/* Workout History */}
+        <div className="space-y-3">
+          <h2 className="text-sm font-display uppercase tracking-wide text-foreground px-1">History</h2>
           <WorkoutHistory />
         </div>
 
-        {/* Progress & Analytics section */}
-        <div className="space-y-4">
-          <h2 className="text-sm font-display font-bold text-foreground px-1">Progress & Analytics</h2>
+        {/* Progress & Analytics */}
+        <div className="space-y-3">
+          <h2 className="text-sm font-display uppercase tracking-wide text-foreground px-1">Analytics</h2>
           
           <BodyProgress />
 
