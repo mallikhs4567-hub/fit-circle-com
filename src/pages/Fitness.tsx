@@ -49,6 +49,8 @@ export default function Fitness() {
   const { checklist, loading: checklistLoading, updateChecklist } = useChecklist();
   const { awardXP, fetchWeeklyLeaderboard } = useXP();
   const { trackers, addWater, removeWater, setSteps, setSleep, logWeight, getWeekData } = useFitnessTrackers(profile?.weight ?? null);
+  const { isPremium } = useSubscription();
+  const navigate = useNavigate();
 
   const [workoutTasks, setWorkoutTasks] = useState<WorkoutTask[]>([]);
   const [dietTasks, setDietTasks] = useState<WorkoutTask[]>([]);
