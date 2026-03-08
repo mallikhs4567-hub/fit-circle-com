@@ -869,6 +869,101 @@ export type Database = {
           },
         ]
       }
+      wearable_activity: {
+        Row: {
+          calories: number | null
+          device_id: string | null
+          distance: number | null
+          heart_rate: number | null
+          id: string
+          recorded_at: string
+          sleep_minutes: number | null
+          steps: number | null
+          synced_at: string
+          user_id: string
+          workout_duration_minutes: number | null
+          workout_type: string | null
+        }
+        Insert: {
+          calories?: number | null
+          device_id?: string | null
+          distance?: number | null
+          heart_rate?: number | null
+          id?: string
+          recorded_at: string
+          sleep_minutes?: number | null
+          steps?: number | null
+          synced_at?: string
+          user_id: string
+          workout_duration_minutes?: number | null
+          workout_type?: string | null
+        }
+        Update: {
+          calories?: number | null
+          device_id?: string | null
+          distance?: number | null
+          heart_rate?: number | null
+          id?: string
+          recorded_at?: string
+          sleep_minutes?: number | null
+          steps?: number | null
+          synced_at?: string
+          user_id?: string
+          workout_duration_minutes?: number | null
+          workout_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wearable_activity_device_id_fkey"
+            columns: ["device_id"]
+            isOneToOne: false
+            referencedRelation: "wearable_devices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      wearable_devices: {
+        Row: {
+          access_token: string | null
+          connected_at: string
+          device_name: string
+          id: string
+          is_connected: boolean
+          last_sync_at: string | null
+          provider: string
+          provider_user_id: string | null
+          refresh_token: string | null
+          token_expires_at: string | null
+          user_id: string
+        }
+        Insert: {
+          access_token?: string | null
+          connected_at?: string
+          device_name: string
+          id?: string
+          is_connected?: boolean
+          last_sync_at?: string | null
+          provider: string
+          provider_user_id?: string | null
+          refresh_token?: string | null
+          token_expires_at?: string | null
+          user_id: string
+        }
+        Update: {
+          access_token?: string | null
+          connected_at?: string
+          device_name?: string
+          id?: string
+          is_connected?: boolean
+          last_sync_at?: string | null
+          provider?: string
+          provider_user_id?: string | null
+          refresh_token?: string | null
+          token_expires_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       weekly_xp_leaderboard: {
         Row: {
           created_at: string
