@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dumbbell, Users, Clock, Trophy, ChevronRight, Zap, Globe } from 'lucide-react';
+import { Dumbbell, Users, Clock, Trophy, ChevronRight, Zap, Globe, Check, Calendar } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { type Challenge, type ChallengeParticipant } from '@/hooks/useChallenges';
 
@@ -22,12 +22,26 @@ const exerciseIcons: Record<string, string> = {
   deadlifts: '🏋️',
 };
 
+function getTimeRemaining(startDate: string, durationDays: number): string {
+  const start = new Date(startDate);
+  const end = new Date(start.getTime() + durationDays * 86400000);
+  const now = Date.now();
+  const remaining = end.getTime() - now;
+
+  if (remaining <= 0) return 'Expired';
+  const days = Math.floor(remaining / 86400000);
+  const hours = Math.floor((remaining % 86400000) / 3600000);
+  if (days > 0) return `${days}d ${hours}h left`;
+  return `${hours}h left`;
+}
+
 export function ChallengeCard({ challenge, participation, onJoin, onViewLeaderboard }: ChallengeCardProps) {
   const [joining, setJoining] = useState(false);
   const isJoined = !!participation;
   const progress = participation ? participation.progress : 0;
   const progressPct = Math.min((progress / challenge.target_reps) * 100, 100);
   const isCompleted = participation?.completed ?? false;
+  const remaining = challenge.target_reps - progress;
 
   const handleJoin = async () => {
     setJoining(true);
@@ -69,7 +83,7 @@ export function ChallengeCard({ challenge, participation, onJoin, onViewLeaderbo
       {/* Stats */}
       <div className="px-4 flex items-center gap-4 text-[11px] text-muted-foreground">
         <span className="flex items-center gap-1">
-          <Dumbbell className="w-3 h-3" /> {challenge.target_reps}
+          <Dumbbell className="w-3 h-3" /> {challenge.target_reps} reps
         </span>
         <span className="flex items-center gap-1">
           <Clock className="w-3 h-3" /> {challenge.duration_days}d
@@ -82,21 +96,48 @@ export function ChallengeCard({ challenge, participation, onJoin, onViewLeaderbo
       {/* Progress */}
       <div className="px-4 pt-3 pb-4 space-y-3">
         {isJoined && (
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <div className="flex justify-between text-[10px]">
               <span className="text-muted-foreground uppercase tracking-wider">Progress</span>
               <span className={cn("stat-value text-xs", isCompleted ? "text-primary" : "text-foreground")}>
-                {progress}/{challenge.target_reps} ({Math.round(progressPct)}%)
+                {progress}/{challenge.target_reps}
               </span>
             </div>
             <div className="w-full h-2 bg-secondary rounded overflow-hidden">
               <div
                 className={cn(
-                  "h-full rounded transition-all duration-500",
-                  isCompleted ? "gradient-primary" : "bg-primary/70"
+                  "h-full rounded transition-all duration-700",
+                  isCompleted ? "gradient-primary progress-bar-animated" : "bg-primary/70"
                 )}
                 style={{ width: `${progressPct}%` }}
               />
+            </div>
+
+            {/* Remaining / Completion info */}
+            <div className="flex items-center justify-between text-[10px]">
+              {isCompleted ? (
+                <>
+                  <span className="flex items-center gap-1 text-primary">
+                    <Check className="w-3 h-3" />
+                    Completed
+                  </span>
+                  {participation?.completed_at && (
+                    <span className="flex items-center gap-1 text-muted-foreground">
+                      <Calendar className="w-3 h-3" />
+                      {new Date(participation.completed_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                    </span>
+                  )}
+                </>
+              ) : (
+                <>
+                  <span className="text-muted-foreground">
+                    {remaining > 0 ? `${remaining} reps to go` : 'Almost there!'}
+                  </span>
+                  <span className="text-accent font-semibold">
+                    {getTimeRemaining(participation!.start_date, challenge.duration_days)}
+                  </span>
+                </>
+              )}
             </div>
           </div>
         )}
