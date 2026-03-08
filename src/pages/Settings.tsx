@@ -22,7 +22,9 @@ import {
   ChevronRight,
   LogOut,
   Save,
+  Watch,
 } from 'lucide-react';
+import { ConnectedDevices } from '@/components/settings/ConnectedDevices';
 
 type FitnessGoal = 'weight-loss' | 'muscle-gain' | 'yoga' | 'runner' | 'general-fitness';
 type ExperienceLevel = 'beginner' | 'intermediate' | 'advanced';
