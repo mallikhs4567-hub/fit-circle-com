@@ -176,6 +176,12 @@ export default function Fitness() {
           <ChallengesLauncher />
         </div>
 
+        {/* Activity Feed */}
+        <section className="space-y-3">
+          <h2 className="section-header px-1">Activity</h2>
+          <ActivityFeed />
+        </section>
+
         {/* Daily Tasks */}
         <section className="space-y-3">
           <h2 className="section-header px-1">Today's Plan</h2>
