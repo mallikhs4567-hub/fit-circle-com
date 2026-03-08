@@ -1,8 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useProfile } from '@/hooks/useProfile';
 import { useChecklist } from '@/hooks/useChecklist';
 import { useXP } from '@/hooks/useXP';
 import { useFitnessTrackers } from '@/hooks/useFitnessTrackers';
+import { useSubscription } from '@/hooks/useSubscription';
 import { LevelUpModal } from '@/components/common/LevelUpModal';
 import { FitnessHeader } from '@/components/fitness/FitnessHeader';
 import { WorkoutSection } from '@/components/fitness/WorkoutSection';
@@ -16,7 +18,7 @@ import { BodyProgress } from '@/components/fitness/BodyProgress';
 import { EnhancedLeaderboard } from '@/components/fitness/EnhancedLeaderboard';
 import { WorkoutHistory } from '@/components/fitness/WorkoutHistory';
 import { ActivityFeed } from '@/components/fitness/ActivityFeed';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Crown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 type FitnessGoal = 'weight-loss' | 'muscle-gain' | 'healthy-routine';
