@@ -311,8 +311,28 @@ export default function Settings() {
         ))}
       </div>
 
+      {/* Connected Devices */}
+      <div className="border-b border-border">
+        <button
+          onClick={() => setActiveSection(activeSection === 'devices' ? null : 'devices')}
+          className="w-full flex items-center gap-3 px-4 py-3.5 text-left"
+        >
+          <Watch className="w-4 h-4 text-muted-foreground" />
+          <span className="flex-1 text-sm font-medium text-foreground">Connected Devices</span>
+          <ChevronRight className={cn(
+            "w-4 h-4 text-muted-foreground transition-transform duration-200",
+            activeSection === 'devices' && "rotate-90"
+          )} />
+        </button>
+        {activeSection === 'devices' && (
+          <div className="px-4 pb-4 animate-fade-up">
+            <ConnectedDevices />
+          </div>
+        )}
+      </div>
+
       {/* Logout */}
-      <div className="px-4">
+      <div className="px-4 pt-2">
         <Button variant="destructive" className="w-full" onClick={handleLogout}>
           <LogOut className="w-5 h-5" />
           Log Out
