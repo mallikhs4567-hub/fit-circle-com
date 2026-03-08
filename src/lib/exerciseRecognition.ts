@@ -112,21 +112,27 @@ function detectJumpingJack(lm: Point[]): { match: boolean; confidence: number } 
   return { match, confidence: match ? 0.85 : 0 };
 }
 
-/** Check for lunge position */
+/** Check for lunge starting position */
 function detectLunge(lm: Point[]): { match: boolean; confidence: number } {
+  if (!isVisible(lm[LANDMARKS.LEFT_HIP]) || !isVisible(lm[LANDMARKS.LEFT_KNEE]) || !isVisible(lm[LANDMARKS.LEFT_ANKLE])) {
+    return { match: false, confidence: 0 };
+  }
+
   const shoulderY = (lm[LANDMARKS.LEFT_SHOULDER].y + lm[LANDMARKS.RIGHT_SHOULDER].y) / 2;
   const hipY = (lm[LANDMARKS.LEFT_HIP].y + lm[LANDMARKS.RIGHT_HIP].y) / 2;
-  const upright = shoulderY < hipY;
+  const upright = shoulderY < hipY - 0.03;
 
-  // One foot forward, one back — check ankle X spread
-  const ankleSpread = Math.abs(lm[LANDMARKS.LEFT_ANKLE].x - lm[LANDMARKS.RIGHT_ANKLE].x);
-  const staggered = ankleSpread > 0.1;
-
-  // Or just standing (ready to lunge)
+  // Standing with legs straight (ready to lunge)
   const lKnee = calculateAngle(lm[LANDMARKS.LEFT_HIP], lm[LANDMARKS.LEFT_KNEE], lm[LANDMARKS.LEFT_ANKLE]);
+  const rKnee = calculateAngle(lm[LANDMARKS.RIGHT_HIP], lm[LANDMARKS.RIGHT_KNEE], lm[LANDMARKS.RIGHT_ANKLE]);
+  const legsReady = lKnee > 145 && rKnee > 145;
 
-  const match = upright && (staggered || lKnee > 140);
-  return { match, confidence: match ? 0.75 : 0 };
+  // Or already in staggered stance
+  const ankleSpread = Math.abs(lm[LANDMARKS.LEFT_ANKLE].x - lm[LANDMARKS.RIGHT_ANKLE].x);
+  const staggered = ankleSpread > 0.12;
+
+  const match = upright && (legsReady || staggered);
+  return { match, confidence: match ? 0.8 : 0 };
 }
 
 const DETECTORS: Record<string, (lm: Point[]) => { match: boolean; confidence: number }> = {
