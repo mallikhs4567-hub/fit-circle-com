@@ -140,8 +140,8 @@ export function CameraFeed({ onFrame, active }: CameraFeedProps) {
                 await poseRef.current.send({ image: videoRef.current });
               }
             },
-            width: 640,
-            height: 480,
+            width: 480,
+            height: 360,
           });
           cameraRef.current = camera;
           camera.start();
