@@ -266,7 +266,7 @@ export default function GroupDetail() {
                     }`}>
                       {i + 1}
                     </span>
-                    <Avatar src={m.profile?.avatar_url} fallback={m.profile?.username?.[0] || '?'} size="sm" />
+                    <Avatar src={m.profile?.avatar_url} name={m.profile?.username} size="sm" />
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-bold text-foreground truncate">{m.profile?.username}</p>
                       <p className="text-[10px] text-muted-foreground">
