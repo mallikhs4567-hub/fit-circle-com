@@ -90,6 +90,7 @@ function AppRoutes() {
         <Route path="/groups" element={<Groups />} />
         <Route path="/groups/:groupId" element={<GroupDetail />} />
         <Route path="/ai-coach" element={<AICoach />} />
+        <Route path="/premium" element={<Premium />} />
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>
