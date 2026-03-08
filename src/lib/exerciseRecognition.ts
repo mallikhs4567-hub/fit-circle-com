@@ -54,28 +54,30 @@ function detectSquat(lm: Point[]): { match: boolean; confidence: number } {
 
 /** Check if landmarks look like a pushup position (plank-like, horizontal) */
 function detectPushup(lm: Point[]): { match: boolean; confidence: number } {
-  const shoulderY = (lm[LANDMARKS.LEFT_SHOULDER].y + lm[LANDMARKS.RIGHT_SHOULDER].y) / 2;
-  const hipY = (lm[LANDMARKS.LEFT_HIP].y + lm[LANDMARKS.RIGHT_HIP].y) / 2;
-  const ankleY = (lm[LANDMARKS.LEFT_ANKLE].y + lm[LANDMARKS.RIGHT_ANKLE].y) / 2;
+  if (!isVisible(lm[LANDMARKS.LEFT_SHOULDER]) || !isVisible(lm[LANDMARKS.LEFT_HIP]) || !isVisible(lm[LANDMARKS.LEFT_ANKLE]) || !isVisible(lm[LANDMARKS.LEFT_WRIST])) {
+    return { match: false, confidence: 0 };
+  }
 
   // Body roughly horizontal — shoulder, hip, ankle at similar Y
+  const shoulderY = (lm[LANDMARKS.LEFT_SHOULDER].y + lm[LANDMARKS.RIGHT_SHOULDER].y) / 2;
+  const ankleY = (lm[LANDMARKS.LEFT_ANKLE].y + lm[LANDMARKS.RIGHT_ANKLE].y) / 2;
   const bodySpread = Math.abs(shoulderY - ankleY);
-  const isHorizontal = bodySpread < 0.3;
-  
-  // Shoulder-hip-ankle alignment
-  const bodyAngle = calculateAngle(
-    lm[LANDMARKS.LEFT_SHOULDER],
-    lm[LANDMARKS.LEFT_HIP],
-    lm[LANDMARKS.LEFT_ANKLE]
-  );
-  const straight = bodyAngle > 140;
+  const isHorizontal = bodySpread < 0.25;
 
-  // Wrists near ground level (below shoulders)
+  // Shoulder-hip-ankle alignment (must be straight)
+  const bodyAngle = calculateAngle(lm[LANDMARKS.LEFT_SHOULDER], lm[LANDMARKS.LEFT_HIP], lm[LANDMARKS.LEFT_ANKLE]);
+  const straight = bodyAngle > 145;
+
+  // Wrists near or below shoulders (supporting body)
   const wristY = (lm[LANDMARKS.LEFT_WRIST].y + lm[LANDMARKS.RIGHT_WRIST].y) / 2;
-  const handsDown = wristY > shoulderY - 0.1;
+  const handsDown = wristY > shoulderY - 0.08;
 
-  const match = (isHorizontal || straight) && handsDown;
-  return { match, confidence: match ? 0.8 : 0 };
+  // Arms must be extended (not just lying down)
+  const elbowAngle = calculateAngle(lm[LANDMARKS.LEFT_SHOULDER], lm[LANDMARKS.LEFT_ELBOW], lm[LANDMARKS.LEFT_WRIST]);
+  const armsExtended = elbowAngle > 120;
+
+  const match = (isHorizontal || straight) && handsDown && armsExtended;
+  return { match, confidence: match ? 0.85 : 0 };
 }
 
 /** Check for jumping jack position */
