@@ -24,7 +24,7 @@ export function FitnessHeader({ username, streak, xp, workoutDone, dietDone }: F
   };
 
   return (
-    <header className="px-4 pt-6 pb-4 space-y-4">
+    <header className="px-4 pt-6 pb-3 space-y-4">
       {/* Top row */}
       <div className="flex items-center justify-between">
         <div>

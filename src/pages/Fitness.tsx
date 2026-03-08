@@ -168,71 +168,78 @@ export default function Fitness() {
         dietDone={allDietDone}
       />
 
-      <div className="px-4 space-y-5">
-        {/* AI Workout & Challenges */}
-        <AIWorkoutLauncher />
-        <ChallengesLauncher />
-
-        {/* Core daily tasks */}
-        <div className="grid grid-cols-1 gap-4">
-          <WorkoutSection
-            tasks={workoutTasks}
-            allDone={allWorkoutDone}
-            onToggle={toggleWorkoutTask}
-            weekDays={weekDays}
-          />
-
-          <DietSection
-            tasks={dietTasks}
-            allDone={allDietDone}
-            onToggle={toggleDietTask}
-            goal={profile?.goal || null}
-          />
+      <div className="px-4 space-y-6">
+        {/* Quick Actions */}
+        <div className="space-y-3">
+          <AIWorkoutLauncher />
+          <ChallengesLauncher />
         </div>
 
-        {/* Health trackers */}
-        <TrackersSection
-          water={trackers.water}
-          steps={trackers.steps}
-          sleep={trackers.sleep}
-          weightLog={trackers.weightLog}
-          onAddWater={addWater}
-          onRemoveWater={removeWater}
-          onSetSteps={setSteps}
-          onSetSleep={setSleep}
-          onLogWeight={logWeight}
-        />
+        {/* Daily Tasks */}
+        <section className="space-y-3">
+          <h2 className="section-header px-1">Today's Plan</h2>
+          <div className="space-y-3">
+            <WorkoutSection
+              tasks={workoutTasks}
+              allDone={allWorkoutDone}
+              onToggle={toggleWorkoutTask}
+              weekDays={weekDays}
+            />
+            <DietSection
+              tasks={dietTasks}
+              allDone={allDietDone}
+              onToggle={toggleDietTask}
+              goal={profile?.goal || null}
+            />
+          </div>
+        </section>
+
+        {/* Health Trackers */}
+        <section className="space-y-3">
+          <h2 className="section-header px-1">Trackers</h2>
+          <TrackersSection
+            water={trackers.water}
+            steps={trackers.steps}
+            sleep={trackers.sleep}
+            weightLog={trackers.weightLog}
+            onAddWater={addWater}
+            onRemoveWater={removeWater}
+            onSetSteps={setSteps}
+            onSetSleep={setSleep}
+            onLogWeight={logWeight}
+          />
+        </section>
 
         {/* Workout History */}
-        <div className="space-y-3">
-          <h2 className="text-sm font-display uppercase tracking-wide text-foreground px-1">History</h2>
+        <section className="space-y-3">
+          <h2 className="section-header px-1">History</h2>
           <WorkoutHistory />
-        </div>
+        </section>
 
         {/* Progress & Analytics */}
-        <div className="space-y-3">
-          <h2 className="text-sm font-display uppercase tracking-wide text-foreground px-1">Analytics</h2>
-          
+        <section className="space-y-3">
+          <h2 className="section-header px-1">Analytics</h2>
           <BodyProgress />
-
           <ProgressAnalytics
             streak={profile?.streak || 0}
             totalActiveDays={profile?.total_active_days || 0}
             weekData={getWeekData()}
             leaderboard={leaderboard}
           />
-
           <EnhancedLeaderboard />
-        </div>
+        </section>
 
-        <AIInsights
-          streak={profile?.streak || 0}
-          workoutDone={allWorkoutDone}
-          dietDone={allDietDone}
-          water={trackers.water}
-          sleep={trackers.sleep}
-          steps={trackers.steps}
-        />
+        {/* AI Insights */}
+        <section>
+          <AIInsights
+            streak={profile?.streak || 0}
+            workoutDone={allWorkoutDone}
+            dietDone={allDietDone}
+            water={trackers.water}
+            sleep={trackers.sleep}
+            steps={trackers.steps}
+          />
+        </section>
       </div>
     </div>
   );

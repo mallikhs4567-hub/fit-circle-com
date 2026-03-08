@@ -129,12 +129,13 @@ export default function Circle() {
   const permanentPosts = posts.filter(p => (p as any).type === 'post');
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pb-20">
       <LevelUpModal
         open={levelUpLevel !== null}
         level={levelUpLevel ?? 1}
         onClose={() => setLevelUpLevel(null)}
       />
+
       {/* Header */}
       <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border safe-top">
         <div className="flex items-center justify-between px-4 py-3">
@@ -156,33 +157,33 @@ export default function Circle() {
         {/* Stories Row */}
         <StoriesRow onAddStory={handleAddStory} />
 
-      {/* Feed */}
-      <div className="px-4 pb-4 space-y-4">
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-          Posts
-        </h3>
-        {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-primary" />
-          </div>
-        ) : posts.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 rounded-full bg-secondary mx-auto mb-4 flex items-center justify-center">
-              <Flame className="w-8 h-8 text-muted-foreground" />
+        {/* Feed */}
+        <div className="px-4 pb-4 space-y-3">
+          <h3 className="section-header pt-1">Feed</h3>
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
             </div>
-            <h3 className="font-semibold text-foreground mb-1">No posts yet</h3>
-            <p className="text-sm text-muted-foreground">
-              Share your progress with your circle
-            </p>
-          </div>
-        ) : (
-          posts.map((post, index) => (
-            <div key={post.id} style={{ animationDelay: `${index * 50}ms` }}>
-              <PostCard post={post} onReaction={handleReaction} isStory={(post as any).type === 'story' || !(post as any).type} />
+          ) : posts.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="w-14 h-14 rounded-full bg-secondary mx-auto mb-4 flex items-center justify-center">
+                <Flame className="w-7 h-7 text-muted-foreground" />
+              </div>
+              <h3 className="font-display font-bold text-foreground mb-1">No Posts Yet</h3>
+              <p className="text-sm text-muted-foreground">
+                Share your progress with your circle
+              </p>
             </div>
-          ))
-        )}
-      </div>
+          ) : (
+            <div className="space-y-3">
+              {posts.map((post, index) => (
+                <div key={post.id} style={{ animationDelay: `${index * 50}ms` }}>
+                  <PostCard post={post} onReaction={handleReaction} isStory={(post as any).type === 'story' || !(post as any).type} />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </PullToRefresh>
 
       {/* Compose Modal */}

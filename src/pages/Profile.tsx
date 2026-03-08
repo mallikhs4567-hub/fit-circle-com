@@ -116,10 +116,10 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-20">
       {/* Header */}
-      <header className="safe-top px-4 pt-6 pb-4">
-        <div className="flex items-center justify-between">
+      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border safe-top">
+        <div className="flex items-center justify-between px-4 py-3">
           <h1 className="text-xl font-display font-bold text-foreground">Profile</h1>
           <div className="flex items-center gap-1">
             <NotificationCenter />
@@ -252,9 +252,7 @@ export default function Profile() {
 
       {/* My Posts Section */}
       <div className="px-4 mb-6">
-        <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-          My Posts
-        </h3>
+        <h3 className="section-header mb-3">My Posts</h3>
         {myPosts.length === 0 ? (
           <p className="text-center text-muted-foreground py-8">
             No posts yet
@@ -301,12 +299,12 @@ function StatCard({
   iconColor: string;
 }) {
   return (
-    <div className="card-elevated p-4">
-      <div className={`flex items-center gap-2 mb-1 ${iconColor}`}>
+    <div className="card-elevated p-4 space-y-2">
+      <div className={`flex items-center gap-2 ${iconColor}`}>
         <Icon className="w-4 h-4" />
-        <span className="text-xs font-medium">{label}</span>
+        <span className="text-[10px] font-semibold uppercase tracking-wider">{label}</span>
       </div>
-      <p className="text-lg font-display font-bold text-foreground">{value}</p>
+      <p className="stat-value text-lg text-foreground">{value}</p>
     </div>
   );
 }

@@ -97,10 +97,10 @@ export default function Chat() {
 
           {/* Friend Requests */}
           {(pendingRequests.length > 0 || sentRequests.length > 0) && (
-            <div className="px-4 py-3 bg-secondary/30 border-b border-border space-y-3">
+            <div className="px-4 py-3 bg-secondary/20 border-b border-border space-y-4">
               {pendingRequests.length > 0 && (
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">Received ({pendingRequests.length})</p>
+                  <p className="section-header mb-2">Received ({pendingRequests.length})</p>
                   <div className="space-y-2">
                     {pendingRequests.map((request) => (
                       <div 
@@ -137,7 +137,7 @@ export default function Chat() {
               )}
               {sentRequests.length > 0 && (
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">Sent ({sentRequests.length})</p>
+                  <p className="section-header mb-2">Sent ({sentRequests.length})</p>
                   <div className="space-y-2">
                     {sentRequests.map((request) => (
                       <div 

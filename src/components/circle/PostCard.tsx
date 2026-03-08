@@ -88,9 +88,9 @@
    };
  
    return (
-     <article className="card-elevated p-4 animate-fade-up">
+     <article className="card-elevated p-4 animate-fade-up space-y-3">
        {/* Header */}
-       <div className="flex items-start justify-between mb-3">
+       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
             <button onClick={() => navigate(`/user/${post.user_id}`)} className="shrink-0">
               <Avatar name={post.username} src={post.avatar_url} size="md" />
@@ -136,16 +136,13 @@
        </div>
  
        {/* Content */}
-       <p className="text-foreground text-base leading-relaxed">
+       <p className="text-foreground text-[15px] leading-relaxed">
          {post.content}
        </p>
  
-       {/* Media */}
        {post.image_url && (
          <PostMedia url={post.image_url} />
        )}
- 
-       <div className="mt-4" />
  
        {/* Stats and Actions */}
        <div className="flex items-center justify-between">
