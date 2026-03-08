@@ -20,6 +20,7 @@ import UserProfile from "@/pages/UserProfile";
 import Challenges from "@/pages/Challenges";
 import NotFound from "@/pages/NotFound";
 import { Loader2 } from "lucide-react";
+import { ErrorBoundary } from "@/components/common/ErrorBoundary";
 
 const queryClient = new QueryClient({
   defaultOptions: {
