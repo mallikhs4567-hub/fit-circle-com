@@ -2,12 +2,15 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAICoach } from '@/hooks/useAICoach';
 import { useProfile } from '@/hooks/useProfile';
+import { useSubscription, FREE_LIMITS } from '@/hooks/useSubscription';
+import { UpgradeModal } from '@/components/premium/UpgradeModal';
+import { PremiumBadge } from '@/components/premium/PremiumBadge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   ArrowLeft, Bot, Dumbbell, Apple, Heart, Flame, Zap, Send,
-  MessageCircle, Loader2, Sparkles, Target, Battery, BrainCircuit
+  MessageCircle, Loader2, Sparkles, Target, Battery, BrainCircuit, Crown, Lock
 } from 'lucide-react';
 
 function InsightCard({
