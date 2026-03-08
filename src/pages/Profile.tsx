@@ -170,6 +170,7 @@ export default function Profile() {
             <h2 className="text-xl font-display font-bold text-foreground">
               @{profile.username}
             </h2>
+            {isPremium && <PremiumBadge size="md" />}
             {(profile.streak ?? 0) > 0 && (
               <Flame className="w-4 h-4 fill-streak text-streak" />
             )}
