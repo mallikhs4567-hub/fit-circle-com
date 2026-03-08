@@ -88,7 +88,7 @@
    };
  
    return (
-     <article className="card-elevated p-4 animate-fade-up">
+     <article className="card-elevated p-4 animate-fade-up space-y-3">
        {/* Header */}
        <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
