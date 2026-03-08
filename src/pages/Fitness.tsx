@@ -13,6 +13,7 @@ import { AIInsights } from '@/components/fitness/AIInsights';
 import { AIWorkoutLauncher } from '@/components/fitness/AIWorkoutLauncher';
 import { BodyProgress } from '@/components/fitness/BodyProgress';
 import { EnhancedLeaderboard } from '@/components/fitness/EnhancedLeaderboard';
+import { WorkoutHistory } from '@/components/fitness/WorkoutHistory';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
