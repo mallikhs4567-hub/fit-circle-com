@@ -97,10 +97,11 @@ export function CameraFeed({ onFrame, active }: CameraFeedProps) {
         });
 
         pose.setOptions({
-          modelComplexity: 1,
+          modelComplexity: 0,
           smoothLandmarks: true,
-          minDetectionConfidence: 0.5,
-          minTrackingConfidence: 0.5,
+          enableSegmentation: false,
+          minDetectionConfidence: 0.4,
+          minTrackingConfidence: 0.4,
         });
 
         pose.onResults((results: any) => {
