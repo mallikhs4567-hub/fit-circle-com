@@ -116,10 +116,10 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-20">
       {/* Header */}
-      <header className="safe-top px-4 pt-6 pb-4">
-        <div className="flex items-center justify-between">
+      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border safe-top">
+        <div className="flex items-center justify-between px-4 py-3">
           <h1 className="text-xl font-display font-bold text-foreground">Profile</h1>
           <div className="flex items-center gap-1">
             <NotificationCenter />
