@@ -80,26 +80,35 @@ function detectPushup(lm: Point[]): { match: boolean; confidence: number } {
   return { match, confidence: match ? 0.85 : 0 };
 }
 
-/** Check for jumping jack position */
+/** Check for jumping jack starting position */
 function detectJumpingJack(lm: Point[]): { match: boolean; confidence: number } {
+  if (!isVisible(lm[LANDMARKS.LEFT_SHOULDER]) || !isVisible(lm[LANDMARKS.RIGHT_SHOULDER]) || !isVisible(lm[LANDMARKS.LEFT_ANKLE]) || !isVisible(lm[LANDMARKS.RIGHT_ANKLE])) {
+    return { match: false, confidence: 0 };
+  }
+
   const shoulderY = (lm[LANDMARKS.LEFT_SHOULDER].y + lm[LANDMARKS.RIGHT_SHOULDER].y) / 2;
   const hipY = (lm[LANDMARKS.LEFT_HIP].y + lm[LANDMARKS.RIGHT_HIP].y) / 2;
-  const upright = shoulderY < hipY;
+  const upright = shoulderY < hipY - 0.03;
 
-  // Check foot spread vs shoulder width
-  const shoulderWidth = distance(lm[LANDMARKS.LEFT_SHOULDER], lm[LANDMARKS.RIGHT_SHOULDER]);
-  const footWidth = distance(lm[LANDMARKS.LEFT_ANKLE], lm[LANDMARKS.RIGHT_ANKLE]);
+  // Must see full body standing
+  const ankleY = (lm[LANDMARKS.LEFT_ANKLE].y + lm[LANDMARKS.RIGHT_ANKLE].y) / 2;
+  const fullBodyVisible = ankleY > hipY;
 
-  // Arms up or at sides — either position is valid as starting
-  const lWrist = lm[LANDMARKS.LEFT_WRIST];
-  const rWrist = lm[LANDMARKS.RIGHT_WRIST];
-  const lShoulder = lm[LANDMARKS.LEFT_SHOULDER];
-  const rShoulder = lm[LANDMARKS.RIGHT_SHOULDER];
-  const armsUp = lWrist.y < lShoulder.y && rWrist.y < rShoulder.y;
-  const feetWide = footWidth > shoulderWidth * 1.2;
+  // Arms at sides (starting position) — wrists near hips
+  const lWristNearHip = Math.abs(lm[LANDMARKS.LEFT_WRIST].y - lm[LANDMARKS.LEFT_HIP].y) < 0.15;
+  const rWristNearHip = Math.abs(lm[LANDMARKS.RIGHT_WRIST].y - lm[LANDMARKS.RIGHT_HIP].y) < 0.15;
+  const armsAtSides = lWristNearHip && rWristNearHip;
 
-  // Match if upright and either arms up OR feet spread (or both)
-  const match = upright && (armsUp || feetWide);
+  // Feet together (starting) OR already in jack position
+  const shoulderWidth = Math.abs(lm[LANDMARKS.LEFT_SHOULDER].x - lm[LANDMARKS.RIGHT_SHOULDER].x);
+  const footWidth = Math.abs(lm[LANDMARKS.LEFT_ANKLE].x - lm[LANDMARKS.RIGHT_ANKLE].x);
+  const feetTogether = footWidth < shoulderWidth * 1.1;
+
+  const armsUp = lm[LANDMARKS.LEFT_WRIST].y < lm[LANDMARKS.LEFT_SHOULDER].y - 0.05 && lm[LANDMARKS.RIGHT_WRIST].y < lm[LANDMARKS.RIGHT_SHOULDER].y - 0.05;
+  const feetWide = footWidth > shoulderWidth * 1.3;
+
+  // Match: upright with full body AND (standing ready OR in jack position)
+  const match = upright && fullBodyVisible && ((armsAtSides && feetTogether) || (armsUp && feetWide));
   return { match, confidence: match ? 0.85 : 0 };
 }
 
