@@ -71,11 +71,13 @@ export function AIWorkoutSession({ exercise, onClose }: AIWorkoutSessionProps) {
 
     if (!recResult.recognized) {
       setRecognized(false);
-      return; // Don't count reps until exercise is recognized
+      recognizedRef.current = false;
+      return;
     }
 
-    if (!recognized) {
+    if (!recognizedRef.current) {
       setRecognized(true);
+      recognizedRef.current = true;
       voiceCoach.announceWorkoutStart(exercise.name);
     }
 
