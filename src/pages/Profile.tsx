@@ -255,6 +255,11 @@ export default function Profile() {
         </div>
       </div>
 
+      {/* Referral */}
+      <div className="px-4 mb-6">
+        <ReferralCard />
+      </div>
+
       {/* My Posts Section */}
       <div className="px-4 mb-6">
         <h3 className="section-header mb-3">My Posts</h3>
