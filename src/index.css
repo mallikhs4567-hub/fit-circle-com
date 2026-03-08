@@ -178,6 +178,12 @@
     line-height: 1;
   }
 
+  /* Standardized section header */
+  .section-header {
+    @apply text-xs font-semibold uppercase tracking-widest text-muted-foreground;
+    font-family: 'Inter', sans-serif;
+  }
+
   /* Animations */
   @keyframes pulse-glow {
     0%, 100% { box-shadow: 0 0 20px hsl(0 100% 59% / 0.2); }

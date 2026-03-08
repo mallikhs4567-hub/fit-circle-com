@@ -15,7 +15,7 @@ export function ProgressAnalytics({ streak, totalActiveDays, weekData, leaderboa
 
   return (
     <div className="space-y-3">
-      <h2 className="text-sm font-semibold text-foreground">Progress</h2>
+      <h2 className="section-header">Progress</h2>
 
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-2">
