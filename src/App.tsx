@@ -17,6 +17,7 @@ import Chat from "@/pages/Chat";
 import Profile from "@/pages/Profile";
 import Settings from "@/pages/Settings";
 import UserProfile from "@/pages/UserProfile";
+import Challenges from "@/pages/Challenges";
 import NotFound from "@/pages/NotFound";
 import { Loader2 } from "lucide-react";
 
@@ -68,6 +69,7 @@ function AppRoutes() {
       <Route element={<AppLayout />}>
         <Route path="/circle" element={<Circle />} />
         <Route path="/fitness" element={<Fitness />} />
+        <Route path="/challenges" element={<Challenges />} />
         <Route path="/search" element={<Search />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/profile" element={<Profile />} />
