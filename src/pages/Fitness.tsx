@@ -15,6 +15,7 @@ import { ChallengesLauncher } from '@/components/fitness/ChallengesLauncher';
 import { BodyProgress } from '@/components/fitness/BodyProgress';
 import { EnhancedLeaderboard } from '@/components/fitness/EnhancedLeaderboard';
 import { WorkoutHistory } from '@/components/fitness/WorkoutHistory';
+import { ActivityFeed } from '@/components/fitness/ActivityFeed';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -174,6 +175,12 @@ export default function Fitness() {
           <AIWorkoutLauncher />
           <ChallengesLauncher />
         </div>
+
+        {/* Activity Feed */}
+        <section className="space-y-3">
+          <h2 className="section-header px-1">Activity</h2>
+          <ActivityFeed />
+        </section>
 
         {/* Daily Tasks */}
         <section className="space-y-3">
