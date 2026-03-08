@@ -23,8 +23,11 @@ import {
   LogOut,
   Save,
   Watch,
+  Crown,
 } from 'lucide-react';
 import { ConnectedDevices } from '@/components/settings/ConnectedDevices';
+import { useSubscription } from '@/hooks/useSubscription';
+import { PremiumBadge } from '@/components/premium/PremiumBadge';
 
 type FitnessGoal = 'weight-loss' | 'muscle-gain' | 'yoga' | 'runner' | 'general-fitness';
 type ExperienceLevel = 'beginner' | 'intermediate' | 'advanced';
