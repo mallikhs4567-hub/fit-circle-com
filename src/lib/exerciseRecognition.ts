@@ -3,7 +3,7 @@
  * is in before rep counting begins. Uses angle/position rules per exercise.
  */
 
-import { calculateAngle, distance, LANDMARKS, type Point } from './angleUtils';
+import { calculateAngle, distance, isVisible, LANDMARKS, type Point } from './angleUtils';
 import type { ExerciseType } from './repCounter';
 
 export interface RecognitionResult {
