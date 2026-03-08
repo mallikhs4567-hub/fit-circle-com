@@ -1,12 +1,14 @@
 import { useState, useRef, useCallback } from 'react';
 import { useProfile } from '@/hooks/useProfile';
-import { useAuth } from '@/hooks/useAuth'; // kept for potential future use
+import { useAuth } from '@/hooks/useAuth';
+import { useSubscription } from '@/hooks/useSubscription';
 import { usePosts } from '@/hooks/usePosts';
 import { Avatar } from '@/components/common/Avatar';
 import { StreakBadge } from '@/components/common/StreakBadge';
 import { GoalBadge } from '@/components/common/GoalBadge';
 import { LevelIndicator } from '@/components/common/LevelIndicator';
 import { XPProgressBar } from '@/components/common/XPProgressBar';
+import { PremiumBadge } from '@/components/premium/PremiumBadge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
