@@ -17,6 +17,7 @@ import Chat from "@/pages/Chat";
 import Profile from "@/pages/Profile";
 import Settings from "@/pages/Settings";
 import UserProfile from "@/pages/UserProfile";
+import Challenges from "@/pages/Challenges";
 import NotFound from "@/pages/NotFound";
 import { Loader2 } from "lucide-react";
 
