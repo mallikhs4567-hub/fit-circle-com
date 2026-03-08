@@ -31,6 +31,7 @@ export function AIWorkoutSession({ exercise, onClose }: AIWorkoutSessionProps) {
   const [recognized, setRecognized] = useState(false);
   const [recognitionMsg, setRecognitionMsg] = useState('Getting into position...');
   const [recognitionConfidence, setRecognitionConfidence] = useState(0);
+  const recognizedRef = useRef(false);
 
   const repStateRef = useRef(createRepState());
   const recognitionStateRef = useRef(createRecognitionState());
@@ -70,11 +71,13 @@ export function AIWorkoutSession({ exercise, onClose }: AIWorkoutSessionProps) {
 
     if (!recResult.recognized) {
       setRecognized(false);
-      return; // Don't count reps until exercise is recognized
+      recognizedRef.current = false;
+      return;
     }
 
-    if (!recognized) {
+    if (!recognizedRef.current) {
       setRecognized(true);
+      recognizedRef.current = true;
       voiceCoach.announceWorkoutStart(exercise.name);
     }
 
@@ -99,7 +102,7 @@ export function AIWorkoutSession({ exercise, onClose }: AIWorkoutSessionProps) {
     }
 
     repStateRef.current = newState;
-  }, [exercise, recognized]);
+  }, [exercise]);
 
   const handleWorkoutComplete = async (totalReps: number) => {
     setCompleted(true);
