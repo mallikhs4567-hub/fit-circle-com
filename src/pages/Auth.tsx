@@ -86,15 +86,15 @@ export default function Auth() {
       if (!error && data?.user && referralCode) {
         // Track referral: look up inviter by code and create referral record
         try {
-          const { data: inviterProfile } = await supabase
+          const { data: inviterProfiles } = await supabase
             .from('profiles')
             .select('user_id')
-            .eq('referral_code' as any, referralCode)
-            .maybeSingle();
+            .eq('referral_code' as any, referralCode) as any;
 
-          if (inviterProfile && (inviterProfile as any).user_id !== data.user.id) {
+          const inviterProfile = inviterProfiles?.[0];
+          if (inviterProfile && inviterProfile.user_id !== data.user.id) {
             await supabase.from('referrals').insert({
-              inviter_id: (inviterProfile as any).user_id,
+              inviter_id: inviterProfile.user_id,
               new_user_id: data.user.id,
               status: 'pending',
             });
