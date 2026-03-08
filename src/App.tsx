@@ -69,6 +69,7 @@ function AppRoutes() {
       <Route element={<AppLayout />}>
         <Route path="/circle" element={<Circle />} />
         <Route path="/fitness" element={<Fitness />} />
+        <Route path="/challenges" element={<Challenges />} />
         <Route path="/search" element={<Search />} />
         <Route path="/chat" element={<Chat />} />
         <Route path="/profile" element={<Profile />} />
