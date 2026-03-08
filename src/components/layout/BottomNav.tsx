@@ -8,6 +8,7 @@ const tabs = [
   { id: 'groups', label: 'Groups', icon: UsersRound, path: '/groups' },
   { id: 'challenges', label: 'Compete', icon: Trophy, path: '/challenges' },
   { id: 'chat', label: 'Chat', icon: MessageCircle, path: '/chat' },
+  { id: 'profile', label: 'Profile', icon: User, path: '/profile' },
 ];
 
 export function BottomNav() {
