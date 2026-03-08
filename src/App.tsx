@@ -18,6 +18,8 @@ import Profile from "@/pages/Profile";
 import Settings from "@/pages/Settings";
 import UserProfile from "@/pages/UserProfile";
 import Challenges from "@/pages/Challenges";
+import Groups from "@/pages/Groups";
+import GroupDetail from "@/pages/GroupDetail";
 import NotFound from "@/pages/NotFound";
 import { Loader2 } from "lucide-react";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
