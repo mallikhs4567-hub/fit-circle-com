@@ -14,7 +14,7 @@ export interface RecognitionResult {
 }
 
 /** Number of consecutive matching frames needed to confirm recognition */
-const CONFIRM_FRAMES = 12;
+const CONFIRM_FRAMES = 8;
 
 interface RecognitionState {
   matchCount: number;

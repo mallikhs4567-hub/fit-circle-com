@@ -59,7 +59,7 @@ export function AIWorkoutSession({ exercise, onClose }: AIWorkoutSessionProps) {
 
   const handleFrame = useCallback((landmarks: Point[]) => {
     frameCountRef.current++;
-    if (frameCountRef.current % 3 !== 0) return;
+    if (frameCountRef.current % 2 !== 0) return;
 
     // Step 1: Exercise recognition — must pass before rep counting
     const { state: newRecState, result: recResult } = recognizeExercise(

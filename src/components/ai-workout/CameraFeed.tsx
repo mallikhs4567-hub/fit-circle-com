@@ -70,7 +70,7 @@ export function CameraFeed({ onFrame, active }: CameraFeedProps) {
       try {
         // Get camera stream
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'user', width: 640, height: 480 },
+          video: { facingMode: 'user', width: 480, height: 360 },
         });
         streamRef.current = stream;
 
@@ -97,10 +97,11 @@ export function CameraFeed({ onFrame, active }: CameraFeedProps) {
         });
 
         pose.setOptions({
-          modelComplexity: 1,
+          modelComplexity: 0,
           smoothLandmarks: true,
-          minDetectionConfidence: 0.5,
-          minTrackingConfidence: 0.5,
+          enableSegmentation: false,
+          minDetectionConfidence: 0.4,
+          minTrackingConfidence: 0.4,
         });
 
         pose.onResults((results: any) => {
@@ -139,8 +140,8 @@ export function CameraFeed({ onFrame, active }: CameraFeedProps) {
                 await poseRef.current.send({ image: videoRef.current });
               }
             },
-            width: 640,
-            height: 480,
+            width: 480,
+            height: 360,
           });
           cameraRef.current = camera;
           camera.start();
