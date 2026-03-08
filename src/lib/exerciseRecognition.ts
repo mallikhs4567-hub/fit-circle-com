@@ -29,18 +29,25 @@ export function createRecognitionState(): RecognitionState {
 
 /** Check if landmarks look like a squat starting position (standing upright) */
 function detectSquat(lm: Point[]): { match: boolean; confidence: number } {
+  if (!isVisible(lm[LANDMARKS.LEFT_HIP]) || !isVisible(lm[LANDMARKS.LEFT_KNEE]) || !isVisible(lm[LANDMARKS.LEFT_ANKLE]) || !isVisible(lm[LANDMARKS.RIGHT_KNEE])) {
+    return { match: false, confidence: 0 };
+  }
+
   const lKnee = calculateAngle(lm[LANDMARKS.LEFT_HIP], lm[LANDMARKS.LEFT_KNEE], lm[LANDMARKS.LEFT_ANKLE]);
   const rKnee = calculateAngle(lm[LANDMARKS.RIGHT_HIP], lm[LANDMARKS.RIGHT_KNEE], lm[LANDMARKS.RIGHT_ANKLE]);
   const avgKnee = (lKnee + rKnee) / 2;
 
-  // Standing with visible legs, facing camera
   const hipY = (lm[LANDMARKS.LEFT_HIP].y + lm[LANDMARKS.RIGHT_HIP].y) / 2;
   const shoulderY = (lm[LANDMARKS.LEFT_SHOULDER].y + lm[LANDMARKS.RIGHT_SHOULDER].y) / 2;
-  const upright = shoulderY < hipY; // shoulders above hips
+  const upright = shoulderY < hipY - 0.03;
 
-  // Legs roughly straight (standing) or already bending (mid-squat)
-  const legsVisible = avgKnee > 120 || avgKnee < 110; // standing or squatting
-  const match = upright && legsVisible && avgKnee > 60;
+  // Feet roughly shoulder width apart
+  const shoulderWidth = Math.abs(lm[LANDMARKS.LEFT_SHOULDER].x - lm[LANDMARKS.RIGHT_SHOULDER].x);
+  const footWidth = Math.abs(lm[LANDMARKS.LEFT_ANKLE].x - lm[LANDMARKS.RIGHT_ANKLE].x);
+  const feetReasonable = footWidth > shoulderWidth * 0.5 && footWidth < shoulderWidth * 2.5;
+
+  const legsReady = avgKnee > 140; // must be standing relatively straight
+  const match = upright && legsReady && feetReasonable;
 
   return { match, confidence: match ? Math.min(1, avgKnee / 180) : 0 };
 }
