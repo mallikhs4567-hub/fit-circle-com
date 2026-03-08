@@ -93,25 +93,44 @@ export default function AICoach() {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const { loading, streamingText, chatMessages, getInsight, sendChatMessage } = useAICoach();
+  const { isPremium, checkFeatureAccess, incrementFeatureUsage, getRemainingUsage } = useSubscription();
   const [activeType, setActiveType] = useState<string | null>(null);
   const [chatInput, setChatInput] = useState('');
+  const [showUpgrade, setShowUpgrade] = useState(false);
+  const [remaining, setRemaining] = useState<number | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages, streamingText]);
 
+  useEffect(() => {
+    getRemainingUsage('ai_coach').then(setRemaining);
+  }, [getRemainingUsage, chatMessages.length]);
+
   const handleGenerate = async (type: string) => {
+    const hasAccess = await checkFeatureAccess('ai_coach');
+    if (!hasAccess) {
+      setShowUpgrade(true);
+      return;
+    }
     setActiveType(type);
     await getInsight(type);
+    await incrementFeatureUsage('ai_coach');
   };
 
   const handleSendChat = async () => {
     if (!chatInput.trim() || loading) return;
+    const hasAccess = await checkFeatureAccess('ai_coach');
+    if (!hasAccess) {
+      setShowUpgrade(true);
+      return;
+    }
     const msg = chatInput.trim();
     setChatInput('');
     setActiveType('chat');
     await sendChatMessage(msg);
+    await incrementFeatureUsage('ai_coach');
   };
 
   const level = Math.floor((profile?.xp || 0) / 100) + 1;
