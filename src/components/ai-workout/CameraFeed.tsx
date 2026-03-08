@@ -70,7 +70,7 @@ export function CameraFeed({ onFrame, active }: CameraFeedProps) {
       try {
         // Get camera stream
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'user', width: 640, height: 480 },
+          video: { facingMode: 'user', width: 480, height: 360 },
         });
         streamRef.current = stream;
 
