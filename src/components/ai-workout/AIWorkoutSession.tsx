@@ -170,23 +170,25 @@ export function AIWorkoutSession({ exercise, onClose }: AIWorkoutSessionProps) {
   if (showPrivacy) {
     return (
       <div className="fixed inset-0 z-50 bg-background flex flex-col items-center justify-center p-6">
-        <div className="card-elevated p-6 max-w-sm space-y-4 text-center">
-          <Camera className="w-12 h-12 text-primary mx-auto" />
-          <h2 className="text-lg font-display font-bold text-foreground">AI Workout Mode</h2>
-          <p className="text-sm text-muted-foreground">
-            Your camera feed is processed <strong>entirely on your device</strong>. 
-            No video is stored or sent to any server. Only your rep count and form score are saved.
+        <div className="card-elevated p-6 max-w-sm space-y-5 text-center">
+          <div className="w-14 h-14 rounded-xl gradient-primary glow-primary mx-auto flex items-center justify-center">
+            <Camera className="w-7 h-7 text-primary-foreground" />
+          </div>
+          <h2 className="text-lg font-display uppercase tracking-wide text-foreground">AI Workout</h2>
+          <p className="text-sm text-muted-foreground leading-relaxed">
+            Camera feed is processed <strong className="text-foreground">on your device only</strong>. 
+            No video is stored or sent anywhere.
           </p>
           <div className="space-y-2">
             <button
               onClick={handleStart}
-              className="w-full py-3 rounded-xl gradient-primary text-primary-foreground font-semibold text-sm"
+              className="w-full py-3.5 rounded-lg gradient-primary text-primary-foreground font-bold text-sm uppercase tracking-wider press-effect"
             >
               Start {exercise.name}
             </button>
             <button
               onClick={onClose}
-              className="w-full py-2 text-sm text-muted-foreground"
+              className="w-full py-2 text-sm text-muted-foreground press-effect"
             >
               Cancel
             </button>
@@ -200,11 +202,11 @@ export function AIWorkoutSession({ exercise, onClose }: AIWorkoutSessionProps) {
     <div className="fixed inset-0 z-50 bg-background flex flex-col">
       {/* Top bar */}
       <div className="flex items-center justify-between p-3 safe-top">
-        <button onClick={onClose} className="p-2 rounded-xl bg-secondary">
+        <button onClick={onClose} className="p-2 rounded-lg bg-secondary press-effect">
           <X className="w-5 h-5 text-foreground" />
         </button>
-        <span className="text-sm font-semibold text-foreground">{exercise.name}</span>
-        <button onClick={() => setVoiceOn(!voiceOn)} className="p-2 rounded-xl bg-secondary">
+        <span className="text-sm font-display uppercase tracking-wider text-foreground">{exercise.name}</span>
+        <button onClick={() => setVoiceOn(!voiceOn)} className="p-2 rounded-lg bg-secondary press-effect">
           {voiceOn ? <Volume2 className="w-5 h-5 text-primary" /> : <VolumeX className="w-5 h-5 text-muted-foreground" />}
         </button>
       </div>
@@ -216,15 +218,15 @@ export function AIWorkoutSession({ exercise, onClose }: AIWorkoutSessionProps) {
 
       {/* HUD */}
       <div className="p-4 space-y-3 safe-bottom">
-        {/* Recognition banner */}
+        {/* Recognition */}
         {!recognized && (
           <div className="card-elevated p-3 flex items-center gap-3">
-            <AlertTriangle className="w-5 h-5 text-accent shrink-0" />
+            <AlertTriangle className="w-5 h-5 text-streak shrink-0" />
             <div className="flex-1">
               <p className="text-xs font-semibold text-foreground">{recognitionMsg}</p>
-              <div className="w-full h-1.5 bg-secondary rounded-full mt-1.5 overflow-hidden">
+              <div className="w-full h-1.5 bg-secondary rounded mt-1.5 overflow-hidden">
                 <div
-                  className="h-full rounded-full bg-accent transition-all duration-300"
+                  className="h-full rounded bg-streak transition-all duration-300"
                   style={{ width: `${recognitionConfidence * 100}%` }}
                 />
               </div>
@@ -232,47 +234,47 @@ export function AIWorkoutSession({ exercise, onClose }: AIWorkoutSessionProps) {
           </div>
         )}
 
-        {/* Rep counter */}
+        {/* Main rep counter - prominent */}
         <div className="flex items-center gap-4">
           <div className="flex-1">
-            <div className="flex justify-between text-xs mb-1">
-              <span className="text-muted-foreground">Reps</span>
-              <span className="text-foreground font-semibold">{reps}/{exercise.targetReps}</span>
+            <div className="flex justify-between text-[10px] mb-1.5 uppercase tracking-wider">
+              <span className="text-muted-foreground">Progress</span>
+              <span className="text-foreground font-bold">{reps}/{exercise.targetReps}</span>
             </div>
-            <div className="w-full h-2 bg-secondary rounded-full overflow-hidden">
+            <div className="w-full h-2.5 bg-secondary rounded overflow-hidden">
               <div
-                className="h-full rounded-full gradient-primary transition-all duration-300"
+                className="h-full rounded gradient-primary transition-all duration-300"
                 style={{ width: `${Math.min(progress, 100)}%` }}
               />
             </div>
           </div>
 
-          <div className="text-center">
-            <p className="text-2xl font-display font-bold text-foreground">{reps}</p>
-            <p className="text-[10px] text-muted-foreground">REPS</p>
+          <div className="text-center px-2">
+            <p className="stat-value text-4xl text-primary animate-count-up" key={reps}>{reps}</p>
+            <p className="text-[9px] text-muted-foreground uppercase tracking-widest">Reps</p>
           </div>
         </div>
 
-        {/* Form score + timer */}
+        {/* Stats row */}
         <div className="flex gap-2">
           <div className="flex-1 card-elevated p-3 text-center">
-            <p className={cn("text-xl font-display font-bold", formColor)}>
+            <p className={cn("stat-value text-2xl", formColor)}>
               {recognized ? `${formResult.score}%` : '—'}
             </p>
-            <p className="text-[10px] text-muted-foreground">Form Score</p>
+            <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-0.5">Form</p>
           </div>
           <div className="flex-1 card-elevated p-3 text-center">
-            <p className="text-xl font-display font-bold text-foreground">
+            <p className="stat-value text-2xl text-foreground">
               {Math.floor(duration / 60)}:{(duration % 60).toString().padStart(2, '0')}
             </p>
-            <p className="text-[10px] text-muted-foreground">Duration</p>
+            <p className="text-[9px] text-muted-foreground uppercase tracking-wider mt-0.5">Time</p>
           </div>
         </div>
 
         {/* Form feedback */}
         {recognized && formResult.tips.length > 0 && (
-          <div className="card-elevated p-3">
-            <p className="text-xs text-accent font-medium">💡 {formResult.tips[0]}</p>
+          <div className="card-elevated p-3 border-l-2 border-l-primary">
+            <p className="text-xs text-foreground">{formResult.tips[0]}</p>
           </div>
         )}
       </div>
