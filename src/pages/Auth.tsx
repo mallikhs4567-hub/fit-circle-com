@@ -1,11 +1,12 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { lovable } from '@/integrations/lovable/index';
-import { Flame, Mail, Lock, User, ArrowRight, ArrowLeft, Loader2, Check } from 'lucide-react';
+import { Flame, Mail, Lock, User, ArrowRight, ArrowLeft, Loader2, Check, Gift } from 'lucide-react';
 import { toast } from 'sonner';
 
 type AuthMode = 'login' | 'signup' | 'forgot';
@@ -13,6 +14,7 @@ type ForgotStep = 'email' | 'otp' | 'password' | 'success';
 
 export default function Auth() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { signIn, signUp, resetPassword, verifyOtp, updatePassword } = useAuth();
   const [mode, setMode] = useState<AuthMode>('login');
   const [loading, setLoading] = useState(false);
@@ -22,6 +24,16 @@ export default function Auth() {
   const [username, setUsername] = useState('');
   const [forgotStep, setForgotStep] = useState<ForgotStep>('email');
   const [otp, setOtp] = useState('');
+
+  // Check for referral code in URL
+  const referralCode = searchParams.get('ref');
+
+  // If referral code present, default to signup mode
+  useEffect(() => {
+    if (referralCode) {
+      setMode('signup');
+    }
+  }, [referralCode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,7 +82,27 @@ export default function Auth() {
         setLoading(false);
         return;
       }
-      const { error } = await signUp(email, password, username);
+      const { data, error } = await signUp(email, password, username);
+      if (!error && data?.user && referralCode) {
+        // Track referral: look up inviter by code and create referral record
+        try {
+          const { data: inviterProfiles } = await (supabase
+            .from('profiles')
+            .select('user_id')
+            .eq('referral_code', referralCode) as any);
+
+          const inviterProfile = inviterProfiles?.[0];
+          if (inviterProfile && inviterProfile.user_id !== data.user.id) {
+            await supabase.from('referrals').insert({
+              inviter_id: inviterProfile.user_id,
+              new_user_id: data.user.id,
+              status: 'pending',
+            });
+          }
+        } catch {
+          // Non-blocking: referral tracking failed
+        }
+      }
       if (!error) {
         navigate('/onboarding');
       }
@@ -130,6 +162,15 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {/* Referral banner */}
+      {referralCode && mode === 'signup' && (
+        <div className="mx-6 mt-4 p-3 rounded-xl bg-primary/10 border border-primary/20 flex items-center gap-2">
+          <Gift className="w-4 h-4 text-primary shrink-0" />
+          <p className="text-xs text-foreground">
+            You've been invited! Sign up to join your friend on FitCircle 🎉
+          </p>
+        </div>
+      )}
       {/* Header */}
       <div className="safe-top px-6 pt-14 pb-10 text-center relative">
         {mode === 'forgot' && (

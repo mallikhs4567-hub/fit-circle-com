@@ -28,6 +28,7 @@ import {
 import { ConnectedDevices } from '@/components/settings/ConnectedDevices';
 import { useSubscription } from '@/hooks/useSubscription';
 import { PremiumBadge } from '@/components/premium/PremiumBadge';
+import { ReferralCard } from '@/components/referral/ReferralCard';
 
 type FitnessGoal = 'weight-loss' | 'muscle-gain' | 'yoga' | 'runner' | 'general-fitness';
 type ExperienceLevel = 'beginner' | 'intermediate' | 'advanced';
@@ -333,6 +334,11 @@ export default function Settings() {
             <ConnectedDevices />
           </div>
         )}
+      </div>
+
+      {/* Referral */}
+      <div className="px-4 mb-2">
+        <ReferralCard />
       </div>
 
       {/* Premium */}
