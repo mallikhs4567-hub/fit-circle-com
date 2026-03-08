@@ -41,6 +41,63 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_coach_logs: {
+        Row: {
+          ai_feedback: string
+          context: Json | null
+          created_at: string
+          id: string
+          user_id: string
+          workout_type: string | null
+        }
+        Insert: {
+          ai_feedback: string
+          context?: Json | null
+          created_at?: string
+          id?: string
+          user_id: string
+          workout_type?: string | null
+        }
+        Update: {
+          ai_feedback?: string
+          context?: Json | null
+          created_at?: string
+          id?: string
+          user_id?: string
+          workout_type?: string | null
+        }
+        Relationships: []
+      }
+      ai_recommendations: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          priority: number
+          recommendation: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          priority?: number
+          recommendation: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          priority?: number
+          recommendation?: string
+          type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       blocked_users: {
         Row: {
           blocked_id: string
