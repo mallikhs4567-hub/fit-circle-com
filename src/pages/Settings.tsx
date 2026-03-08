@@ -56,6 +56,7 @@ export default function Settings() {
   const navigate = useNavigate();
   const { profile, updateProfile } = useProfile();
   const { signOut } = useAuth();
+  const { isPremium } = useSubscription();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [username, setUsername] = useState(profile?.username || '');
