@@ -788,6 +788,8 @@ export type Database = {
           goal: string | null
           height: number | null
           id: string
+          referral_code: string | null
+          referred_by: string | null
           streak: number | null
           total_active_days: number | null
           updated_at: string
@@ -806,6 +808,8 @@ export type Database = {
           goal?: string | null
           height?: number | null
           id?: string
+          referral_code?: string | null
+          referred_by?: string | null
           streak?: number | null
           total_active_days?: number | null
           updated_at?: string
@@ -824,6 +828,8 @@ export type Database = {
           goal?: string | null
           height?: number | null
           id?: string
+          referral_code?: string | null
+          referred_by?: string | null
           streak?: number | null
           total_active_days?: number | null
           updated_at?: string
@@ -1140,6 +1146,10 @@ export type Database = {
       }
       is_group_member: {
         Args: { _group_id: string; _user_id: string }
+        Returns: boolean
+      }
+      process_referral_reward: {
+        Args: { inviter_user_id: string }
         Returns: boolean
       }
       search_users_by_username: {
