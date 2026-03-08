@@ -14,6 +14,7 @@ type ForgotStep = 'email' | 'otp' | 'password' | 'success';
 
 export default function Auth() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { signIn, signUp, resetPassword, verifyOtp, updatePassword } = useAuth();
   const [mode, setMode] = useState<AuthMode>('login');
   const [loading, setLoading] = useState(false);
@@ -23,6 +24,16 @@ export default function Auth() {
   const [username, setUsername] = useState('');
   const [forgotStep, setForgotStep] = useState<ForgotStep>('email');
   const [otp, setOtp] = useState('');
+
+  // Check for referral code in URL
+  const referralCode = searchParams.get('ref');
+
+  // If referral code present, default to signup mode
+  useEffect(() => {
+    if (referralCode) {
+      setMode('signup');
+    }
+  }, [referralCode]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
