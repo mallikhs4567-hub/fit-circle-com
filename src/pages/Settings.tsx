@@ -28,6 +28,7 @@ import {
 import { ConnectedDevices } from '@/components/settings/ConnectedDevices';
 import { useSubscription } from '@/hooks/useSubscription';
 import { PremiumBadge } from '@/components/premium/PremiumBadge';
+import { ReferralCard } from '@/components/referral/ReferralCard';
 
 type FitnessGoal = 'weight-loss' | 'muscle-gain' | 'yoga' | 'runner' | 'general-fitness';
 type ExperienceLevel = 'beginner' | 'intermediate' | 'advanced';
