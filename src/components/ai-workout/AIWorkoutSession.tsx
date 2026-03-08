@@ -31,6 +31,7 @@ export function AIWorkoutSession({ exercise, onClose }: AIWorkoutSessionProps) {
   const [recognized, setRecognized] = useState(false);
   const [recognitionMsg, setRecognitionMsg] = useState('Getting into position...');
   const [recognitionConfidence, setRecognitionConfidence] = useState(0);
+  const recognizedRef = useRef(false);
 
   const repStateRef = useRef(createRepState());
   const recognitionStateRef = useRef(createRecognitionState());
