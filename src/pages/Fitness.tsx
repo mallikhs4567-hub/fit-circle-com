@@ -13,6 +13,7 @@ import { AIInsights } from '@/components/fitness/AIInsights';
 import { AIWorkoutLauncher } from '@/components/fitness/AIWorkoutLauncher';
 import { BodyProgress } from '@/components/fitness/BodyProgress';
 import { EnhancedLeaderboard } from '@/components/fitness/EnhancedLeaderboard';
+import { WorkoutHistory } from '@/components/fitness/WorkoutHistory';
 import { Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -199,6 +200,12 @@ export default function Fitness() {
           onSetSleep={setSleep}
           onLogWeight={logWeight}
         />
+
+        {/* Workout History & Weekly Stats */}
+        <div className="space-y-4">
+          <h2 className="text-sm font-display font-bold text-foreground px-1">Workout History</h2>
+          <WorkoutHistory />
+        </div>
 
         {/* Progress & Analytics section */}
         <div className="space-y-4">
