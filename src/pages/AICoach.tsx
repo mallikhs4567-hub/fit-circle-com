@@ -2,12 +2,15 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAICoach } from '@/hooks/useAICoach';
 import { useProfile } from '@/hooks/useProfile';
+import { useSubscription, FREE_LIMITS } from '@/hooks/useSubscription';
+import { UpgradeModal } from '@/components/premium/UpgradeModal';
+import { PremiumBadge } from '@/components/premium/PremiumBadge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   ArrowLeft, Bot, Dumbbell, Apple, Heart, Flame, Zap, Send,
-  MessageCircle, Loader2, Sparkles, Target, Battery, BrainCircuit
+  MessageCircle, Loader2, Sparkles, Target, Battery, BrainCircuit, Crown, Lock
 } from 'lucide-react';
 
 function InsightCard({
@@ -90,38 +93,59 @@ export default function AICoach() {
   const navigate = useNavigate();
   const { profile } = useProfile();
   const { loading, streamingText, chatMessages, getInsight, sendChatMessage } = useAICoach();
+  const { isPremium, checkFeatureAccess, incrementFeatureUsage, getRemainingUsage } = useSubscription();
   const [activeType, setActiveType] = useState<string | null>(null);
   const [chatInput, setChatInput] = useState('');
+  const [showUpgrade, setShowUpgrade] = useState(false);
+  const [remaining, setRemaining] = useState<number | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages, streamingText]);
 
+  useEffect(() => {
+    getRemainingUsage('ai_coach').then(setRemaining);
+  }, [getRemainingUsage, chatMessages.length]);
+
   const handleGenerate = async (type: string) => {
+    const hasAccess = await checkFeatureAccess('ai_coach');
+    if (!hasAccess) {
+      setShowUpgrade(true);
+      return;
+    }
     setActiveType(type);
     await getInsight(type);
+    await incrementFeatureUsage('ai_coach');
   };
 
   const handleSendChat = async () => {
     if (!chatInput.trim() || loading) return;
+    const hasAccess = await checkFeatureAccess('ai_coach');
+    if (!hasAccess) {
+      setShowUpgrade(true);
+      return;
+    }
     const msg = chatInput.trim();
     setChatInput('');
     setActiveType('chat');
     await sendChatMessage(msg);
+    await incrementFeatureUsage('ai_coach');
   };
 
   const level = Math.floor((profile?.xp || 0) / 100) + 1;
 
   return (
     <div className="min-h-screen bg-background">
+      <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} feature="Unlimited AI Coach" />
+
       {/* Header */}
       <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border/40 px-4 pt-12 pb-3">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="text-muted-foreground">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-1">
             <div className="w-9 h-9 rounded-xl bg-primary/20 flex items-center justify-center">
               <BrainCircuit className="w-5 h-5 text-primary" />
             </div>
@@ -134,6 +158,13 @@ export default function AICoach() {
               </p>
             </div>
           </div>
+          {isPremium ? (
+            <PremiumBadge size="md" />
+          ) : remaining !== null ? (
+            <span className="text-[10px] text-muted-foreground bg-secondary px-2 py-1 rounded-full">
+              {remaining}/{FREE_LIMITS.ai_coach} left
+            </span>
+          ) : null}
         </div>
       </div>
 

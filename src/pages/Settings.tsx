@@ -23,8 +23,11 @@ import {
   LogOut,
   Save,
   Watch,
+  Crown,
 } from 'lucide-react';
 import { ConnectedDevices } from '@/components/settings/ConnectedDevices';
+import { useSubscription } from '@/hooks/useSubscription';
+import { PremiumBadge } from '@/components/premium/PremiumBadge';
 
 type FitnessGoal = 'weight-loss' | 'muscle-gain' | 'yoga' | 'runner' | 'general-fitness';
 type ExperienceLevel = 'beginner' | 'intermediate' | 'advanced';
@@ -53,6 +56,7 @@ export default function Settings() {
   const navigate = useNavigate();
   const { profile, updateProfile } = useProfile();
   const { signOut } = useAuth();
+  const { isPremium } = useSubscription();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [username, setUsername] = useState(profile?.username || '');
@@ -329,6 +333,20 @@ export default function Settings() {
             <ConnectedDevices />
           </div>
         )}
+      </div>
+
+      {/* Premium */}
+      <div className="px-4 mb-2">
+        <button
+          onClick={() => navigate('/premium')}
+          className="w-full flex items-center gap-3 py-3.5 px-4 card-elevated rounded-xl"
+        >
+          <Crown className="w-4 h-4 text-primary" />
+          <span className="flex-1 text-sm font-medium text-foreground">
+            {isPremium ? 'Premium Active' : 'Upgrade to Premium'}
+          </span>
+          {isPremium ? <PremiumBadge /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
+        </button>
       </div>
 
       {/* Logout */}

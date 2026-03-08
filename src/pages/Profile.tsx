@@ -1,12 +1,14 @@
 import { useState, useRef, useCallback } from 'react';
 import { useProfile } from '@/hooks/useProfile';
-import { useAuth } from '@/hooks/useAuth'; // kept for potential future use
+import { useAuth } from '@/hooks/useAuth';
+import { useSubscription } from '@/hooks/useSubscription';
 import { usePosts } from '@/hooks/usePosts';
 import { Avatar } from '@/components/common/Avatar';
 import { StreakBadge } from '@/components/common/StreakBadge';
 import { GoalBadge } from '@/components/common/GoalBadge';
 import { LevelIndicator } from '@/components/common/LevelIndicator';
 import { XPProgressBar } from '@/components/common/XPProgressBar';
+import { PremiumBadge } from '@/components/premium/PremiumBadge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -41,6 +43,7 @@ const goalLabels: Record<string, string> = {
 export default function Profile() {
   const { profile, loading, updateProfile, refetch: refetchProfile } = useProfile();
   const { signOut } = useAuth();
+  const { isPremium } = useSubscription();
   const { posts, addReaction, refetch: refetchPosts } = usePosts();
   const navigate = useNavigate();
   const [isEditingBio, setIsEditingBio] = useState(false);
@@ -167,6 +170,7 @@ export default function Profile() {
             <h2 className="text-xl font-display font-bold text-foreground">
               @{profile.username}
             </h2>
+            {isPremium && <PremiumBadge size="md" />}
             {(profile.streak ?? 0) > 0 && (
               <Flame className="w-4 h-4 fill-streak text-streak" />
             )}

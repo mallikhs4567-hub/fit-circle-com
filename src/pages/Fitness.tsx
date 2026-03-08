@@ -1,8 +1,10 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useProfile } from '@/hooks/useProfile';
 import { useChecklist } from '@/hooks/useChecklist';
 import { useXP } from '@/hooks/useXP';
 import { useFitnessTrackers } from '@/hooks/useFitnessTrackers';
+import { useSubscription } from '@/hooks/useSubscription';
 import { LevelUpModal } from '@/components/common/LevelUpModal';
 import { FitnessHeader } from '@/components/fitness/FitnessHeader';
 import { WorkoutSection } from '@/components/fitness/WorkoutSection';
@@ -16,7 +18,7 @@ import { BodyProgress } from '@/components/fitness/BodyProgress';
 import { EnhancedLeaderboard } from '@/components/fitness/EnhancedLeaderboard';
 import { WorkoutHistory } from '@/components/fitness/WorkoutHistory';
 import { ActivityFeed } from '@/components/fitness/ActivityFeed';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Crown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 type FitnessGoal = 'weight-loss' | 'muscle-gain' | 'healthy-routine';
@@ -47,6 +49,8 @@ export default function Fitness() {
   const { checklist, loading: checklistLoading, updateChecklist } = useChecklist();
   const { awardXP, fetchWeeklyLeaderboard } = useXP();
   const { trackers, addWater, removeWater, setSteps, setSleep, logWeight, getWeekData } = useFitnessTrackers(profile?.weight ?? null);
+  const { isPremium } = useSubscription();
+  const navigate = useNavigate();
 
   const [workoutTasks, setWorkoutTasks] = useState<WorkoutTask[]>([]);
   const [dietTasks, setDietTasks] = useState<WorkoutTask[]>([]);
@@ -174,6 +178,20 @@ export default function Fitness() {
         <div className="space-y-3">
           <AIWorkoutLauncher />
           <ChallengesLauncher />
+          {!isPremium && (
+            <button
+              onClick={() => navigate('/premium')}
+              className="w-full flex items-center gap-3 p-4 rounded-2xl border border-primary/30 bg-primary/5"
+            >
+              <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
+                <Crown className="w-5 h-5 text-primary" />
+              </div>
+              <div className="flex-1 text-left">
+                <p className="text-sm font-bold text-foreground">Go Premium</p>
+                <p className="text-[10px] text-muted-foreground">Unlimited AI Coach, No Ads & More</p>
+              </div>
+            </button>
+          )}
         </div>
 
         {/* Activity Feed */}
