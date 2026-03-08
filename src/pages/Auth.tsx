@@ -86,10 +86,10 @@ export default function Auth() {
       if (!error && data?.user && referralCode) {
         // Track referral: look up inviter by code and create referral record
         try {
-          const { data: inviterProfiles } = await supabase
+          const { data: inviterProfiles } = await (supabase
             .from('profiles')
             .select('user_id')
-            .eq('referral_code' as any, referralCode) as any;
+            .eq('referral_code', referralCode) as any);
 
           const inviterProfile = inviterProfiles?.[0];
           if (inviterProfile && inviterProfile.user_id !== data.user.id) {
