@@ -1,4 +1,5 @@
-import { Sparkles } from 'lucide-react';
+import { Sparkles, BrainCircuit, ArrowRight } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 
 interface AIInsightsProps {
@@ -11,6 +12,7 @@ interface AIInsightsProps {
 }
 
 export function AIInsights({ streak, workoutDone, dietDone, water, sleep, steps }: AIInsightsProps) {
+  const navigate = useNavigate();
   const insights: string[] = [];
 
   if (!workoutDone && new Date().getHours() > 18) {
@@ -35,24 +37,42 @@ export function AIInsights({ streak, workoutDone, dietDone, water, sleep, steps 
     insights.push("Start fresh today! Complete both workout and diet to begin a streak.");
   }
 
-  const display = insights.slice(0, 3);
-  if (display.length === 0) return null;
+  const display = insights.slice(0, 2);
 
   return (
-    <div className="space-y-2">
-      <div className="flex items-center gap-1.5">
-        <Sparkles className="w-3.5 h-3.5 text-primary" />
-        <h2 className="text-sm font-semibold text-foreground">Smart Insights</h2>
-      </div>
-      {display.map((text, i) => (
-        <div
-          key={i}
-          className="card-elevated p-3 border-l-2 border-primary/40 animate-fade-up"
-          style={{ animationDelay: `${i * 80}ms` }}
-        >
-          <p className="text-xs text-muted-foreground leading-relaxed">{text}</p>
+    <div className="space-y-3">
+      {/* AI Coach Launcher */}
+      <button
+        onClick={() => navigate('/ai-coach')}
+        className="w-full p-4 rounded-2xl border border-primary/30 bg-gradient-to-r from-primary/10 via-card to-card flex items-center gap-3 hover:border-primary/50 transition-all group"
+      >
+        <div className="w-11 h-11 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
+          <BrainCircuit className="w-6 h-6 text-primary" />
         </div>
-      ))}
+        <div className="flex-1 text-left">
+          <p className="text-sm font-bold text-foreground">AI Fitness Coach</p>
+          <p className="text-[10px] text-muted-foreground">Workouts, nutrition, recovery & chat</p>
+        </div>
+        <ArrowRight className="w-4 h-4 text-muted-foreground group-hover:text-primary transition-colors" />
+      </button>
+
+      {display.length > 0 && (
+        <>
+          <div className="flex items-center gap-1.5">
+            <Sparkles className="w-3.5 h-3.5 text-primary" />
+            <h2 className="text-sm font-semibold text-foreground">Smart Insights</h2>
+          </div>
+          {display.map((text, i) => (
+            <div
+              key={i}
+              className="card-elevated p-3 border-l-2 border-primary/40 animate-fade-up"
+              style={{ animationDelay: `${i * 80}ms` }}
+            >
+              <p className="text-xs text-muted-foreground leading-relaxed">{text}</p>
+            </div>
+          ))}
+        </>
+      )}
     </div>
   );
 }
