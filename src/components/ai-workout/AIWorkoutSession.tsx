@@ -102,7 +102,7 @@ export function AIWorkoutSession({ exercise, onClose }: AIWorkoutSessionProps) {
     }
 
     repStateRef.current = newState;
-  }, [exercise, recognized]);
+  }, [exercise]);
 
   const handleWorkoutComplete = async (totalReps: number) => {
     setCompleted(true);
