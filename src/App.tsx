@@ -20,6 +20,7 @@ import UserProfile from "@/pages/UserProfile";
 import Challenges from "@/pages/Challenges";
 import Groups from "@/pages/Groups";
 import GroupDetail from "@/pages/GroupDetail";
+import AICoach from "@/pages/AICoach";
 import NotFound from "@/pages/NotFound";
 import { Loader2 } from "lucide-react";
 import { ErrorBoundary } from "@/components/common/ErrorBoundary";
