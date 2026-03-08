@@ -162,6 +162,15 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+      {/* Referral banner */}
+      {referralCode && mode === 'signup' && (
+        <div className="mx-6 mt-4 p-3 rounded-xl bg-primary/10 border border-primary/20 flex items-center gap-2">
+          <Gift className="w-4 h-4 text-primary shrink-0" />
+          <p className="text-xs text-foreground">
+            You've been invited! Sign up to join your friend on FitCircle 🎉
+          </p>
+        </div>
+      )}
       {/* Header */}
       <div className="safe-top px-6 pt-14 pb-10 text-center relative">
         {mode === 'forgot' && (
