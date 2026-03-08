@@ -336,6 +336,11 @@ export default function Settings() {
         )}
       </div>
 
+      {/* Referral */}
+      <div className="px-4 mb-2">
+        <ReferralCard />
+      </div>
+
       {/* Premium */}
       <div className="px-4 mb-2">
         <button
