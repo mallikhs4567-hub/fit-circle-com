@@ -9,6 +9,7 @@ import { GoalBadge } from '@/components/common/GoalBadge';
 import { LevelIndicator } from '@/components/common/LevelIndicator';
 import { XPProgressBar } from '@/components/common/XPProgressBar';
 import { PremiumBadge } from '@/components/premium/PremiumBadge';
+import { ReferralCard } from '@/components/referral/ReferralCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
