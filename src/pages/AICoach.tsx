@@ -137,13 +137,15 @@ export default function AICoach() {
 
   return (
     <div className="min-h-screen bg-background">
+      <UpgradeModal open={showUpgrade} onClose={() => setShowUpgrade(false)} feature="Unlimited AI Coach" />
+
       {/* Header */}
       <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border/40 px-4 pt-12 pb-3">
         <div className="flex items-center gap-3">
           <button onClick={() => navigate(-1)} className="text-muted-foreground">
             <ArrowLeft className="w-5 h-5" />
           </button>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-1">
             <div className="w-9 h-9 rounded-xl bg-primary/20 flex items-center justify-center">
               <BrainCircuit className="w-5 h-5 text-primary" />
             </div>
@@ -156,6 +158,13 @@ export default function AICoach() {
               </p>
             </div>
           </div>
+          {isPremium ? (
+            <PremiumBadge size="md" />
+          ) : remaining !== null ? (
+            <span className="text-[10px] text-muted-foreground bg-secondary px-2 py-1 rounded-full">
+              {remaining}/{FREE_LIMITS.ai_coach} left
+            </span>
+          ) : null}
         </div>
       </div>
 
