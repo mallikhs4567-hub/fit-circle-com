@@ -335,6 +335,20 @@ export default function Settings() {
         )}
       </div>
 
+      {/* Premium */}
+      <div className="px-4 mb-2">
+        <button
+          onClick={() => navigate('/premium')}
+          className="w-full flex items-center gap-3 py-3.5 px-4 card-elevated rounded-xl"
+        >
+          <Crown className="w-4 h-4 text-primary" />
+          <span className="flex-1 text-sm font-medium text-foreground">
+            {isPremium ? 'Premium Active' : 'Upgrade to Premium'}
+          </span>
+          {isPremium ? <PremiumBadge /> : <ChevronRight className="w-4 h-4 text-muted-foreground" />}
+        </button>
+      </div>
+
       {/* Logout */}
       <div className="px-4 pt-2">
         <Button variant="destructive" className="w-full" onClick={handleLogout}>
