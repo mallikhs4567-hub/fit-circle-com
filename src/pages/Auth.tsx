@@ -402,13 +402,13 @@ export default function Auth() {
               </Button>
             </div>
 
-            <div className="mt-8 text-center">
-              <p className="text-muted-foreground">
+            <div className="mt-10 text-center">
+              <p className="text-sm text-muted-foreground">
                 {mode === 'login' ? "Don't have an account?" : 'Already have an account?'}
               </p>
               <button
                 onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
-                className="text-primary font-semibold hover:underline mt-1"
+                className="text-primary font-semibold hover:underline mt-1 text-sm"
               >
                 {mode === 'login' ? 'Sign Up' : 'Log In'}
               </button>

@@ -137,7 +137,7 @@ export default function Chat() {
               )}
               {sentRequests.length > 0 && (
                 <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-2 uppercase tracking-wider">Sent ({sentRequests.length})</p>
+                  <p className="section-header mb-2">Sent ({sentRequests.length})</p>
                   <div className="space-y-2">
                     {sentRequests.map((request) => (
                       <div 

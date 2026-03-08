@@ -152,17 +152,19 @@ export default function Settings() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-20">
       {/* Header */}
-      <header className="safe-top px-4 pt-6 pb-4 flex items-center gap-3">
-        <button onClick={() => navigate('/profile')} className="p-2 rounded-xl bg-secondary">
-          <ArrowLeft className="w-5 h-5 text-foreground" />
-        </button>
-        <h1 className="text-lg font-display font-bold text-foreground flex-1">Edit Profile</h1>
-        <Button size="sm" onClick={handleSave} disabled={saving}>
-          {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-          <span className="ml-1">Save</span>
-        </Button>
+      <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-xl border-b border-border safe-top">
+        <div className="flex items-center gap-3 px-4 py-3">
+          <button onClick={() => navigate('/profile')} className="p-2 -ml-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors">
+            <ArrowLeft className="w-5 h-5" />
+          </button>
+          <h1 className="text-lg font-display font-bold text-foreground flex-1">Edit Profile</h1>
+          <Button size="sm" onClick={handleSave} disabled={saving}>
+            {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+            <span className="ml-1">Save</span>
+          </Button>
+        </div>
       </header>
 
       {/* Avatar section */}

@@ -299,12 +299,12 @@ function StatCard({
   iconColor: string;
 }) {
   return (
-    <div className="card-elevated p-4">
-      <div className={`flex items-center gap-2 mb-1 ${iconColor}`}>
+    <div className="card-elevated p-4 space-y-2">
+      <div className={`flex items-center gap-2 ${iconColor}`}>
         <Icon className="w-4 h-4" />
-        <span className="text-xs font-medium">{label}</span>
+        <span className="text-[10px] font-semibold uppercase tracking-wider">{label}</span>
       </div>
-      <p className="text-lg font-display font-bold text-foreground">{value}</p>
+      <p className="stat-value text-lg text-foreground">{value}</p>
     </div>
   );
 }
