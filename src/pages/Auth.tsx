@@ -82,7 +82,27 @@ export default function Auth() {
         setLoading(false);
         return;
       }
-      const { error } = await signUp(email, password, username);
+      const { data, error } = await signUp(email, password, username);
+      if (!error && data?.user && referralCode) {
+        // Track referral: look up inviter by code and create referral record
+        try {
+          const { data: inviterProfile } = await supabase
+            .from('profiles')
+            .select('user_id')
+            .eq('referral_code' as any, referralCode)
+            .maybeSingle();
+
+          if (inviterProfile && (inviterProfile as any).user_id !== data.user.id) {
+            await supabase.from('referrals').insert({
+              inviter_id: (inviterProfile as any).user_id,
+              new_user_id: data.user.id,
+              status: 'pending',
+            });
+          }
+        } catch {
+          // Non-blocking: referral tracking failed
+        }
+      }
       if (!error) {
         navigate('/onboarding');
       }
