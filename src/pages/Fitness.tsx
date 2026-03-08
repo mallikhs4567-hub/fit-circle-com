@@ -169,8 +169,9 @@ export default function Fitness() {
       />
 
       <div className="px-4 space-y-5">
-        {/* AI Workout — top priority */}
+        {/* AI Workout & Challenges */}
         <AIWorkoutLauncher />
+        <ChallengesLauncher />
 
         {/* Core daily tasks */}
         <div className="grid grid-cols-1 gap-4">
