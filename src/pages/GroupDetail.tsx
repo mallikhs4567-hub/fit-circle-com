@@ -16,7 +16,7 @@ function PostItem({ post }: { post: GroupPost }) {
   return (
     <div className="p-4 rounded-2xl border border-border/40 bg-card/60 space-y-2">
       <div className="flex items-center gap-2">
-        <Avatar src={post.profile?.avatar_url} fallback={post.profile?.username?.[0] || '?'} size="sm" />
+        <Avatar src={post.profile?.avatar_url} name={post.profile?.username} size="sm" />
         <div>
           <p className="text-xs font-bold text-foreground">{post.profile?.username}</p>
           <p className="text-[10px] text-muted-foreground">{formatDistanceToNow(new Date(post.created_at), { addSuffix: true })}</p>
