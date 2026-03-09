@@ -142,6 +142,14 @@ export default function Circle() {
         <div className="flex items-center justify-between px-4 py-3">
           <h1 className="text-xl font-display font-bold text-foreground">Circle</h1>
           <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => navigate('/search')}
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <Search className="w-5 h-5" />
+            </Button>
             <NotificationCenter />
             <Button
               variant="default"
