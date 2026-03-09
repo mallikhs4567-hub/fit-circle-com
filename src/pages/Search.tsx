@@ -97,7 +97,7 @@ export default function Search() {
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               autoFocus
               placeholder="Search people, communities, posts..."
