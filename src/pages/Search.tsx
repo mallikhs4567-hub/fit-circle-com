@@ -10,7 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Search, Users, UsersRound, FileText, Loader2, Globe, Lock, Dumbbell, PersonStanding, Bike, Flame, ArrowLeft } from 'lucide-react';
+import { Search as SearchIcon, Users, UsersRound, FileText, Loader2, Globe, Lock, Dumbbell, PersonStanding, Bike, Flame, ArrowLeft } from 'lucide-react';
 import { useGroups } from '@/hooks/useGroups';
 
 const categoryIcons: Record<string, any> = {
