@@ -14,7 +14,7 @@ import { PullToRefresh } from '@/components/common/PullToRefresh';
 import { NotificationCenter } from '@/components/common/NotificationCenter';
 import { LevelUpModal } from '@/components/common/LevelUpModal';
 import { AdBanner } from '@/components/common/AdBanner';
-import { Plus, Send, X, Image, Video, Loader2, Flame } from 'lucide-react';
+import { Plus, Send, X, Image, Video, Loader2, Flame, Search } from 'lucide-react';
 
 type ComposeMode = 'post' | 'story';
 
