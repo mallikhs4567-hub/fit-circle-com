@@ -8,7 +8,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Plus, Search, Users, Lock, Globe, Dumbbell, PersonStanding, Bike, Flame, Loader2 } from 'lucide-react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const categoryIcons: Record<string, any> = {
   gym: Dumbbell,
@@ -156,50 +155,18 @@ export default function Groups() {
         </div>
       </div>
 
-      <div className="px-4 py-4 space-y-5">
-        <Tabs defaultValue="my" className="w-full">
-          <TabsList className="w-full grid grid-cols-2 h-10 bg-secondary rounded-xl">
-            <TabsTrigger value="my" className="rounded-lg text-xs font-bold">My Groups</TabsTrigger>
-            <TabsTrigger value="discover" className="rounded-lg text-xs font-bold">Discover</TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="my" className="mt-4 space-y-3">
-            {loading ? (
-              <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
-            ) : myGroups.length === 0 ? (
-              <div className="text-center py-12 space-y-2">
-                <Users className="w-12 h-12 text-muted-foreground/40 mx-auto" />
-                <p className="text-sm text-muted-foreground">No communities yet</p>
-                <p className="text-xs text-muted-foreground/60">Create or join a fitness community</p>
-              </div>
-            ) : (
-              myGroups.map(g => <GroupCard key={g.id} group={g} onJoin={() => {}} isMember />)
-            )}
-          </TabsContent>
-
-          <TabsContent value="discover" className="mt-4 space-y-3">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Search communities..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-            {loading ? (
-              <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
-            ) : filtered.length === 0 ? (
-              <div className="text-center py-12">
-                <p className="text-sm text-muted-foreground">No communities found</p>
-              </div>
-            ) : (
-              filtered.map(g => (
-                <GroupCard key={g.id} group={g} onJoin={(grp) => joinGroup(grp.id, grp.privacy)} isMember={false} />
-              ))
-            )}
-          </TabsContent>
-        </Tabs>
+      <div className="px-4 py-4 space-y-3">
+        {loading ? (
+          <div className="flex justify-center py-12"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+        ) : myGroups.length === 0 ? (
+          <div className="text-center py-12 space-y-2">
+            <Users className="w-12 h-12 text-muted-foreground/40 mx-auto" />
+            <p className="text-sm text-muted-foreground">No communities yet</p>
+            <p className="text-xs text-muted-foreground/60">Create or join a fitness community</p>
+          </div>
+        ) : (
+          myGroups.map(g => <GroupCard key={g.id} group={g} onJoin={() => {}} isMember />)
+        )}
       </div>
     </div>
   );
