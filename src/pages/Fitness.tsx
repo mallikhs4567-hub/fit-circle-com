@@ -247,6 +247,7 @@ export default function Fitness() {
         <section className="space-y-3">
           <h2 className="section-header px-1">Analytics</h2>
           <BodyProgress />
+          <AdBanner variant="banner" />
           <ProgressAnalytics
             streak={profile?.streak || 0}
             totalActiveDays={profile?.total_active_days || 0}
