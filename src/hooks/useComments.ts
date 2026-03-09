@@ -61,7 +61,7 @@ export function useComments(postId: string) {
     if (!postId || postId.startsWith('demo-')) return;
     const { count: c, error } = await supabase
       .from('comments')
-      .select('*', { count: 'exact', head: true })
+      .select('*', { count: 'exact' })
       .eq('post_id', postId);
     if (!error && c !== null) setCount(c);
   }, [postId]);
