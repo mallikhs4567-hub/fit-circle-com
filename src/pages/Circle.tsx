@@ -20,6 +20,7 @@ import { Plus, Send, X, Image, Video, Loader2, Flame, Search } from 'lucide-reac
 type ComposeMode = 'post' | 'story';
 
 export default function Circle() {
+  const navigate = useNavigate();
   const { posts, loading, createPost, addReaction, refetch: refetchPosts } = usePosts();
   const { profile } = useProfile();
   const { myStory, refetch: refetchStories } = useStories();
