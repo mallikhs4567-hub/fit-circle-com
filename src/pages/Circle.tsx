@@ -180,8 +180,12 @@ export default function Circle() {
               {posts.map((post, index) => (
                 <div key={post.id} style={{ animationDelay: `${index * 50}ms` }}>
                   <PostCard post={post} onReaction={handleReaction} isStory={(post as any).type === 'story' || !(post as any).type} />
+                  {/* Show ad after every 3rd post */}
+                  {(index + 1) % 3 === 0 && <AdBanner variant="inline" className="mt-3" />}
                 </div>
               ))}
+              {/* Final ad banner at the end */}
+              <AdBanner variant="banner" />
             </div>
           )}
         </div>
