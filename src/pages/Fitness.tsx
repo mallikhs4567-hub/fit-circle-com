@@ -199,6 +199,7 @@ export default function Fitness() {
         <section className="space-y-3">
           <h2 className="section-header px-1">Activity</h2>
           <ActivityFeed />
+          <AdBanner variant="inline" />
         </section>
 
         {/* Daily Tasks */}
