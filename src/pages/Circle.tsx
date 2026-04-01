@@ -192,8 +192,6 @@ export default function Circle() {
                   <PostCard post={post} onReaction={handleReaction} isStory={(post as any).type === 'story' || !(post as any).type} />
                 </div>
               ))}
-              {/* Final ad banner at the end */}
-              <AdBanner variant="banner" />
             </div>
           )}
         </div>
