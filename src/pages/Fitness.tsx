@@ -18,7 +18,7 @@ import { BodyProgress } from '@/components/fitness/BodyProgress';
 import { EnhancedLeaderboard } from '@/components/fitness/EnhancedLeaderboard';
 import { WorkoutHistory } from '@/components/fitness/WorkoutHistory';
 import { ActivityFeed } from '@/components/fitness/ActivityFeed';
-import { AdBanner } from '@/components/common/AdBanner';
+
 import { Loader2, Crown } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -199,7 +199,7 @@ export default function Fitness() {
         <section className="space-y-3">
           <h2 className="section-header px-1">Activity</h2>
           <ActivityFeed />
-          <AdBanner variant="inline" />
+          
         </section>
 
         {/* Daily Tasks */}
@@ -247,7 +247,7 @@ export default function Fitness() {
         <section className="space-y-3">
           <h2 className="section-header px-1">Analytics</h2>
           <BodyProgress />
-          <AdBanner variant="banner" />
+          
           <ProgressAnalytics
             streak={profile?.streak || 0}
             totalActiveDays={profile?.total_active_days || 0}
