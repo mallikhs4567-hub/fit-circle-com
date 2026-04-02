@@ -48,7 +48,7 @@ export function useChallenges() {
     // Get participant counts per challenge
     const { data: allParticipants } = await supabase
       .from('challenge_participants')
-      .select('challenge_id, progress');
+      .select('challenge_id, progress, user_id, completed');
 
     const countMap = new Map<string, number>();
     const globalProgressMap = new Map<string, number>();
