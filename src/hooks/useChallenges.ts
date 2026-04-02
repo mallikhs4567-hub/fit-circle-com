@@ -141,6 +141,43 @@ export function useChallenges() {
     return myParticipations.find(p => p.challenge_id === challengeId) || null;
   }, [myParticipations]);
 
+  const addProgress = useCallback(async (challengeId: string, reps: number) => {
+    if (!user) return false;
+    const participation = myParticipations.find(p => p.challenge_id === challengeId);
+    if (!participation || participation.completed) return false;
+
+    const challenge = challenges.find(c => c.id === challengeId);
+    if (!challenge) return false;
+
+    const newProgress = Math.min(participation.progress + reps, challenge.target_reps);
+    const isNowCompleted = newProgress >= challenge.target_reps;
+
+    const { error } = await supabase
+      .from('challenge_participants')
+      .update({
+        progress: newProgress,
+        completed: isNowCompleted,
+        completed_at: isNowCompleted ? new Date().toISOString() : null,
+      })
+      .eq('id', participation.id);
+
+    if (error) {
+      toast.error('Failed to update progress');
+      return false;
+    }
+
+    if (isNowCompleted) {
+      // Award XP via the database function
+      await supabase.rpc('award_xp', { p_user_id: user.id, p_amount: Math.min(50 + challenge.target_reps, 200) });
+      toast.success('Challenge completed! 🏆');
+    } else {
+      toast.success(`+${reps} reps logged!`);
+    }
+
+    await fetchChallenges();
+    return true;
+  }, [user, myParticipations, challenges, fetchChallenges]);
+
   return {
     challenges,
     myParticipations,
@@ -148,6 +185,7 @@ export function useChallenges() {
     joinChallenge,
     getLeaderboard,
     getMyParticipation,
+    addProgress,
     refetch: fetchChallenges,
   };
 }
