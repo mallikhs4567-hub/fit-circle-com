@@ -58,8 +58,15 @@ export function useChallenges() {
     });
 
     const now = new Date();
+    // Get IDs of challenges the user has completed
+    const myCompletedIds = new Set(
+      (user ? (allParticipants || []).filter(p => p.user_id === user.id && p.completed).map(p => p.challenge_id) : [])
+    );
+
     const activeChallenges = challengeRows.filter(c => {
-      // Remove expired challenges (check ends_at or created_at + duration_days)
+      // Always keep challenges the user has completed (for Done tab)
+      if (myCompletedIds.has(c.id)) return true;
+      // Remove expired challenges
       if (c.ends_at && new Date(c.ends_at) < now) return false;
       const createdEnd = new Date(new Date(c.created_at).getTime() + c.duration_days * 86400000);
       if (createdEnd < now) return false;
