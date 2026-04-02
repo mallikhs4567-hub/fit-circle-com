@@ -185,6 +185,7 @@ export function useChallenges() {
     joinChallenge,
     getLeaderboard,
     getMyParticipation,
+    addProgress,
     refetch: fetchChallenges,
   };
 }
