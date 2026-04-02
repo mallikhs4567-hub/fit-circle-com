@@ -36,8 +36,10 @@ function getTimeRemaining(startDate: string, durationDays: number): string {
   return `${hours}h left`;
 }
 
-export function ChallengeCard({ challenge, participation, onJoin, onViewLeaderboard }: ChallengeCardProps) {
+export function ChallengeCard({ challenge, participation, onJoin, onViewLeaderboard, onAddProgress }: ChallengeCardProps) {
   const [joining, setJoining] = useState(false);
+  const [showLogInput, setShowLogInput] = useState(false);
+  const [logReps, setLogReps] = useState('');
   const isJoined = !!participation;
   const progress = participation ? participation.progress : 0;
   const progressPct = Math.min((progress / challenge.target_reps) * 100, 100);
