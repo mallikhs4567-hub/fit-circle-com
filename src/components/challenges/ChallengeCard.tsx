@@ -8,6 +8,7 @@ interface ChallengeCardProps {
   participation: ChallengeParticipant | null;
   onJoin: (id: string) => void;
   onViewLeaderboard: (id: string) => void;
+  onAddProgress: (id: string, reps: number) => void;
 }
 
 const exerciseIcons: Record<string, string> = {
