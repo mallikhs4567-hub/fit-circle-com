@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dumbbell, Users, Clock, Trophy, ChevronRight, Zap, Globe, Check, Calendar } from 'lucide-react';
+import { Dumbbell, Users, Clock, Trophy, ChevronRight, Zap, Globe, Check, Calendar, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { type Challenge, type ChallengeParticipant } from '@/hooks/useChallenges';
 
