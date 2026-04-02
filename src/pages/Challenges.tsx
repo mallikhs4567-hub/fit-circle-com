@@ -161,10 +161,10 @@ export default function Challenges() {
               key={challenge.id}
               challenge={challenge}
               participation={getMyParticipation(challenge.id)}
-              onJoin={joinChallenge}
-              onAddProgress={addProgress}
+              onJoin={hasRealData ? joinChallenge : handleDemoJoin}
+              onAddProgress={hasRealData ? addProgress : handleDemoProgress}
               onViewLeaderboard={(id) => {
-                const c = challenges.find(ch => ch.id === id);
+                const c = displayChallenges.find(ch => ch.id === id);
                 if (c) setLeaderboardChallenge(c);
               }}
             />
