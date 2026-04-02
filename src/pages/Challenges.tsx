@@ -6,16 +6,46 @@ import { ChallengeCompletion } from '@/components/challenges/ChallengeCompletion
 import { Trophy, Flame, Target, Globe, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { demoChallenges, demoParticipants } from '@/lib/demoChallenges';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 type TabId = 'all' | 'my' | 'global' | 'completed';
 
 export default function Challenges() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { challenges, myParticipations, loading, joinChallenge, getLeaderboard, getMyParticipation, addProgress } = useChallenges();
   const [activeTab, setActiveTab] = useState<TabId>('all');
   const [leaderboardChallenge, setLeaderboardChallenge] = useState<Challenge | null>(null);
   const [completedChallenge, setCompletedChallenge] = useState<Challenge | null>(null);
   const prevCompletedRef = useRef<Set<string>>(new Set());
+
+  // Use demo data when no real challenges exist
+  const hasRealData = challenges.length > 0;
+  const displayChallenges = hasRealData ? challenges : demoChallenges;
+
+  const handleDemoJoin = (id: string) => {
+    toast.info('Sign up and join real challenges! 💪');
+    return Promise.resolve(false);
+  };
+  const handleDemoProgress = (id: string, reps: number) => {
+    toast.info('Sign up to track your progress!');
+    return Promise.resolve(false);
+  };
+  const handleDemoLeaderboard = async (challengeId: string) => {
+    return demoParticipants
+      .filter(p => p.challengeId === challengeId)
+      .sort((a, b) => b.progress - a.progress)
+      .map((p, idx) => ({
+        rank: idx + 1,
+        userId: `demo-${p.username}`,
+        username: p.username,
+        avatarUrl: p.avatarUrl,
+        progress: p.progress,
+        completed: p.completed,
+      }));
+  };
 
   useEffect(() => {
     const completedIds = new Set(myParticipations.filter(p => p.completed).map(p => p.challenge_id));
@@ -39,15 +69,15 @@ export default function Challenges() {
   const filtered = useMemo(() => {
     switch (activeTab) {
       case 'my':
-        return challenges.filter(c => { const p = getMyParticipation(c.id); return p && !p.completed; });
+        return displayChallenges.filter(c => { const p = getMyParticipation(c.id); return p && !p.completed; });
       case 'global':
-        return challenges.filter(c => c.is_global);
+        return displayChallenges.filter(c => c.is_global);
       case 'completed':
-        return challenges.filter(c => { const p = getMyParticipation(c.id); return p?.completed; });
+        return displayChallenges.filter(c => { const p = getMyParticipation(c.id); return p?.completed; });
       default:
-        return challenges;
+        return displayChallenges;
     }
-  }, [activeTab, challenges, getMyParticipation]);
+  }, [activeTab, displayChallenges, getMyParticipation]);
 
   const activeChallenges = myParticipations.filter(p => !p.completed).length;
   const completedCount = myParticipations.filter(p => p.completed).length;
@@ -65,7 +95,7 @@ export default function Challenges() {
       {leaderboardChallenge && (
         <ChallengeLeaderboard
           challenge={leaderboardChallenge}
-          getLeaderboard={getLeaderboard}
+          getLeaderboard={hasRealData ? getLeaderboard : handleDemoLeaderboard}
           onClose={() => setLeaderboardChallenge(null)}
         />
       )}
@@ -131,10 +161,10 @@ export default function Challenges() {
               key={challenge.id}
               challenge={challenge}
               participation={getMyParticipation(challenge.id)}
-              onJoin={joinChallenge}
-              onAddProgress={addProgress}
+              onJoin={hasRealData ? joinChallenge : handleDemoJoin}
+              onAddProgress={hasRealData ? addProgress : handleDemoProgress}
               onViewLeaderboard={(id) => {
-                const c = challenges.find(ch => ch.id === id);
+                const c = displayChallenges.find(ch => ch.id === id);
                 if (c) setLeaderboardChallenge(c);
               }}
             />
