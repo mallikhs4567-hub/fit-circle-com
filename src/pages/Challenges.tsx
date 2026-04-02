@@ -132,6 +132,7 @@ export default function Challenges() {
               challenge={challenge}
               participation={getMyParticipation(challenge.id)}
               onJoin={joinChallenge}
+              onAddProgress={addProgress}
               onViewLeaderboard={(id) => {
                 const c = challenges.find(ch => ch.id === id);
                 if (c) setLeaderboardChallenge(c);
