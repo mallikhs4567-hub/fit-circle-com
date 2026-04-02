@@ -69,15 +69,15 @@ export default function Challenges() {
   const filtered = useMemo(() => {
     switch (activeTab) {
       case 'my':
-        return challenges.filter(c => { const p = getMyParticipation(c.id); return p && !p.completed; });
+        return displayChallenges.filter(c => { const p = getMyParticipation(c.id); return p && !p.completed; });
       case 'global':
-        return challenges.filter(c => c.is_global);
+        return displayChallenges.filter(c => c.is_global);
       case 'completed':
-        return challenges.filter(c => { const p = getMyParticipation(c.id); return p?.completed; });
+        return displayChallenges.filter(c => { const p = getMyParticipation(c.id); return p?.completed; });
       default:
-        return challenges;
+        return displayChallenges;
     }
-  }, [activeTab, challenges, getMyParticipation]);
+  }, [activeTab, displayChallenges, getMyParticipation]);
 
   const activeChallenges = myParticipations.filter(p => !p.completed).length;
   const completedCount = myParticipations.filter(p => p.completed).length;
