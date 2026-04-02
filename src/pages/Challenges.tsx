@@ -95,7 +95,7 @@ export default function Challenges() {
       {leaderboardChallenge && (
         <ChallengeLeaderboard
           challenge={leaderboardChallenge}
-          getLeaderboard={getLeaderboard}
+          getLeaderboard={hasRealData ? getLeaderboard : handleDemoLeaderboard}
           onClose={() => setLeaderboardChallenge(null)}
         />
       )}
