@@ -11,7 +11,7 @@ type TabId = 'all' | 'my' | 'global' | 'completed';
 
 export default function Challenges() {
   const navigate = useNavigate();
-  const { challenges, myParticipations, loading, joinChallenge, getLeaderboard, getMyParticipation } = useChallenges();
+  const { challenges, myParticipations, loading, joinChallenge, getLeaderboard, getMyParticipation, addProgress } = useChallenges();
   const [activeTab, setActiveTab] = useState<TabId>('all');
   const [leaderboardChallenge, setLeaderboardChallenge] = useState<Challenge | null>(null);
   const [completedChallenge, setCompletedChallenge] = useState<Challenge | null>(null);
