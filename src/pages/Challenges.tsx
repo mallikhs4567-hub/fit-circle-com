@@ -6,16 +6,46 @@ import { ChallengeCompletion } from '@/components/challenges/ChallengeCompletion
 import { Trophy, Flame, Target, Globe, ArrowLeft } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useNavigate } from 'react-router-dom';
+import { demoChallenges, demoParticipants } from '@/lib/demoChallenges';
+import { useAuth } from '@/hooks/useAuth';
+import { toast } from 'sonner';
 
 type TabId = 'all' | 'my' | 'global' | 'completed';
 
 export default function Challenges() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { challenges, myParticipations, loading, joinChallenge, getLeaderboard, getMyParticipation, addProgress } = useChallenges();
   const [activeTab, setActiveTab] = useState<TabId>('all');
   const [leaderboardChallenge, setLeaderboardChallenge] = useState<Challenge | null>(null);
   const [completedChallenge, setCompletedChallenge] = useState<Challenge | null>(null);
   const prevCompletedRef = useRef<Set<string>>(new Set());
+
+  // Use demo data when no real challenges exist
+  const hasRealData = challenges.length > 0;
+  const displayChallenges = hasRealData ? challenges : demoChallenges;
+
+  const handleDemoJoin = (id: string) => {
+    toast.info('Sign up and join real challenges! 💪');
+    return Promise.resolve(false);
+  };
+  const handleDemoProgress = (id: string, reps: number) => {
+    toast.info('Sign up to track your progress!');
+    return Promise.resolve(false);
+  };
+  const handleDemoLeaderboard = async (challengeId: string) => {
+    return demoParticipants
+      .filter(p => p.challengeId === challengeId)
+      .sort((a, b) => b.progress - a.progress)
+      .map((p, idx) => ({
+        rank: idx + 1,
+        userId: `demo-${p.username}`,
+        username: p.username,
+        avatarUrl: p.avatarUrl,
+        progress: p.progress,
+        completed: p.completed,
+      }));
+  };
 
   useEffect(() => {
     const completedIds = new Set(myParticipations.filter(p => p.completed).map(p => p.challenge_id));
