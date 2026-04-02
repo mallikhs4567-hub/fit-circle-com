@@ -141,7 +141,47 @@ export function ChallengeCard({ challenge, participation, onJoin, onViewLeaderbo
                   </span>
                 </>
               )}
-            </div>
+           </div>
+
+           {/* Log Progress */}
+           {!isCompleted && (
+             <div className="space-y-2">
+               {showLogInput ? (
+                 <div className="flex gap-2">
+                   <input
+                     type="number"
+                     min="1"
+                     value={logReps}
+                     onChange={(e) => setLogReps(e.target.value)}
+                     placeholder="Reps"
+                     className="flex-1 px-3 py-2 rounded-lg bg-secondary text-foreground text-sm border border-border focus:outline-none focus:ring-1 focus:ring-primary"
+                   />
+                   <button
+                     onClick={() => {
+                       const n = parseInt(logReps);
+                       if (n > 0) { onAddProgress(challenge.id, n); setLogReps(''); setShowLogInput(false); }
+                     }}
+                     className="px-4 py-2 rounded-lg gradient-primary text-primary-foreground text-sm font-bold uppercase press-effect"
+                   >
+                     Log
+                   </button>
+                   <button
+                     onClick={() => { setShowLogInput(false); setLogReps(''); }}
+                     className="px-3 py-2 rounded-lg bg-secondary text-muted-foreground text-sm press-effect"
+                   >
+                     ✕
+                   </button>
+                 </div>
+               ) : (
+                 <button
+                   onClick={() => setShowLogInput(true)}
+                   className="w-full py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider border border-primary/30 text-primary transition-all hover:bg-primary/10 flex items-center justify-center gap-1.5 press-effect"
+                 >
+                   <Plus className="w-3.5 h-3.5" /> Log Progress
+                 </button>
+               )}
+             </div>
+           )}
           </div>
         )}
 
