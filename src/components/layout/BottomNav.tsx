@@ -29,15 +29,22 @@ export function BottomNav() {
               key={tab.id}
               onClick={() => navigate(tab.path)}
               className={cn(
-                "flex flex-col items-center justify-center gap-0.5 w-14 py-1.5 transition-colors duration-150",
+                "relative flex flex-col items-center justify-center gap-0.5 w-14 py-1.5 transition-all duration-200",
                 isActive 
                   ? "text-primary" 
-                  : "text-muted-foreground"
+                  : "text-muted-foreground active:scale-90"
               )}
             >
-              <Icon className="w-5 h-5" strokeWidth={isActive ? 2.5 : 1.8} />
+              {/* Active glow dot */}
+              {isActive && (
+                <span className="absolute -top-1 w-1 h-1 rounded-full bg-primary animate-online-pulse" />
+              )}
+              <Icon className={cn(
+                "w-5 h-5 transition-transform duration-200",
+                isActive && "scale-110"
+              )} strokeWidth={isActive ? 2.5 : 1.8} />
               <span className={cn(
-                "text-[9px] font-semibold tracking-wide uppercase",
+                "text-[9px] font-semibold tracking-wide uppercase transition-all duration-200",
                 isActive && "text-primary"
               )}>
                 {tab.label}
