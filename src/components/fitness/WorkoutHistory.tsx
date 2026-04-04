@@ -192,7 +192,7 @@ export function WorkoutHistory() {
                   : 'text-destructive';
 
               return (
-                <div key={workout.id} className="card-elevated p-3 space-y-2">
+                <div key={workout.id} className="card-elevated p-3 space-y-2 animate-stagger-in" style={{ animationDelay: `${idx * 80}ms` }}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                       <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center">
