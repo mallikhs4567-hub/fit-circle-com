@@ -182,7 +182,7 @@ export function WorkoutHistory() {
 
         <ScrollArea className="h-[280px]">
           <div className="space-y-2 pr-3">
-            {history.map(workout => {
+            {displayHistory.map((workout, idx) => {
               const mins = Math.floor(workout.duration_seconds / 60);
               const secs = workout.duration_seconds % 60;
               const formColor = workout.avg_form_score >= 90
