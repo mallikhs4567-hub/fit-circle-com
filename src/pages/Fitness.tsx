@@ -176,15 +176,15 @@ export default function Fitness() {
 
       <div className="px-4 space-y-6">
         {/* Quick Actions */}
-        <div className="space-y-3">
+        <div className="space-y-3 animate-stagger-in" style={{ animationDelay: '100ms' }}>
           <AIWorkoutLauncher />
           <ChallengesLauncher />
           {!isPremium && (
             <button
               onClick={() => navigate('/premium')}
-              className="w-full flex items-center gap-3 p-4 rounded-2xl border border-primary/30 bg-primary/5"
+              className="w-full flex items-center gap-3 p-4 rounded-2xl border border-primary/30 bg-primary/5 group press-effect"
             >
-              <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center shrink-0 group-hover:animate-breathing">
                 <Crown className="w-5 h-5 text-primary" />
               </div>
               <div className="flex-1 text-left">
@@ -196,14 +196,13 @@ export default function Fitness() {
         </div>
 
         {/* Activity Feed */}
-        <section className="space-y-3">
+        <section className="space-y-3 animate-stagger-in" style={{ animationDelay: '200ms' }}>
           <h2 className="section-header px-1">Activity</h2>
           <ActivityFeed />
-          
         </section>
 
         {/* Daily Tasks */}
-        <section className="space-y-3">
+        <section className="space-y-3 animate-stagger-in" style={{ animationDelay: '300ms' }}>
           <h2 className="section-header px-1">Today's Plan</h2>
           <div className="space-y-3">
             <WorkoutSection
@@ -222,7 +221,7 @@ export default function Fitness() {
         </section>
 
         {/* Health Trackers */}
-        <section className="space-y-3">
+        <section className="space-y-3 animate-stagger-in" style={{ animationDelay: '400ms' }}>
           <h2 className="section-header px-1">Trackers</h2>
           <TrackersSection
             water={trackers.water}
@@ -238,13 +237,13 @@ export default function Fitness() {
         </section>
 
         {/* Workout History */}
-        <section className="space-y-3">
+        <section className="space-y-3 animate-stagger-in" style={{ animationDelay: '500ms' }}>
           <h2 className="section-header px-1">History</h2>
           <WorkoutHistory />
         </section>
 
         {/* Progress & Analytics */}
-        <section className="space-y-3">
+        <section className="space-y-3 animate-stagger-in" style={{ animationDelay: '600ms' }}>
           <h2 className="section-header px-1">Analytics</h2>
           <BodyProgress />
           
@@ -258,7 +257,7 @@ export default function Fitness() {
         </section>
 
         {/* AI Insights */}
-        <section>
+        <section className="animate-stagger-in" style={{ animationDelay: '700ms' }}>
           <AIInsights
             streak={profile?.streak || 0}
             workoutDone={allWorkoutDone}
